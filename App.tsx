@@ -1,24 +1,43 @@
 
 import React, { useState, useEffect } from 'react';
-import Navbar from './components/Navbar';
-import Footer from './components/Footer';
-import Home from './pages/Home';
-import Profiler from './pages/Profiler';
-import Coleccion from './pages/Coleccion';
-import Eventos from './pages/Eventos';
-import Contacto from './pages/Contacto';
-import Artista from './pages/Artista';
-import Admin from './pages/Admin';
+import Navbar from './components/Navbar.tsx';
+import Footer from './components/Footer.tsx';
+import Home from './pages/Home.tsx';
+import Coleccion from './pages/Coleccion.tsx';
+import Eventos from './pages/Eventos.tsx';
+import OtrosEventos from './pages/OtrosEventos.tsx';
+import Contacto from './pages/Contacto.tsx';
+import Artista from './pages/Artista.tsx';
+import Configuracion from './pages/Configuracion.tsx';
 import { INITIAL_ARTWORKS, INITIAL_EVENTS, ARTISTS as INITIAL_ARTISTS } from './constants.tsx';
-import { Artwork, EventItem, Artist } from './types';
+import { Artwork, EventItem, OtherEvent, Artist, Language } from './types.ts';
 
 const App: React.FC = () => {
   const [currentPath, setCurrentPath] = useState(window.location.hash || '#/');
+  const [lang, setLang] = useState<Language>('ES');
+  
+  // State for all dynamic content
   const [artworks, setArtworks] = useState<Artwork[]>(INITIAL_ARTWORKS);
   const [events, setEvents] = useState<EventItem[]>(INITIAL_EVENTS);
   const [artists, setArtists] = useState<Artist[]>(INITIAL_ARTISTS);
-  const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
-  const [tempPassword, setTempPassword] = useState('');
+  const [otherEvents, setOtherEvents] = useState<OtherEvent[]>([
+    {
+      id: 'o1',
+      date: '15 DIC 2024',
+      title: 'Taller de Materia y Textura',
+      category: 'Taller',
+      imageUrl: 'https://images.unsplash.com/photo-1513364776144-60967b0f800f?q=80&w=800',
+      description: 'Explora el uso de materiales no convencionales en la pintura contemporánea de la mano de nuestros artistas residentes.'
+    },
+    {
+      id: 'o2',
+      date: '20 DIC 2024',
+      title: 'Presentación: La Poesía del Caos',
+      category: 'Literatura',
+      imageUrl: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?q=80&w=800',
+      description: 'Una tarde dedicada a la narrativa introspectiva y su relación con el arte visual moderno.'
+    }
+  ]);
 
   useEffect(() => {
     const handleHashChange = () => {
@@ -33,84 +52,66 @@ const App: React.FC = () => {
     window.location.hash = path;
   };
 
-  const handleLoginSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (tempPassword === 'captaloona2024') {
-      setIsAdminLoggedIn(true);
-      setTempPassword('');
-      navigate('/admin');
-    } else {
-      alert('Contraseña incorrecta');
-    }
-  };
-
   const renderPage = () => {
     switch (currentPath) {
-      case '#/': return <Home onNavigate={navigate} />;
-      case '#/profiler': return <Profiler />;
+      case '#/': return <Home onNavigate={navigate} lang={lang} />;
       case '#/coleccion': return <Coleccion artworks={artworks} />;
       case '#/eventos': return <Eventos events={events} />;
+      case '#/otros-eventos': return <OtrosEventos events={otherEvents} />;
       case '#/contacto': return <Contacto />;
-      case '#/artista': return <Artista />;
-      case '#/admin': 
-        if (!isAdminLoggedIn) {
-          return (
-            <div className="pt-48 pb-24 max-w-md mx-auto px-6 text-center animate-fadeIn">
-              <div className="bg-white p-10 shadow-2xl border border-zinc-100 rounded-sm">
-                <h1 className="text-3xl serif mb-4">Acceso Restringido</h1>
-                <p className="text-sm text-zinc-500 mb-8 uppercase tracking-widest">Introduce la contraseña de gestión</p>
-                <form onSubmit={handleLoginSubmit} className="space-y-6">
-                  <input 
-                    type="password" 
-                    placeholder="Contraseña"
-                    className="w-full border-b border-zinc-200 py-2 text-center focus:outline-none focus:border-emerald-600 transition-colors"
-                    value={tempPassword}
-                    onChange={(e) => setTempPassword(e.target.value)}
-                    autoFocus
-                  />
-                  <button type="submit" className="w-full bg-zinc-900 text-white py-4 text-xs font-bold uppercase tracking-[0.2em] hover:bg-emerald-600 transition-all">
-                    Entrar al Panel
-                  </button>
-                  <button type="button" onClick={() => navigate('/')} className="text-xs text-zinc-400 hover:text-zinc-900 uppercase tracking-widest pt-4">
-                    Cancelar
-                  </button>
-                </form>
+      case '#/artista': return <Artista lang={lang} />;
+      case '#/config': return (
+        <Configuracion 
+          artworks={artworks}
+          events={events}
+          otherEvents={otherEvents}
+          artists={artists}
+          onUpdateArtworks={setArtworks}
+          onUpdateEvents={setEvents}
+          onUpdateOtherEvents={setOtherEvents}
+          onUpdateArtists={setArtists}
+        />
+      );
+      case '#/espacio': 
+        return (
+          <div className="pt-52 pb-40 max-w-6xl mx-auto px-8 animate-fadeIn">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-24 items-center">
+              <div className="space-y-10 text-left">
+                <span className="text-emerald-600 text-[11px] font-bold uppercase tracking-[0.6em]">MADRID HEADQUARTERS</span>
+                <h1 className="text-7xl serif italic leading-none">Captaloona Art</h1>
+                <p className="text-zinc-500 text-xl font-light italic leading-relaxed">
+                  Situado en Andrés Mellado 55, este espacio es el laboratorio físico donde las teorías de Loona Contemporary se materializan.
+                </p>
+                <div className="h-0.5 w-24 bg-zinc-900"></div>
+                <div className="space-y-2 text-sm text-zinc-400 font-medium uppercase tracking-widest">
+                   <p>Gaztambide, 28015</p>
+                   <p>Madrid, España</p>
+                </div>
+              </div>
+              <div className="aspect-[4/5] bg-zinc-100 shadow-3xl overflow-hidden rounded-sm relative">
+                <img 
+                  src="https://images.unsplash.com/photo-1492684223066-81342ee5ff30?q=80&w=1200" 
+                  className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-1000" 
+                />
               </div>
             </div>
-          );
-        }
-        return (
-          <Admin 
-            artworks={artworks} 
-            events={events} 
-            artists={artists}
-            onUpdateArtworks={setArtworks} 
-            onUpdateEvents={setEvents} 
-            onUpdateArtists={setArtists}
-          />
+          </div>
         );
-      default: return <Home onNavigate={navigate} />;
+      default: return <Home onNavigate={navigate} lang={lang} />;
     }
   };
 
   return (
     <div className="min-h-screen flex flex-col selection:bg-emerald-100 selection:text-emerald-900">
-      <Navbar currentPath={currentPath.replace('#', '')} onNavigate={navigate} />
+      <Navbar 
+        currentPath={currentPath.replace('#', '')} 
+        onNavigate={navigate} 
+        lang={lang}
+        onLanguageChange={setLang}
+      />
       <main className="flex-grow">
         {renderPage()}
       </main>
-      
-      {/* Botón discreto de Admin */}
-      <div className="fixed bottom-6 right-6 z-50">
-        <button 
-          onClick={() => navigate('/admin')}
-          className={`w-12 h-12 rounded-full flex items-center justify-center border transition-all shadow-lg ${isAdminLoggedIn ? 'bg-emerald-600 text-white border-emerald-500' : 'bg-white/80 backdrop-blur-md border-zinc-200 text-zinc-400 hover:text-emerald-600 hover:border-emerald-600'}`}
-          title="Administración"
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-        </button>
-      </div>
-      
       <Footer />
     </div>
   );

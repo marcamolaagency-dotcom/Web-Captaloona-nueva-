@@ -1,4 +1,7 @@
 
+// Define and export the Language type used throughout the application
+export type Language = 'ES' | 'IT' | 'EN' | 'FR';
+
 export interface Artist {
   id: string;
   name: string;
@@ -30,6 +33,15 @@ export interface EventItem {
   date: string;
   title: string;
   location: string;
+  imageUrl: string;
+  description: string;
+}
+
+export interface OtherEvent {
+  id: string;
+  date: string;
+  title: string;
+  category: string;
   imageUrl: string;
   description: string;
 }

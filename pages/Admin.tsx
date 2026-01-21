@@ -20,8 +20,9 @@ const Admin: React.FC<AdminProps> = ({ artworks, events, artists, onUpdateArtwor
   const [newEvent, setNewEvent] = useState<Partial<EventItem>>({});
 
   const toggleStatus = (id: string) => {
-    const updated = artworks.map(art => 
-      art.id === id ? { ...art, status: art.status === 'disponible' ? 'vendido' : 'disponible' } : art
+    // Cast the status to ensure it remains within the allowed union type and doesn't widen to string
+    const updated: Artwork[] = artworks.map(art => 
+      art.id === id ? { ...art, status: (art.status === 'disponible' ? 'vendido' : 'disponible') as 'disponible' | 'vendido' } : art
     );
     onUpdateArtworks(updated);
   };

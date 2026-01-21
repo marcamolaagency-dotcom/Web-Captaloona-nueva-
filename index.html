@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Captaloona Art | Inner Vision</title>
+  <title>Loona Contemporary | Art Concept</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -18,35 +18,38 @@
       font-family: 'Playfair Display', serif;
     }
     .glass {
-      background: rgba(255, 255, 255, 0.7);
+      background: rgba(255, 255, 255, 0.75);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
     }
-    .inner-vision-gradient {
-      background: radial-gradient(circle at 50% 50%, rgba(100, 149, 237, 0.1) 0%, rgba(255, 255, 255, 0) 70%);
+    .animate-fadeIn {
+      animation: fadeIn 1s cubic-bezier(0.4, 0, 0.2, 1) forwards;
     }
-    ::-webkit-scrollbar {
-      width: 6px;
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
     }
-    ::-webkit-scrollbar-track {
-      background: #f1f1f1;
+    .hover-lift {
+      transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
-    ::-webkit-scrollbar-thumb {
-      background: #888;
-      border-radius: 10px;
+    .hover-lift:hover {
+      transform: translateY(-8px);
     }
   </style>
 <script type="importmap">
 {
   "imports": {
+    "react": "https://esm.sh/react@19",
+    "react-dom": "https://esm.sh/react-dom@19",
+    "react/jsx-runtime": "https://esm.sh/react@19/jsx-runtime",
     "react/": "https://esm.sh/react@^19.2.3/",
-    "react": "https://esm.sh/react@^19.2.3",
     "react-dom/": "https://esm.sh/react-dom@^19.2.3/"
   }
 }
 </script>
 </head>
-<body class="bg-[#fafafa] text-zinc-900">
+<body class="bg-[#ffffff] text-zinc-900">
   <div id="root"></div>
+  <script type="module" src="./index.tsx"></script>
 </body>
 </html>
