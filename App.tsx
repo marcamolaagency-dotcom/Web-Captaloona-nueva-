@@ -9,35 +9,25 @@ import OtrosEventos from './pages/OtrosEventos.tsx';
 import Contacto from './pages/Contacto.tsx';
 import Artista from './pages/Artista.tsx';
 import Configuracion from './pages/Configuracion.tsx';
-import { INITIAL_ARTWORKS, INITIAL_EVENTS, ARTISTS as INITIAL_ARTISTS } from './constants.tsx';
-import { Artwork, EventItem, OtherEvent, Artist, Language } from './types.ts';
+import { useData } from './lib/useData';
+import { Language } from './types.ts';
 
 const App: React.FC = () => {
   const [currentPath, setCurrentPath] = useState(window.location.hash || '#/');
   const [lang, setLang] = useState<Language>('ES');
-  
-  // State for all dynamic content
-  const [artworks, setArtworks] = useState<Artwork[]>(INITIAL_ARTWORKS);
-  const [events, setEvents] = useState<EventItem[]>(INITIAL_EVENTS);
-  const [artists, setArtists] = useState<Artist[]>(INITIAL_ARTISTS);
-  const [otherEvents, setOtherEvents] = useState<OtherEvent[]>([
-    {
-      id: 'o1',
-      date: '15 DIC 2024',
-      title: 'Taller de Materia y Textura',
-      category: 'Taller',
-      imageUrl: 'https://images.unsplash.com/photo-1513364776144-60967b0f800f?q=80&w=800',
-      description: 'Explora el uso de materiales no convencionales en la pintura contemporánea de la mano de nuestros artistas residentes.'
-    },
-    {
-      id: 'o2',
-      date: '20 DIC 2024',
-      title: 'Presentación: La Poesía del Caos',
-      category: 'Literatura',
-      imageUrl: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?q=80&w=800',
-      description: 'Una tarde dedicada a la narrativa introspectiva y su relación con el arte visual moderno.'
-    }
-  ]);
+
+  // Use the data hook for Supabase integration with persistence
+  const {
+    artists,
+    artworks,
+    events,
+    otherEvents,
+    loading,
+    setArtists,
+    setArtworks,
+    setEvents,
+    setOtherEvents,
+  } = useData();
 
   useEffect(() => {
     const handleHashChange = () => {

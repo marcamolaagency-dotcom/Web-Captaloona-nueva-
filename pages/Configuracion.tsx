@@ -1,6 +1,8 @@
 
 import React, { useState } from 'react';
 import { Artwork, EventItem, OtherEvent, Artist } from '../types';
+import { useAuth } from '../lib/useAuth';
+import { isSupabaseConfigured } from '../lib/supabase';
 
 interface ConfiguracionProps {
   artworks: Artwork[];
@@ -13,45 +15,99 @@ interface ConfiguracionProps {
   onUpdateArtists: (artists: Artist[]) => void;
 }
 
-const Configuracion: React.FC<ConfiguracionProps> = ({ 
-  artworks, events, otherEvents, artists, 
-  onUpdateArtworks, onUpdateEvents, onUpdateOtherEvents, onUpdateArtists 
+const Configuracion: React.FC<ConfiguracionProps> = ({
+  artworks, events, otherEvents, artists,
+  onUpdateArtworks, onUpdateEvents, onUpdateOtherEvents, onUpdateArtists
 }) => {
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [isAuthorized, setIsAuthorized] = useState(false);
   const [activeTab, setActiveTab] = useState<'obras' | 'exposiciones' | 'otros' | 'artistas'>('obras');
+  const [loginError, setLoginError] = useState<string | null>(null);
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const { isAuthenticated, login, loginWithPassword, logout, user } = useAuth();
+  const supabaseEnabled = isSupabaseConfigured();
+
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (password === 'loona2024') {
-      setIsAuthorized(true);
-    } else {
-      alert('Contraseña incorrecta');
+    setLoginError(null);
+    setIsLoggingIn(true);
+
+    try {
+      if (supabaseEnabled && email) {
+        // Use Supabase auth with email/password
+        const success = await login(email, password);
+        if (!success) {
+          setLoginError('Credenciales incorrectas. Verifica tu email y contraseña.');
+        }
+      } else {
+        // Fallback to simple password
+        const success = loginWithPassword(password);
+        if (!success) {
+          setLoginError('Contraseña incorrecta');
+        }
+      }
+    } catch (err) {
+      setLoginError('Error al iniciar sesión');
+    } finally {
+      setIsLoggingIn(false);
     }
   };
 
-  if (!isAuthorized) {
+  const handleLogout = async () => {
+    await logout();
+  };
+
+  if (!isAuthenticated) {
     return (
       <div className="pt-60 pb-40 flex items-center justify-center animate-fadeIn">
         <div className="max-w-md w-full px-8 py-12 bg-zinc-50 border border-zinc-100 shadow-sm text-center space-y-8">
           <div className="flex flex-col items-center">
-            <span className="text-xl font-bold tracking-[0.2em] text-zinc-900 serif uppercase">LOONA</span>
+            <span className="text-xl font-bold tracking-[0.2em] text-zinc-900 serif uppercase">CAPTALOONA</span>
             <span className="text-[10px] tracking-[0.3em] text-zinc-400 font-medium uppercase mt-1">ADMINISTRATION</span>
           </div>
-          <p className="text-zinc-500 text-sm font-light italic">Introduce la clave de acceso para gestionar los contenidos.</p>
+          <p className="text-zinc-500 text-sm font-light italic">
+            {supabaseEnabled
+              ? 'Introduce tus credenciales para gestionar los contenidos.'
+              : 'Introduce la clave de acceso para gestionar los contenidos.'}
+          </p>
+          {loginError && (
+            <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-sm text-sm">
+              {loginError}
+            </div>
+          )}
           <form onSubmit={handleLogin} className="space-y-4">
-            <input 
-              type="password" 
+            {supabaseEnabled && (
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Email"
+                className="w-full px-4 py-3 border border-zinc-200 focus:outline-none focus:border-emerald-600 text-sm"
+                autoFocus
+              />
+            )}
+            <input
+              type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Contraseña"
               className="w-full px-4 py-3 border border-zinc-200 focus:outline-none focus:border-emerald-600 text-sm"
-              autoFocus
+              autoFocus={!supabaseEnabled}
             />
-            <button className="w-full bg-zinc-900 text-white py-4 text-[10px] font-bold uppercase tracking-[0.3em] hover:bg-emerald-600 transition-all shadow-lg">
-              Acceder
+            <button
+              type="submit"
+              disabled={isLoggingIn}
+              className="w-full bg-zinc-900 text-white py-4 text-[10px] font-bold uppercase tracking-[0.3em] hover:bg-emerald-600 transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isLoggingIn ? 'Accediendo...' : 'Acceder'}
             </button>
           </form>
+          {!supabaseEnabled && (
+            <p className="text-[10px] text-zinc-400">
+              Modo offline - Los cambios no se guardarán permanentemente
+            </p>
+          )}
         </div>
       </div>
     );
@@ -59,6 +115,28 @@ const Configuracion: React.FC<ConfiguracionProps> = ({
 
   return (
     <div className="pt-40 pb-32 max-w-[1400px] mx-auto px-8 animate-fadeIn">
+      {/* Header with logout */}
+      <div className="flex justify-between items-center mb-6">
+        <div className="flex items-center gap-4">
+          {user?.email && (
+            <span className="text-xs text-zinc-400">
+              {user.email}
+            </span>
+          )}
+          {!supabaseEnabled && (
+            <span className="text-[10px] bg-amber-100 text-amber-700 px-2 py-1 rounded">
+              Modo Offline
+            </span>
+          )}
+        </div>
+        <button
+          onClick={handleLogout}
+          className="text-[10px] text-zinc-400 hover:text-red-500 uppercase tracking-widest transition-colors"
+        >
+          Cerrar Sesión
+        </button>
+      </div>
+
       <div className="flex justify-between items-end mb-16 border-b border-zinc-100 pb-10">
         <div>
           <h1 className="text-5xl serif italic">Panel de Configuración</h1>
@@ -66,7 +144,7 @@ const Configuracion: React.FC<ConfiguracionProps> = ({
         </div>
         <div className="flex bg-zinc-50 p-1 rounded-sm border border-zinc-100">
           {(['obras', 'exposiciones', 'otros', 'artistas'] as const).map((tab) => (
-            <button 
+            <button
               key={tab}
               onClick={() => setActiveTab(tab)}
               className={`px-6 py-2 text-[9px] font-bold uppercase tracking-[0.2em] transition-all rounded-sm ${activeTab === tab ? 'bg-zinc-900 text-white' : 'text-zinc-400 hover:text-zinc-900'}`}
