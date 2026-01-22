@@ -56,7 +56,7 @@ const Artista: React.FC<{ lang?: Language }> = ({ lang = 'ES' }) => {
           </p>
 
           <p className="text-zinc-500 text-lg leading-relaxed font-light">
-            Antes de abrir Capataloona Art en Madrid, Claudio dedicó décadas a estudiar la relación entre el arte y el pensamiento humano. Escritor prolífico, ha desarrollado una visión única: <em className="text-emerald-700">el arte verdadero no decora paredes, transforma conciencias</em>. No sigue tendencias — las anticipa. No busca aprobación — explora lo "no expresado" que bulle dentro de la humanidad.
+            Antes de abrir Capataloona Art en Madrid, Claudio dedicó décadas a estudiar la relación entre el arte y el pensamiento humano. Escritor prolífico, ha desarrollado una visión única: <em className="text-emerald-700">el arte verdadero no decora, transforma conciencias</em>. No sigue tendencias — las anticipa. No busca aprobación — explora lo "no expresado" que bulle dentro de la humanidad.
           </p>
         </div>
       </div>
@@ -80,7 +80,7 @@ const Artista: React.FC<{ lang?: Language }> = ({ lang = 'ES' }) => {
             </li>
             <li className="flex items-start gap-4">
               <span className="w-1 h-1 bg-emerald-600 rounded-full mt-2.5 flex-shrink-0"></span>
-              <span className="text-zinc-600"><strong className="text-zinc-800">Profundizar en su subconsciente</strong> para encontrar su voz genuina</span>
+              <span className="text-zinc-600"><strong className="text-zinc-800">Profundizar en su subconsciente</strong> para encontrar la voz interior</span>
             </li>
             <li className="flex items-start gap-4">
               <span className="w-1 h-1 bg-emerald-600 rounded-full mt-2.5 flex-shrink-0"></span>
@@ -123,7 +123,7 @@ const Artista: React.FC<{ lang?: Language }> = ({ lang = 'ES' }) => {
           </ul>
 
           <p className="text-zinc-600 leading-relaxed">
-            Frente a esto, ha creado <strong className="text-zinc-800">Capataloona Art</strong> como un espacio donde los artistas emergentes pueden desarrollarse sin comprometer su visión por agradar al sistema.
+            Frente a esto, ha creado <strong className="text-zinc-800">Capataloona Art</strong> como un espacio donde los artistas emergentes pueden desarrollarse sin comprometer su visión por agradar al sistema. Desde ahí se definió una selección de artistas presentados por Loona Contemporary.
           </p>
         </div>
       </section>
