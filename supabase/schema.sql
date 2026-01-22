@@ -3,6 +3,51 @@
 -- ============================================
 -- Run this SQL in your Supabase SQL Editor to create the database structure
 
+-- ============================================
+-- STORAGE BUCKET SETUP (Run in Storage section of Supabase Dashboard)
+-- ============================================
+-- 1. Go to Storage in your Supabase Dashboard
+-- 2. Click "New bucket"
+-- 3. Name it: captaloona-images
+-- 4. Check "Public bucket" to allow public access
+-- 5. Click "Create bucket"
+--
+-- Then run this SQL to set up storage policies:
+
+-- Storage policies for the captaloona-images bucket
+-- Allow public read access
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('captaloona-images', 'captaloona-images', true)
+ON CONFLICT (id) DO NOTHING;
+
+-- Allow authenticated users to upload files
+CREATE POLICY "Authenticated users can upload images"
+ON storage.objects FOR INSERT
+TO authenticated
+WITH CHECK (bucket_id = 'captaloona-images');
+
+-- Allow authenticated users to update their files
+CREATE POLICY "Authenticated users can update images"
+ON storage.objects FOR UPDATE
+TO authenticated
+USING (bucket_id = 'captaloona-images');
+
+-- Allow authenticated users to delete files
+CREATE POLICY "Authenticated users can delete images"
+ON storage.objects FOR DELETE
+TO authenticated
+USING (bucket_id = 'captaloona-images');
+
+-- Allow public read access to all files
+CREATE POLICY "Public read access for images"
+ON storage.objects FOR SELECT
+TO public
+USING (bucket_id = 'captaloona-images');
+
+-- ============================================
+-- DATABASE SCHEMA
+-- ============================================
+
 -- Enable UUID extension
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 

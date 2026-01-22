@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Artwork, EventItem, OtherEvent, Artist } from '../types';
 import { useAuth } from '../lib/useAuth';
 import { isSupabaseConfigured } from '../lib/supabase';
+import ImageUpload from '../components/ImageUpload';
 
 interface ConfiguracionProps {
   artworks: Artwork[];
@@ -25,6 +26,12 @@ const Configuracion: React.FC<ConfiguracionProps> = ({
   const [loginError, setLoginError] = useState<string | null>(null);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
 
+  // Image URLs for forms
+  const [artworkImageUrl, setArtworkImageUrl] = useState('');
+  const [eventImageUrl, setEventImageUrl] = useState('');
+  const [otherEventImageUrl, setOtherEventImageUrl] = useState('');
+  const [artistImageUrl, setArtistImageUrl] = useState('');
+
   const { isAuthenticated, login, loginWithPassword, logout, user } = useAuth();
   const supabaseEnabled = isSupabaseConfigured();
 
@@ -35,13 +42,11 @@ const Configuracion: React.FC<ConfiguracionProps> = ({
 
     try {
       if (supabaseEnabled && email) {
-        // Use Supabase auth with email/password
         const success = await login(email, password);
         if (!success) {
           setLoginError('Credenciales incorrectas. Verifica tu email y contraseña.');
         }
       } else {
-        // Fallback to simple password
         const success = loginWithPassword(password);
         if (!success) {
           setLoginError('Contraseña incorrecta');
@@ -56,6 +61,23 @@ const Configuracion: React.FC<ConfiguracionProps> = ({
 
   const handleLogout = async () => {
     await logout();
+  };
+
+  // Reset form helper
+  const resetArtworkForm = () => {
+    setArtworkImageUrl('');
+  };
+
+  const resetEventForm = () => {
+    setEventImageUrl('');
+  };
+
+  const resetOtherEventForm = () => {
+    setOtherEventImageUrl('');
+  };
+
+  const resetArtistForm = () => {
+    setArtistImageUrl('');
   };
 
   if (!isAuthenticated) {
@@ -155,6 +177,7 @@ const Configuracion: React.FC<ConfiguracionProps> = ({
         </div>
       </div>
 
+      {/* OBRAS TAB */}
       {activeTab === 'obras' && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-16">
           <div className="lg:col-span-1 space-y-8 bg-zinc-50 p-8 rounded-sm">
@@ -172,10 +195,11 @@ const Configuracion: React.FC<ConfiguracionProps> = ({
                     price: Number(form.price.value),
                     category: form.category.value,
                     status: 'disponible',
-                    imageUrl: form.imageUrl.value || 'https://images.unsplash.com/photo-1541963463532-d68292c34b19'
+                    imageUrl: artworkImageUrl || 'https://images.unsplash.com/photo-1541963463532-d68292c34b19'
                 };
                 onUpdateArtworks([newArt, ...artworks]);
                 form.reset();
+                resetArtworkForm();
             }}>
               <input name="title" placeholder="Título de la obra" className="w-full p-3 border-b bg-transparent border-zinc-200 focus:outline-none focus:border-emerald-600 text-sm" required />
               <select name="artistId" className="w-full p-3 border-b bg-transparent border-zinc-200 focus:outline-none text-sm" required>
@@ -193,7 +217,15 @@ const Configuracion: React.FC<ConfiguracionProps> = ({
               </div>
               <input name="medium" placeholder="Técnica" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" />
               <input name="size" placeholder="Medidas (ej: 100x100 cm)" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" />
-              <input name="imageUrl" placeholder="URL de la imagen" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" />
+
+              {/* Image Upload Component */}
+              <ImageUpload
+                onImageUploaded={setArtworkImageUrl}
+                currentImageUrl={artworkImageUrl}
+                folder="artworks"
+                label="Imagen de la obra"
+              />
+
               <button className="w-full bg-zinc-900 text-white py-4 text-[9px] font-bold uppercase tracking-[0.3em] hover:bg-emerald-600 transition-all">Añadir a Colección</button>
             </form>
           </div>
@@ -217,6 +249,7 @@ const Configuracion: React.FC<ConfiguracionProps> = ({
         </div>
       )}
 
+      {/* EXPOSICIONES TAB */}
       {activeTab === 'exposiciones' && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-16">
           <div className="lg:col-span-1 space-y-8 bg-zinc-50 p-8 rounded-sm">
@@ -230,16 +263,25 @@ const Configuracion: React.FC<ConfiguracionProps> = ({
                     date: form.date.value,
                     location: form.location.value,
                     description: form.description.value,
-                    imageUrl: form.imageUrl.value || 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30'
+                    imageUrl: eventImageUrl || 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30'
                 };
                 onUpdateEvents([newEv, ...events]);
                 form.reset();
+                resetEventForm();
             }}>
               <input name="title" placeholder="Nombre de la expo" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" required />
               <input name="date" placeholder="Fecha (ej: 12 DIC 2024)" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" required />
               <input name="location" placeholder="Sede" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" />
               <textarea name="description" placeholder="Resumen corto" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm h-32 resize-none" />
-              <input name="imageUrl" placeholder="URL de imagen" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" />
+
+              {/* Image Upload Component */}
+              <ImageUpload
+                onImageUploaded={setEventImageUrl}
+                currentImageUrl={eventImageUrl}
+                folder="events"
+                label="Imagen de la exposición"
+              />
+
               <button className="w-full bg-zinc-900 text-white py-4 text-[9px] font-bold uppercase tracking-[0.3em] hover:bg-emerald-600 transition-all">Publicar Exposición</button>
             </form>
           </div>
@@ -261,6 +303,7 @@ const Configuracion: React.FC<ConfiguracionProps> = ({
         </div>
       )}
 
+      {/* OTROS EVENTOS TAB */}
       {activeTab === 'otros' && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-16">
           <div className="lg:col-span-1 space-y-8 bg-zinc-50 p-8 rounded-sm">
@@ -274,16 +317,25 @@ const Configuracion: React.FC<ConfiguracionProps> = ({
                     date: form.date.value,
                     category: form.category.value,
                     description: form.description.value,
-                    imageUrl: form.imageUrl.value || 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4'
+                    imageUrl: otherEventImageUrl || 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4'
                 };
                 onUpdateOtherEvents([newEv, ...otherEvents]);
                 form.reset();
+                resetOtherEventForm();
             }}>
               <input name="title" placeholder="Título del evento" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" required />
               <input name="date" placeholder="Fecha" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" required />
               <input name="category" placeholder="Categoría (Taller, Charla, etc.)" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" />
               <textarea name="description" placeholder="Descripción" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm h-32 resize-none" />
-              <input name="imageUrl" placeholder="URL de la imagen" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" />
+
+              {/* Image Upload Component */}
+              <ImageUpload
+                onImageUploaded={setOtherEventImageUrl}
+                currentImageUrl={otherEventImageUrl}
+                folder="events"
+                label="Imagen del evento"
+              />
+
               <button className="w-full bg-zinc-900 text-white py-4 text-[9px] font-bold uppercase tracking-[0.3em] hover:bg-emerald-600 transition-all">Crear Evento</button>
             </form>
           </div>
@@ -304,6 +356,7 @@ const Configuracion: React.FC<ConfiguracionProps> = ({
         </div>
       )}
 
+      {/* ARTISTAS TAB */}
       {activeTab === 'artistas' && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-16">
           <div className="lg:col-span-1 space-y-8 bg-zinc-50 p-8 rounded-sm">
@@ -316,15 +369,24 @@ const Configuracion: React.FC<ConfiguracionProps> = ({
                     name: form.name.value,
                     bio: form.bio.value,
                     location: form.location.value,
-                    imageUrl: form.imageUrl.value || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d'
+                    imageUrl: artistImageUrl || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d'
                 };
                 onUpdateArtists([...artists, newArtist]);
                 form.reset();
+                resetArtistForm();
             }}>
               <input name="name" placeholder="Nombre completo" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" required />
               <input name="location" placeholder="Ubicación" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" />
               <textarea name="bio" placeholder="Biografía" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm h-40 resize-none" />
-              <input name="imageUrl" placeholder="URL Foto de Perfil" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" />
+
+              {/* Image Upload Component */}
+              <ImageUpload
+                onImageUploaded={setArtistImageUrl}
+                currentImageUrl={artistImageUrl}
+                folder="artists"
+                label="Foto del artista"
+              />
+
               <button className="w-full bg-zinc-900 text-white py-4 text-[9px] font-bold uppercase tracking-[0.3em] hover:bg-emerald-600 transition-all">Registrar Artista</button>
             </form>
           </div>
