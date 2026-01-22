@@ -184,7 +184,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
               {dragActive ? 'Suelta la imagen aquí' : 'Arrastra una imagen o haz clic'}
             </p>
             <p className="text-[10px] text-zinc-400">
-              JPG, PNG, WebP o GIF (máx. 5MB)
+              JPG, PNG, WebP o GIF (máx. 10MB)
             </p>
             {isUploading && (
               <div className="flex items-center justify-center gap-2 mt-3">

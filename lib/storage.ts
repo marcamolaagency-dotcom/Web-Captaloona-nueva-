@@ -8,7 +8,7 @@ const BUCKET_NAME = 'captaloona-images';
 
 // Allowed image types
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
-const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
 export interface UploadResult {
   success: boolean;
@@ -48,7 +48,7 @@ export async function uploadImage(
     return {
       success: false,
       url: null,
-      error: 'El archivo es demasiado grande. Máximo 5MB.',
+      error: 'El archivo es demasiado grande. Máximo 10MB.',
     };
   }
 
@@ -162,7 +162,7 @@ export function validateImageFile(file: File): { valid: boolean; error: string |
   if (file.size > MAX_FILE_SIZE) {
     return {
       valid: false,
-      error: 'El archivo es demasiado grande. Máximo 5MB.',
+      error: 'El archivo es demasiado grande. Máximo 10MB.',
     };
   }
 
