@@ -1,5 +1,11 @@
 
 import React, { useState } from 'react';
+import { Language } from '../types';
+import { TRANSLATIONS } from '../translations';
+
+interface EspacioProps {
+  lang: Language;
+}
 
 const galleryImages = [
   {
@@ -29,8 +35,9 @@ const galleryImages = [
   }
 ];
 
-const Espacio: React.FC = () => {
+const Espacio: React.FC<EspacioProps> = ({ lang }) => {
   const [selectedImage, setSelectedImage] = useState<number | null>(null);
+  const t = TRANSLATIONS[lang].space;
 
   return (
     <div className="pt-32 pb-24 animate-fadeIn">
@@ -38,13 +45,13 @@ const Espacio: React.FC = () => {
       <div className="max-w-7xl mx-auto px-6">
         <header className="text-center mb-20">
           <span className="text-emerald-600 text-[11px] font-bold uppercase tracking-[0.6em] block mb-6">
-            MADRID HEADQUARTERS
+            {t.headquarters}
           </span>
           <h1 className="text-6xl md:text-7xl serif italic leading-none mb-8">
-            Captaloona Art
+            {t.title}
           </h1>
           <p className="text-zinc-400 text-sm uppercase tracking-[0.3em]">
-            Andrés Mellado 55 · Gaztambide, 28015 · Madrid, España
+            {t.address}
           </p>
         </header>
 
@@ -53,25 +60,23 @@ const Espacio: React.FC = () => {
           {/* Mission */}
           <div className="bg-zinc-50 p-12 rounded-sm border border-zinc-100 relative">
             <div className="absolute -top-4 left-8 bg-white px-4">
-              <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-emerald-600">Misión</span>
+              <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-emerald-600">{t.mission}</span>
             </div>
             <p className="text-zinc-600 leading-relaxed text-lg serif italic">
-              De las exposiciones que se organizan emerge una selección rigurosa de artistas contemporáneos que,
-              a través de su arte, indican un recorrido que nos permite acceder al lenguaje artístico del futuro,
-              que se expresa con un gesto creativo del presente.
+              {t.missionText}
             </p>
           </div>
 
           {/* Vision */}
           <div className="bg-zinc-900 p-12 rounded-sm relative">
             <div className="absolute -top-4 left-8 bg-white px-4">
-              <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-zinc-900">Visión</span>
+              <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-zinc-900">{t.vision}</span>
             </div>
             <p className="text-zinc-300 leading-relaxed text-lg mb-6">
-              Nuestra idea tiene fundamento en un concepto:
+              {t.visionIntro}
             </p>
             <p className="text-white text-2xl serif italic">
-              ¡El arte no persigue, el arte anticipa!
+              {t.visionText}
             </p>
           </div>
         </div>
@@ -79,7 +84,7 @@ const Espacio: React.FC = () => {
         {/* Photo Gallery */}
         <div className="mb-16">
           <h2 className="text-center text-[10px] font-bold uppercase tracking-[0.4em] text-zinc-400 mb-12">
-            Nuestro Espacio
+            {t.galleryTitle}
           </h2>
 
           {/* Main Gallery Grid */}
@@ -108,18 +113,17 @@ const Espacio: React.FC = () => {
         {/* Additional Info */}
         <div className="text-center py-16 border-t border-zinc-100">
           <p className="text-zinc-500 text-sm leading-relaxed max-w-2xl mx-auto mb-8">
-            Captaloona Art es el laboratorio físico donde las teorías de Loona Contemporary se materializan.
-            Un espacio dedicado a la exploración artística y al encuentro entre artistas y coleccionistas.
+            {t.galleryDesc}
           </p>
           <div className="flex justify-center gap-8">
             <div>
-              <h4 className="text-[10px] uppercase tracking-widest font-bold text-zinc-400 mb-2">Horario</h4>
-              <p className="text-sm text-zinc-600">Lun - Vie: 10:00 - 19:00</p>
-              <p className="text-sm text-zinc-600">Sáb: 11:00 - 14:00</p>
+              <h4 className="text-[10px] uppercase tracking-widest font-bold text-zinc-400 mb-2">{t.schedule}</h4>
+              <p className="text-sm text-zinc-600">{t.scheduleWeekdays}</p>
+              <p className="text-sm text-zinc-600">{t.scheduleSaturday}</p>
             </div>
             <div className="h-16 w-px bg-zinc-100" />
             <div>
-              <h4 className="text-[10px] uppercase tracking-widest font-bold text-zinc-400 mb-2">Contacto</h4>
+              <h4 className="text-[10px] uppercase tracking-widest font-bold text-zinc-400 mb-2">{t.contact}</h4>
               <p className="text-sm text-zinc-600">info@captaloonaart.com</p>
               <p className="text-sm text-zinc-600">+34 XXX XXX XXX</p>
             </div>

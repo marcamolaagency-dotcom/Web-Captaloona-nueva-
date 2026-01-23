@@ -46,7 +46,7 @@ const App: React.FC = () => {
   const renderPage = () => {
     switch (currentPath) {
       case '#/': return <Home onNavigate={navigate} lang={lang} />;
-      case '#/coleccion': return <Coleccion artworks={artworks} artists={artists} />;
+      case '#/coleccion': return <Coleccion artworks={artworks} artists={artists} lang={lang} />;
       case '#/eventos': return <Eventos events={events} />;
       case '#/otros-eventos': return <OtrosEventos events={otherEvents} />;
       case '#/contacto': return <Contacto />;
@@ -63,7 +63,7 @@ const App: React.FC = () => {
           onUpdateArtists={setArtists}
         />
       );
-      case '#/espacio': return <Espacio />;
+      case '#/espacio': return <Espacio lang={lang} />;
       default: return <Home onNavigate={navigate} lang={lang} />;
     }
   };
