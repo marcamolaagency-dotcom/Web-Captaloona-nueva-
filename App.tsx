@@ -9,6 +9,7 @@ import OtrosEventos from './pages/OtrosEventos.tsx';
 import Contacto from './pages/Contacto.tsx';
 import Artista from './pages/Artista.tsx';
 import Configuracion from './pages/Configuracion.tsx';
+import Espacio from './pages/Espacio.tsx';
 import { useData } from './lib/useData';
 import { Language } from './types.ts';
 
@@ -62,31 +63,7 @@ const App: React.FC = () => {
           onUpdateArtists={setArtists}
         />
       );
-      case '#/espacio': 
-        return (
-          <div className="pt-52 pb-40 max-w-6xl mx-auto px-8 animate-fadeIn">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-24 items-center">
-              <div className="space-y-10 text-left">
-                <span className="text-emerald-600 text-[11px] font-bold uppercase tracking-[0.6em]">MADRID HEADQUARTERS</span>
-                <h1 className="text-7xl serif italic leading-none">Captaloona Art</h1>
-                <p className="text-zinc-500 text-xl font-light italic leading-relaxed">
-                  Situado en Andrés Mellado 55, este espacio es el laboratorio físico donde las teorías de Loona Contemporary se materializan.
-                </p>
-                <div className="h-0.5 w-24 bg-zinc-900"></div>
-                <div className="space-y-2 text-sm text-zinc-400 font-medium uppercase tracking-widest">
-                   <p>Gaztambide, 28015</p>
-                   <p>Madrid, España</p>
-                </div>
-              </div>
-              <div className="aspect-[4/5] bg-zinc-100 shadow-3xl overflow-hidden rounded-sm relative">
-                <img 
-                  src="https://images.unsplash.com/photo-1492684223066-81342ee5ff30?q=80&w=1200" 
-                  className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-1000" 
-                />
-              </div>
-            </div>
-          </div>
-        );
+      case '#/espacio': return <Espacio />;
       default: return <Home onNavigate={navigate} lang={lang} />;
     }
   };
