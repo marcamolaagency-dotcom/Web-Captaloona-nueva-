@@ -45,7 +45,7 @@ const App: React.FC = () => {
   const renderPage = () => {
     switch (currentPath) {
       case '#/': return <Home onNavigate={navigate} lang={lang} />;
-      case '#/coleccion': return <Coleccion artworks={artworks} />;
+      case '#/coleccion': return <Coleccion artworks={artworks} artists={artists} />;
       case '#/eventos': return <Eventos events={events} />;
       case '#/otros-eventos': return <OtrosEventos events={otherEvents} />;
       case '#/contacto': return <Contacto />;
