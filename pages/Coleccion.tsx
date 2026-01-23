@@ -1,6 +1,5 @@
 
 import React, { useState, useMemo } from 'react';
-import { ARTISTS } from '../constants.tsx';
 import { Artwork, Artist } from '../types';
 
 interface ColeccionProps {
@@ -8,18 +7,45 @@ interface ColeccionProps {
   artists?: Artist[];
 }
 
-const Coleccion: React.FC<ColeccionProps> = ({ artworks, artists = ARTISTS }) => {
+const Coleccion: React.FC<ColeccionProps> = ({ artworks, artists = [] }) => {
   const [selectedArtistProfile, setSelectedArtistProfile] = useState<Artist | null>(null);
   const [filterCategory, setFilterCategory] = useState('Todas');
   const [filterArtist, setFilterArtist] = useState('Todos');
+  const [showArtistSelector, setShowArtistSelector] = useState(false);
 
-  const categories = ['Todas', 'Pintura', 'Escultura', 'Poesía', 'Narrativa'];
+  const categories = ['Todas', 'Pintura', 'Escultura', 'Poesía', 'Narrativa', 'Artista'];
 
-  // Get unique artists from artworks
+  // Build complete artist list from both props and artworks
+  const allArtists = useMemo(() => {
+    const artistMap = new Map<string, Artist>();
+
+    // First add all artists from props
+    artists.forEach(artist => {
+      artistMap.set(artist.id, artist);
+    });
+
+    // Then add/update from artworks (in case artwork has artist info not in artists list)
+    artworks.forEach(art => {
+      if (!artistMap.has(art.artistId)) {
+        // Create artist entry from artwork data
+        artistMap.set(art.artistId, {
+          id: art.artistId,
+          name: art.artistName,
+          bio: '',
+          imageUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=800&auto=format&fit=crop',
+          location: ''
+        });
+      }
+    });
+
+    return Array.from(artistMap.values());
+  }, [artworks, artists]);
+
+  // Get artists that have works in the collection
   const artistsWithWorks = useMemo(() => {
     const artistIds = [...new Set(artworks.map(art => art.artistId))];
-    return artists.filter(artist => artistIds.includes(artist.id));
-  }, [artworks, artists]);
+    return allArtists.filter(artist => artistIds.includes(artist.id));
+  }, [artworks, allArtists]);
 
   const filteredArt = artworks.filter(art => {
     const matchCategory = filterCategory === 'Todas' || art.category === filterCategory;
@@ -27,9 +53,36 @@ const Coleccion: React.FC<ColeccionProps> = ({ artworks, artists = ARTISTS }) =>
     return matchCategory && matchArtist;
   });
 
+  // Find artist by ID or by name (fallback)
+  const findArtist = (artistId: string, artistName: string): Artist | null => {
+    // First try to find by ID
+    let artist = allArtists.find(a => a.id === artistId);
+
+    // If not found, try by name
+    if (!artist) {
+      artist = allArtists.find(a => a.name.toLowerCase() === artistName.toLowerCase());
+    }
+
+    // If still not found, create a basic artist object
+    if (!artist && artistName) {
+      artist = {
+        id: artistId,
+        name: artistName,
+        bio: '',
+        imageUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=800&auto=format&fit=crop',
+        location: ''
+      };
+    }
+
+    return artist || null;
+  };
+
   // View: Artist Profile
   if (selectedArtistProfile) {
-    const artistWorks = artworks.filter(a => a.artistId === selectedArtistProfile.id);
+    const artistWorks = artworks.filter(a =>
+      a.artistId === selectedArtistProfile.id ||
+      a.artistName.toLowerCase() === selectedArtistProfile.name.toLowerCase()
+    );
 
     return (
       <div className="pt-32 pb-24 animate-fadeIn">
@@ -47,12 +100,16 @@ const Coleccion: React.FC<ColeccionProps> = ({ artworks, artists = ARTISTS }) =>
                 ← Volver al catálogo general
               </button>
               <h1 className="text-6xl serif">{selectedArtistProfile.name}</h1>
-              <p className="text-zinc-500 leading-relaxed text-lg">{selectedArtistProfile.bio}</p>
+              {selectedArtistProfile.bio && (
+                <p className="text-zinc-500 leading-relaxed text-lg">{selectedArtistProfile.bio}</p>
+              )}
               <div className="flex gap-10">
-                <div>
-                  <h4 className="text-[10px] uppercase tracking-widest font-bold text-zinc-400 mb-2">Ubicación</h4>
-                  <p className="text-sm">{selectedArtistProfile.location}</p>
-                </div>
+                {selectedArtistProfile.location && (
+                  <div>
+                    <h4 className="text-[10px] uppercase tracking-widest font-bold text-zinc-400 mb-2">Ubicación</h4>
+                    <p className="text-sm">{selectedArtistProfile.location}</p>
+                  </div>
+                )}
                 <div>
                   <h4 className="text-[10px] uppercase tracking-widest font-bold text-zinc-400 mb-2">Colección</h4>
                   <p className="text-sm">{artistWorks.length} Obras</p>
@@ -62,7 +119,11 @@ const Coleccion: React.FC<ColeccionProps> = ({ artworks, artists = ARTISTS }) =>
           </div>
 
           <h2 className="text-3xl serif mb-12 border-b pb-6">Catálogo de {selectedArtistProfile.name}</h2>
-          <ArtGrid artworks={artistWorks} onArtistClick={setSelectedArtistProfile} artists={artists} />
+          <ArtGrid
+            artworks={artistWorks}
+            onArtistClick={setSelectedArtistProfile}
+            findArtist={findArtist}
+          />
         </div>
       </div>
     );
@@ -88,9 +149,18 @@ const Coleccion: React.FC<ColeccionProps> = ({ artworks, artists = ARTISTS }) =>
               {categories.map((c) => (
                 <button
                   key={c}
-                  onClick={() => setFilterCategory(c)}
+                  onClick={() => {
+                    if (c === 'Artista') {
+                      setShowArtistSelector(true);
+                      setFilterCategory('Todas');
+                    } else {
+                      setShowArtistSelector(false);
+                      setFilterCategory(c);
+                      setFilterArtist('Todos');
+                    }
+                  }}
                   className={`px-6 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all ${
-                    filterCategory === c
+                    (c === 'Artista' && showArtistSelector) || (c !== 'Artista' && filterCategory === c && !showArtistSelector)
                       ? 'bg-zinc-900 text-white'
                       : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'
                   }`}
@@ -101,60 +171,87 @@ const Coleccion: React.FC<ColeccionProps> = ({ artworks, artists = ARTISTS }) =>
             </div>
           </div>
 
-          {/* Artist Filter */}
-          <div className="border-b border-zinc-100 pb-6">
-            <h3 className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-4 text-center">Artista</h3>
-            <div className="flex justify-center gap-3 flex-wrap">
-              <button
-                onClick={() => setFilterArtist('Todos')}
-                className={`px-6 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all ${
-                  filterArtist === 'Todos'
-                    ? 'bg-emerald-600 text-white'
-                    : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'
-                }`}
-              >
-                Todos
-              </button>
+        </div>
+
+        {/* Artist Selector View */}
+        {showArtistSelector && (
+          <div className="mb-16 animate-fadeIn">
+            <h3 className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-6 text-center">Selecciona un Artista</h3>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
               {artistsWithWorks.map((artist) => (
                 <button
                   key={artist.id}
-                  onClick={() => setFilterArtist(artist.id)}
-                  className={`px-6 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all ${
-                    filterArtist === artist.id
-                      ? 'bg-emerald-600 text-white'
-                      : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'
-                  }`}
+                  onClick={() => {
+                    setFilterArtist(artist.id);
+                    setShowArtistSelector(false);
+                  }}
+                  className="group text-left bg-zinc-50 hover:bg-emerald-50 p-6 rounded-sm transition-all border border-zinc-100 hover:border-emerald-200"
                 >
-                  {artist.name}
+                  <div className="aspect-square mb-4 overflow-hidden rounded-full bg-zinc-200">
+                    <img
+                      src={artist.imageUrl}
+                      alt={artist.name}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                  </div>
+                  <h4 className="text-lg serif text-center group-hover:text-emerald-600 transition-colors">{artist.name}</h4>
+                  {artist.location && (
+                    <p className="text-[10px] text-zinc-400 text-center mt-1 uppercase tracking-widest">{artist.location}</p>
+                  )}
                 </button>
               ))}
             </div>
           </div>
-        </div>
+        )}
+
+        {/* Active artist filter indicator */}
+        {filterArtist !== 'Todos' && !showArtistSelector && (
+          <div className="mb-8 text-center animate-fadeIn">
+            <div className="inline-flex items-center gap-3 bg-emerald-50 px-6 py-3 rounded-full border border-emerald-100">
+              <span className="text-sm text-emerald-700">
+                Mostrando obras de: <strong>{artistsWithWorks.find(a => a.id === filterArtist)?.name || filterArtist}</strong>
+              </span>
+              <button
+                onClick={() => setFilterArtist('Todos')}
+                className="text-emerald-600 hover:text-emerald-800 text-xs font-bold uppercase tracking-widest"
+              >
+                × Limpiar
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Results count */}
-        <div className="mb-8 text-center">
-          <p className="text-sm text-zinc-400">
-            {filteredArt.length} {filteredArt.length === 1 ? 'obra encontrada' : 'obras encontradas'}
-          </p>
-        </div>
+        {!showArtistSelector && (
+          <div className="mb-8 text-center">
+            <p className="text-sm text-zinc-400">
+              {filteredArt.length} {filteredArt.length === 1 ? 'obra encontrada' : 'obras encontradas'}
+            </p>
+          </div>
+        )}
 
         {/* Art Grid */}
-        {filteredArt.length > 0 ? (
-          <ArtGrid artworks={filteredArt} onArtistClick={setSelectedArtistProfile} artists={artists} />
-        ) : (
-          <div className="text-center py-20">
-            <p className="text-zinc-400 text-lg">No se encontraron obras con los filtros seleccionados.</p>
-            <button
-              onClick={() => {
-                setFilterCategory('Todas');
-                setFilterArtist('Todos');
-              }}
-              className="mt-4 text-emerald-600 text-sm font-bold uppercase tracking-widest hover:text-emerald-700"
-            >
-              Limpiar filtros
-            </button>
-          </div>
+        {!showArtistSelector && (
+          filteredArt.length > 0 ? (
+            <ArtGrid
+              artworks={filteredArt}
+              onArtistClick={setSelectedArtistProfile}
+              findArtist={findArtist}
+            />
+          ) : (
+            <div className="text-center py-20">
+              <p className="text-zinc-400 text-lg">No se encontraron obras con los filtros seleccionados.</p>
+              <button
+                onClick={() => {
+                  setFilterCategory('Todas');
+                  setFilterArtist('Todos');
+                }}
+                className="mt-4 text-emerald-600 text-sm font-bold uppercase tracking-widest hover:text-emerald-700"
+              >
+                Limpiar filtros
+              </button>
+            </div>
+          )
         )}
       </div>
     </div>
@@ -164,10 +261,10 @@ const Coleccion: React.FC<ColeccionProps> = ({ artworks, artists = ARTISTS }) =>
 interface ArtGridProps {
   artworks: Artwork[];
   onArtistClick: (a: Artist) => void;
-  artists: Artist[];
+  findArtist: (artistId: string, artistName: string) => Artist | null;
 }
 
-const ArtGrid: React.FC<ArtGridProps> = ({ artworks, onArtistClick, artists }) => (
+const ArtGrid: React.FC<ArtGridProps> = ({ artworks, onArtistClick, findArtist }) => (
   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-12 gap-y-20">
     {artworks.map((art) => (
       <div key={art.id} className="group cursor-pointer">
@@ -191,7 +288,7 @@ const ArtGrid: React.FC<ArtGridProps> = ({ artworks, onArtistClick, artists }) =
           <button
             onClick={(e) => {
               e.stopPropagation();
-              const artist = artists.find(a => a.id === art.artistId);
+              const artist = findArtist(art.artistId, art.artistName);
               if (artist) onArtistClick(artist);
             }}
             className="text-sm text-zinc-400 italic hover:text-emerald-600 transition-colors"
