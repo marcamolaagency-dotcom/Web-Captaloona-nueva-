@@ -10,6 +10,7 @@ import Contacto from './pages/Contacto.tsx';
 import Artista from './pages/Artista.tsx';
 import Configuracion from './pages/Configuracion.tsx';
 import Espacio from './pages/Espacio.tsx';
+import SchemaMarkup from './components/SchemaMarkup.tsx';
 import { useData } from './lib/useData';
 import { Language } from './types.ts';
 
@@ -70,6 +71,12 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col selection:bg-emerald-100 selection:text-emerald-900">
+      <SchemaMarkup
+        currentPath={currentPath}
+        artworks={artworks}
+        artists={artists}
+        events={events}
+      />
       <Navbar 
         currentPath={currentPath.replace('#', '')} 
         onNavigate={navigate} 
