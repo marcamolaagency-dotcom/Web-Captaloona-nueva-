@@ -26,10 +26,14 @@ const App: React.FC = () => {
     otherEvents,
     featuredArtworkIds,
     loading,
-    setArtists,
-    setArtworks,
-    setEvents,
-    setOtherEvents,
+    addArtist,
+    removeArtist,
+    addArtwork,
+    removeArtwork,
+    addEvent,
+    removeEvent,
+    addOtherEvent,
+    removeOtherEvent,
     setFeaturedArtworkIds,
   } = useData();
 
@@ -61,10 +65,14 @@ const App: React.FC = () => {
           otherEvents={otherEvents}
           artists={artists}
           featuredArtworkIds={featuredArtworkIds}
-          onUpdateArtworks={setArtworks}
-          onUpdateEvents={setEvents}
-          onUpdateOtherEvents={setOtherEvents}
-          onUpdateArtists={setArtists}
+          onAddArtwork={addArtwork}
+          onRemoveArtwork={removeArtwork}
+          onAddEvent={addEvent}
+          onRemoveEvent={removeEvent}
+          onAddOtherEvent={addOtherEvent}
+          onRemoveOtherEvent={removeOtherEvent}
+          onAddArtist={addArtist}
+          onRemoveArtist={removeArtist}
           onUpdateFeaturedArtworkIds={setFeaturedArtworkIds}
         />
       );

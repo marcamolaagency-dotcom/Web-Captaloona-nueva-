@@ -409,3 +409,62 @@ export async function getContactMessages() {
 
   return data;
 }
+
+// ============================================
+// SETTINGS (Featured Artworks, etc.)
+// ============================================
+
+export async function getFeaturedArtworkIds(): Promise<string[]> {
+  if (!isSupabaseConfigured()) {
+    // Fallback to localStorage
+    try {
+      const stored = localStorage.getItem('featuredArtworkIds');
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      return [];
+    }
+  }
+
+  const { data, error } = await supabase
+    .from('settings')
+    .select('value')
+    .eq('key', 'featured_artwork_ids')
+    .single();
+
+  if (error) {
+    // If no setting found, return empty array (not an error)
+    if (error.code === 'PGRST116') {
+      return [];
+    }
+    console.error('Error fetching featured artwork IDs:', error);
+    return [];
+  }
+
+  return data?.value || [];
+}
+
+export async function saveFeaturedArtworkIds(ids: string[]): Promise<boolean> {
+  // Always save to localStorage as backup
+  localStorage.setItem('featuredArtworkIds', JSON.stringify(ids));
+
+  if (!isSupabaseConfigured()) {
+    return true;
+  }
+
+  const { error } = await supabase
+    .from('settings')
+    .upsert({
+      key: 'featured_artwork_ids',
+      value: ids,
+      updated_at: new Date().toISOString()
+    }, {
+      onConflict: 'key'
+    });
+
+  if (error) {
+    console.error('Error saving featured artwork IDs:', error);
+    return false;
+  }
+
+  return true;
+}

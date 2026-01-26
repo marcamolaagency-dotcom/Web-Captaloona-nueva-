@@ -136,6 +136,22 @@ export interface Database {
           read?: boolean;
         };
       };
+      settings: {
+        Row: {
+          key: string;
+          value: Json;
+          updated_at: string;
+        };
+        Insert: {
+          key: string;
+          value: Json;
+          updated_at?: string;
+        };
+        Update: {
+          value?: Json;
+          updated_at?: string;
+        };
+      };
     };
     Views: {};
     Functions: {};
