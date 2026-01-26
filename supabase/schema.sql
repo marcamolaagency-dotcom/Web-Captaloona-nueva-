@@ -137,6 +137,16 @@ CREATE TABLE contact_messages (
 CREATE INDEX idx_messages_read ON contact_messages(read);
 
 -- ============================================
+-- SETTINGS TABLE (for featured artworks, etc.)
+-- ============================================
+
+CREATE TABLE settings (
+    key TEXT PRIMARY KEY,
+    value JSONB NOT NULL DEFAULT '[]'::jsonb,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- ============================================
 -- ROW LEVEL SECURITY (RLS)
 -- ============================================
 
@@ -145,6 +155,7 @@ ALTER TABLE artists ENABLE ROW LEVEL SECURITY;
 ALTER TABLE artworks ENABLE ROW LEVEL SECURITY;
 ALTER TABLE events ENABLE ROW LEVEL SECURITY;
 ALTER TABLE contact_messages ENABLE ROW LEVEL SECURITY;
+ALTER TABLE settings ENABLE ROW LEVEL SECURITY;
 
 -- Artists: Public read, authenticated write
 CREATE POLICY "Artists are viewable by everyone" ON artists
@@ -174,6 +185,13 @@ CREATE POLICY "Anyone can submit contact messages" ON contact_messages
 CREATE POLICY "Only authenticated users can read messages" ON contact_messages
     FOR SELECT USING (auth.role() = 'authenticated');
 
+-- Settings: Public read, authenticated write
+CREATE POLICY "Settings are viewable by everyone" ON settings
+    FOR SELECT USING (true);
+
+CREATE POLICY "Settings are editable by authenticated users" ON settings
+    FOR ALL USING (auth.role() = 'authenticated');
+
 -- ============================================
 -- TRIGGERS FOR UPDATED_AT
 -- ============================================
@@ -198,6 +216,11 @@ CREATE TRIGGER update_artworks_updated_at
 
 CREATE TRIGGER update_events_updated_at
     BEFORE UPDATE ON events
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_settings_updated_at
+    BEFORE UPDATE ON settings
     FOR EACH ROW
     EXECUTE FUNCTION update_updated_at_column();
 

@@ -13,6 +13,8 @@ import {
   getOtherEvents,
   createOtherEvent,
   deleteOtherEvent,
+  getFeaturedArtworkIds,
+  saveFeaturedArtworkIds,
 } from './database';
 import { INITIAL_ARTWORKS, INITIAL_EVENTS, ARTISTS } from '../constants';
 import type { Artwork, EventItem, OtherEvent, Artist } from '../types';
@@ -73,34 +75,19 @@ const INITIAL_OTHER_EVENTS: OtherEvent[] = [
   }
 ];
 
-// Load featured artwork IDs from localStorage
-const loadFeaturedIds = (): string[] => {
-  try {
-    const stored = localStorage.getItem('featuredArtworkIds');
-    return stored ? JSON.parse(stored) : [];
-  } catch {
-    return [];
-  }
-};
-
-// Save featured artwork IDs to localStorage
-const saveFeaturedIds = (ids: string[]) => {
-  localStorage.setItem('featuredArtworkIds', JSON.stringify(ids));
-};
-
 export function useData(): UseDataReturn {
   const [artists, setArtists] = useState<Artist[]>(ARTISTS);
   const [artworks, setArtworks] = useState<Artwork[]>(INITIAL_ARTWORKS);
   const [events, setEvents] = useState<EventItem[]>(INITIAL_EVENTS);
   const [otherEvents, setOtherEvents] = useState<OtherEvent[]>(INITIAL_OTHER_EVENTS);
-  const [featuredArtworkIds, setFeaturedArtworkIdsState] = useState<string[]>(loadFeaturedIds);
+  const [featuredArtworkIds, setFeaturedArtworkIdsState] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Wrapper to save to localStorage when updating featured IDs
-  const setFeaturedArtworkIds = useCallback((ids: string[]) => {
+  // Wrapper to save to Supabase and localStorage when updating featured IDs
+  const setFeaturedArtworkIds = useCallback(async (ids: string[]) => {
     setFeaturedArtworkIdsState(ids);
-    saveFeaturedIds(ids);
+    await saveFeaturedArtworkIds(ids);
   }, []);
 
   // Load all data on mount
@@ -109,17 +96,20 @@ export function useData(): UseDataReturn {
     setError(null);
 
     try {
-      const [artistsData, artworksData, eventsData, otherEventsData] = await Promise.all([
+      const [artistsData, artworksData, eventsData, otherEventsData, featuredIds] = await Promise.all([
         getArtists(),
         getArtworks(),
         getEvents(),
         getOtherEvents(),
+        getFeaturedArtworkIds(),
       ]);
 
-      setArtists(artistsData);
-      setArtworks(artworksData);
-      setEvents(eventsData);
+      // Use fetched data if available, otherwise use initial constants
+      setArtists(artistsData.length > 0 ? artistsData : ARTISTS);
+      setArtworks(artworksData.length > 0 ? artworksData : INITIAL_ARTWORKS);
+      setEvents(eventsData.length > 0 ? eventsData : INITIAL_EVENTS);
       setOtherEvents(otherEventsData.length > 0 ? otherEventsData : INITIAL_OTHER_EVENTS);
+      setFeaturedArtworkIdsState(featuredIds);
     } catch (err) {
       console.error('Error loading data:', err);
       setError('Error al cargar los datos. Usando datos locales.');

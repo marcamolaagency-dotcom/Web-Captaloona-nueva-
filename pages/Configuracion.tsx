@@ -11,17 +11,24 @@ interface ConfiguracionProps {
   otherEvents: OtherEvent[];
   artists: Artist[];
   featuredArtworkIds: string[];
-  onUpdateArtworks: (arts: Artwork[]) => void;
-  onUpdateEvents: (evs: EventItem[]) => void;
-  onUpdateOtherEvents: (evs: OtherEvent[]) => void;
-  onUpdateArtists: (artists: Artist[]) => void;
+  onAddArtwork: (artwork: Omit<Artwork, 'id'>) => Promise<void>;
+  onRemoveArtwork: (id: string) => Promise<void>;
+  onAddEvent: (event: Omit<EventItem, 'id'>) => Promise<void>;
+  onRemoveEvent: (id: string) => Promise<void>;
+  onAddOtherEvent: (event: Omit<OtherEvent, 'id'>) => Promise<void>;
+  onRemoveOtherEvent: (id: string) => Promise<void>;
+  onAddArtist: (artist: Omit<Artist, 'id'>) => Promise<void>;
+  onRemoveArtist: (id: string) => Promise<void>;
   onUpdateFeaturedArtworkIds: (ids: string[]) => void;
 }
 
 const Configuracion: React.FC<ConfiguracionProps> = ({
   artworks, events, otherEvents, artists, featuredArtworkIds,
-  onUpdateArtworks, onUpdateEvents, onUpdateOtherEvents, onUpdateArtists, onUpdateFeaturedArtworkIds
+  onAddArtwork, onRemoveArtwork, onAddEvent, onRemoveEvent,
+  onAddOtherEvent, onRemoveOtherEvent, onAddArtist, onRemoveArtist,
+  onUpdateFeaturedArtworkIds
 }) => {
+  const [isSaving, setIsSaving] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [activeTab, setActiveTab] = useState<'obras' | 'exposiciones' | 'otros' | 'artistas' | 'destacados'>('obras');
@@ -184,11 +191,11 @@ const Configuracion: React.FC<ConfiguracionProps> = ({
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-16">
           <div className="lg:col-span-1 space-y-8 bg-zinc-50 p-8 rounded-sm">
             <h2 className="text-xl serif italic mb-6">Añadir Nueva Obra</h2>
-            <form className="space-y-4" onSubmit={(e) => {
+            <form className="space-y-4" onSubmit={async (e) => {
                 e.preventDefault();
+                setIsSaving(true);
                 const form = e.target as any;
-                const newArt: Artwork = {
-                    id: Date.now().toString(),
+                const newArt: Omit<Artwork, 'id'> = {
                     title: form.title.value,
                     artistId: form.artistId.value,
                     artistName: artists.find(a => a.id === form.artistId.value)?.name || '',
@@ -199,9 +206,10 @@ const Configuracion: React.FC<ConfiguracionProps> = ({
                     status: 'disponible',
                     imageUrl: artworkImageUrl || 'https://images.unsplash.com/photo-1541963463532-d68292c34b19'
                 };
-                onUpdateArtworks([newArt, ...artworks]);
+                await onAddArtwork(newArt);
                 form.reset();
                 resetArtworkForm();
+                setIsSaving(false);
             }}>
               <input name="title" placeholder="Título de la obra" className="w-full p-3 border-b bg-transparent border-zinc-200 focus:outline-none focus:border-emerald-600 text-sm" required />
               <select name="artistId" className="w-full p-3 border-b bg-transparent border-zinc-200 focus:outline-none text-sm" required>
@@ -228,7 +236,9 @@ const Configuracion: React.FC<ConfiguracionProps> = ({
                 label="Imagen de la obra"
               />
 
-              <button className="w-full bg-zinc-900 text-white py-4 text-[9px] font-bold uppercase tracking-[0.3em] hover:bg-emerald-600 transition-all">Añadir a Colección</button>
+              <button disabled={isSaving} className="w-full bg-zinc-900 text-white py-4 text-[9px] font-bold uppercase tracking-[0.3em] hover:bg-emerald-600 transition-all disabled:opacity-50">
+                {isSaving ? 'Guardando...' : 'Añadir a Colección'}
+              </button>
             </form>
           </div>
           <div className="lg:col-span-2 space-y-4">
@@ -241,7 +251,7 @@ const Configuracion: React.FC<ConfiguracionProps> = ({
                     <p className="font-bold text-xs uppercase tracking-widest">{art.title}</p>
                     <p className="text-[10px] text-zinc-400">{art.artistName}</p>
                   </div>
-                  <button onClick={() => onUpdateArtworks(artworks.filter(a => a.id !== art.id))} className="text-zinc-300 hover:text-red-500 p-2">
+                  <button onClick={() => onRemoveArtwork(art.id)} className="text-zinc-300 hover:text-red-500 p-2">
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                   </button>
                 </div>
@@ -256,20 +266,21 @@ const Configuracion: React.FC<ConfiguracionProps> = ({
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-16">
           <div className="lg:col-span-1 space-y-8 bg-zinc-50 p-8 rounded-sm">
             <h2 className="text-xl serif italic mb-6">Nueva Exposición</h2>
-            <form className="space-y-4" onSubmit={(e) => {
+            <form className="space-y-4" onSubmit={async (e) => {
                 e.preventDefault();
+                setIsSaving(true);
                 const form = e.target as any;
-                const newEv: EventItem = {
-                    id: Date.now().toString(),
+                const newEv: Omit<EventItem, 'id'> = {
                     title: form.title.value,
                     date: form.date.value,
                     location: form.location.value,
                     description: form.description.value,
                     imageUrl: eventImageUrl || 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30'
                 };
-                onUpdateEvents([newEv, ...events]);
+                await onAddEvent(newEv);
                 form.reset();
                 resetEventForm();
+                setIsSaving(false);
             }}>
               <input name="title" placeholder="Nombre de la expo" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" required />
               <input name="date" placeholder="Fecha (ej: 12 DIC 2024)" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" required />
@@ -284,7 +295,9 @@ const Configuracion: React.FC<ConfiguracionProps> = ({
                 label="Imagen de la exposición"
               />
 
-              <button className="w-full bg-zinc-900 text-white py-4 text-[9px] font-bold uppercase tracking-[0.3em] hover:bg-emerald-600 transition-all">Publicar Exposición</button>
+              <button disabled={isSaving} className="w-full bg-zinc-900 text-white py-4 text-[9px] font-bold uppercase tracking-[0.3em] hover:bg-emerald-600 transition-all disabled:opacity-50">
+                {isSaving ? 'Guardando...' : 'Publicar Exposición'}
+              </button>
             </form>
           </div>
           <div className="lg:col-span-2 space-y-4">
@@ -296,7 +309,7 @@ const Configuracion: React.FC<ConfiguracionProps> = ({
                       <h3 className="text-xl serif italic">{ev.title}</h3>
                       <p className="text-xs text-zinc-400 mt-2">{ev.location}</p>
                    </div>
-                   <button onClick={() => onUpdateEvents(events.filter(e => e.id !== ev.id))} className="text-zinc-300 hover:text-red-500">
+                   <button onClick={() => onRemoveEvent(ev.id)} className="text-zinc-300 hover:text-red-500">
                      Eliminar
                    </button>
                 </div>
@@ -310,20 +323,21 @@ const Configuracion: React.FC<ConfiguracionProps> = ({
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-16">
           <div className="lg:col-span-1 space-y-8 bg-zinc-50 p-8 rounded-sm">
             <h2 className="text-xl serif italic mb-6">Añadir Evento Vario</h2>
-            <form className="space-y-4" onSubmit={(e) => {
+            <form className="space-y-4" onSubmit={async (e) => {
                 e.preventDefault();
+                setIsSaving(true);
                 const form = e.target as any;
-                const newEv: OtherEvent = {
-                    id: Date.now().toString(),
+                const newEv: Omit<OtherEvent, 'id'> = {
                     title: form.title.value,
                     date: form.date.value,
                     category: form.category.value,
                     description: form.description.value,
                     imageUrl: otherEventImageUrl || 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4'
                 };
-                onUpdateOtherEvents([newEv, ...otherEvents]);
+                await onAddOtherEvent(newEv);
                 form.reset();
                 resetOtherEventForm();
+                setIsSaving(false);
             }}>
               <input name="title" placeholder="Título del evento" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" required />
               <input name="date" placeholder="Fecha" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" required />
@@ -338,7 +352,9 @@ const Configuracion: React.FC<ConfiguracionProps> = ({
                 label="Imagen del evento"
               />
 
-              <button className="w-full bg-zinc-900 text-white py-4 text-[9px] font-bold uppercase tracking-[0.3em] hover:bg-emerald-600 transition-all">Crear Evento</button>
+              <button disabled={isSaving} className="w-full bg-zinc-900 text-white py-4 text-[9px] font-bold uppercase tracking-[0.3em] hover:bg-emerald-600 transition-all disabled:opacity-50">
+                {isSaving ? 'Guardando...' : 'Crear Evento'}
+              </button>
             </form>
           </div>
           <div className="lg:col-span-2 space-y-4">
@@ -349,7 +365,7 @@ const Configuracion: React.FC<ConfiguracionProps> = ({
                       <p className="text-[10px] text-zinc-400 font-bold tracking-widest uppercase">{ev.date} • {ev.category}</p>
                       <h3 className="text-lg serif italic">{ev.title}</h3>
                    </div>
-                   <button onClick={() => onUpdateOtherEvents(otherEvents.filter(e => e.id !== ev.id))} className="text-zinc-300 hover:text-red-500">
+                   <button onClick={() => onRemoveOtherEvent(ev.id)} className="text-zinc-300 hover:text-red-500">
                      Borrar
                    </button>
                 </div>
@@ -363,19 +379,20 @@ const Configuracion: React.FC<ConfiguracionProps> = ({
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-16">
           <div className="lg:col-span-1 space-y-8 bg-zinc-50 p-8 rounded-sm">
             <h2 className="text-xl serif italic mb-6">Gestionar Artistas</h2>
-            <form className="space-y-4" onSubmit={(e) => {
+            <form className="space-y-4" onSubmit={async (e) => {
                 e.preventDefault();
+                setIsSaving(true);
                 const form = e.target as any;
-                const newArtist: Artist = {
-                    id: form.name.value.toLowerCase().replace(/\s+/g, '-'),
+                const newArtist: Omit<Artist, 'id'> = {
                     name: form.name.value,
                     bio: form.bio.value,
                     location: form.location.value,
                     imageUrl: artistImageUrl || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d'
                 };
-                onUpdateArtists([...artists, newArtist]);
+                await onAddArtist(newArtist);
                 form.reset();
                 resetArtistForm();
+                setIsSaving(false);
             }}>
               <input name="name" placeholder="Nombre completo" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" required />
               <input name="location" placeholder="Ubicación" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" />
@@ -389,7 +406,9 @@ const Configuracion: React.FC<ConfiguracionProps> = ({
                 label="Foto del artista"
               />
 
-              <button className="w-full bg-zinc-900 text-white py-4 text-[9px] font-bold uppercase tracking-[0.3em] hover:bg-emerald-600 transition-all">Registrar Artista</button>
+              <button disabled={isSaving} className="w-full bg-zinc-900 text-white py-4 text-[9px] font-bold uppercase tracking-[0.3em] hover:bg-emerald-600 transition-all disabled:opacity-50">
+                {isSaving ? 'Guardando...' : 'Registrar Artista'}
+              </button>
             </form>
           </div>
           <div className="lg:col-span-2 space-y-4">
@@ -401,7 +420,7 @@ const Configuracion: React.FC<ConfiguracionProps> = ({
                       <p className="text-[10px] text-zinc-400 uppercase tracking-widest">{a.location}</p>
                    </div>
                    {a.id !== 'claudio-fiorentini' && (
-                     <button onClick={() => onUpdateArtists(artists.filter(art => art.id !== a.id))} className="text-zinc-300 hover:text-red-500">
+                     <button onClick={() => onRemoveArtist(a.id)} className="text-zinc-300 hover:text-red-500">
                         Eliminar
                      </button>
                    )}
