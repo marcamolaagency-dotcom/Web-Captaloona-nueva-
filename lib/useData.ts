@@ -23,6 +23,7 @@ interface UseDataReturn {
   artworks: Artwork[];
   events: EventItem[];
   otherEvents: OtherEvent[];
+  featuredArtworkIds: string[];
 
   // Loading states
   loading: boolean;
@@ -47,6 +48,7 @@ interface UseDataReturn {
   setArtworks: React.Dispatch<React.SetStateAction<Artwork[]>>;
   setEvents: React.Dispatch<React.SetStateAction<EventItem[]>>;
   setOtherEvents: React.Dispatch<React.SetStateAction<OtherEvent[]>>;
+  setFeaturedArtworkIds: (ids: string[]) => void;
 
   // Refresh data
   refresh: () => Promise<void>;
@@ -71,13 +73,35 @@ const INITIAL_OTHER_EVENTS: OtherEvent[] = [
   }
 ];
 
+// Load featured artwork IDs from localStorage
+const loadFeaturedIds = (): string[] => {
+  try {
+    const stored = localStorage.getItem('featuredArtworkIds');
+    return stored ? JSON.parse(stored) : [];
+  } catch {
+    return [];
+  }
+};
+
+// Save featured artwork IDs to localStorage
+const saveFeaturedIds = (ids: string[]) => {
+  localStorage.setItem('featuredArtworkIds', JSON.stringify(ids));
+};
+
 export function useData(): UseDataReturn {
   const [artists, setArtists] = useState<Artist[]>(ARTISTS);
   const [artworks, setArtworks] = useState<Artwork[]>(INITIAL_ARTWORKS);
   const [events, setEvents] = useState<EventItem[]>(INITIAL_EVENTS);
   const [otherEvents, setOtherEvents] = useState<OtherEvent[]>(INITIAL_OTHER_EVENTS);
+  const [featuredArtworkIds, setFeaturedArtworkIdsState] = useState<string[]>(loadFeaturedIds);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Wrapper to save to localStorage when updating featured IDs
+  const setFeaturedArtworkIds = useCallback((ids: string[]) => {
+    setFeaturedArtworkIdsState(ids);
+    saveFeaturedIds(ids);
+  }, []);
 
   // Load all data on mount
   const loadData = useCallback(async () => {
@@ -201,6 +225,7 @@ export function useData(): UseDataReturn {
     artworks,
     events,
     otherEvents,
+    featuredArtworkIds,
     loading,
     error,
     addArtist,
@@ -216,6 +241,7 @@ export function useData(): UseDataReturn {
     setArtworks,
     setEvents,
     setOtherEvents,
+    setFeaturedArtworkIds,
     refresh: loadData,
   };
 }

@@ -1,12 +1,35 @@
 
 import React from 'react';
-import { Language } from '../types.ts';
+import { Language, Artwork } from '../types.ts';
 import { TRANSLATIONS } from '../translations.ts';
 
-const Home: React.FC<{ onNavigate: (path: string) => void, lang: Language }> = ({ onNavigate, lang }) => {
+interface HomeProps {
+  onNavigate: (path: string) => void;
+  lang: Language;
+  artworks: Artwork[];
+  featuredArtworkIds: string[];
+}
+
+const Home: React.FC<HomeProps> = ({ onNavigate, lang, artworks, featuredArtworkIds }) => {
   const t = TRANSLATIONS[lang]?.home || TRANSLATIONS['ES'].home;
 
-  const featuredImages = [
+  // Get Claudio's artworks for the Coach section
+  const claudioArtworks = artworks.filter(a =>
+    a.artistId === 'claudio-fiorentini' ||
+    a.artistName?.toLowerCase().includes('claudio') ||
+    a.artistName?.toLowerCase().includes('fiorentini')
+  );
+  const coachImage = claudioArtworks.length > 0
+    ? claudioArtworks[0].imageUrl
+    : "https://images.unsplash.com/photo-1541701494587-cb58502866ab?q=80&w=1200";
+
+  // Get featured artworks (selected in admin) or fallback to defaults
+  const featuredArtworks = featuredArtworkIds
+    .map(id => artworks.find(a => a.id === id))
+    .filter((a): a is Artwork => a !== undefined);
+
+  // Fallback images if no featured artworks selected
+  const defaultFeaturedImages = [
     "https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?q=80&w=800&auto=format&fit=crop",
     "https://images.unsplash.com/photo-1578301978693-85fa9c0320b9?q=80&w=800&auto=format&fit=crop",
     "https://images.unsplash.com/photo-1582555172866-f73bb12a2ab3?q=80&w=800&auto=format&fit=crop"
@@ -151,7 +174,7 @@ const Home: React.FC<{ onNavigate: (path: string) => void, lang: Language }> = (
                 <div className="lg:col-span-7">
                     <div className="relative aspect-[16/10] overflow-hidden shadow-2xl">
                         <img
-                            src="https://images.unsplash.com/photo-1541701494587-cb58502866ab?q=80&w=1200"
+                            src={coachImage}
                             alt="Claudio Fiorentini Works"
                             className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-1000"
                         />
@@ -170,19 +193,37 @@ const Home: React.FC<{ onNavigate: (path: string) => void, lang: Language }> = (
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-16">
-            {featuredImages.map((url, i) => (
-              <div key={i} className="group cursor-pointer bg-white p-6 shadow-sm border border-zinc-100 hover-lift">
-                <div className="relative aspect-square overflow-hidden mb-8 bg-zinc-50">
-                  <img
-                    src={url}
-                    alt={`Art piece ${i + 1}`}
-                    className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110 grayscale group-hover:grayscale-0"
-                  />
+            {featuredArtworks.length > 0 ? (
+              // Show selected featured artworks from admin
+              featuredArtworks.map((artwork) => (
+                <div key={artwork.id} className="group cursor-pointer bg-white p-6 shadow-sm border border-zinc-100 hover-lift" onClick={() => onNavigate('/coleccion')}>
+                  <div className="relative aspect-square overflow-hidden mb-8 bg-zinc-50">
+                    <img
+                      src={artwork.imageUrl}
+                      alt={artwork.title}
+                      className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110 grayscale group-hover:grayscale-0"
+                    />
+                  </div>
+                  <h3 className="text-2xl serif mb-3 group-hover:text-emerald-600 transition-colors">{artwork.title}</h3>
+                  <p className="text-[9px] text-zinc-400 uppercase tracking-[0.3em] font-bold">{artwork.artistName}</p>
                 </div>
-                <h3 className="text-2xl serif mb-3 group-hover:text-emerald-600 transition-colors">Selección Contemporánea</h3>
-                <p className="text-[9px] text-zinc-400 uppercase tracking-[0.3em] font-bold">Curado por Loona Contemporary</p>
-              </div>
-            ))}
+              ))
+            ) : (
+              // Fallback to default images when no featured artworks selected
+              defaultFeaturedImages.map((url, i) => (
+                <div key={i} className="group cursor-pointer bg-white p-6 shadow-sm border border-zinc-100 hover-lift" onClick={() => onNavigate('/coleccion')}>
+                  <div className="relative aspect-square overflow-hidden mb-8 bg-zinc-50">
+                    <img
+                      src={url}
+                      alt={`Art piece ${i + 1}`}
+                      className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110 grayscale group-hover:grayscale-0"
+                    />
+                  </div>
+                  <h3 className="text-2xl serif mb-3 group-hover:text-emerald-600 transition-colors">Selección Contemporánea</h3>
+                  <p className="text-[9px] text-zinc-400 uppercase tracking-[0.3em] font-bold">Curado por Loona Contemporary</p>
+                </div>
+              ))
+            )}
           </div>
         </div>
       </section>
