@@ -10,19 +10,21 @@ interface ConfiguracionProps {
   events: EventItem[];
   otherEvents: OtherEvent[];
   artists: Artist[];
+  featuredArtworkIds: string[];
   onUpdateArtworks: (arts: Artwork[]) => void;
   onUpdateEvents: (evs: EventItem[]) => void;
   onUpdateOtherEvents: (evs: OtherEvent[]) => void;
   onUpdateArtists: (artists: Artist[]) => void;
+  onUpdateFeaturedArtworkIds: (ids: string[]) => void;
 }
 
 const Configuracion: React.FC<ConfiguracionProps> = ({
-  artworks, events, otherEvents, artists,
-  onUpdateArtworks, onUpdateEvents, onUpdateOtherEvents, onUpdateArtists
+  artworks, events, otherEvents, artists, featuredArtworkIds,
+  onUpdateArtworks, onUpdateEvents, onUpdateOtherEvents, onUpdateArtists, onUpdateFeaturedArtworkIds
 }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [activeTab, setActiveTab] = useState<'obras' | 'exposiciones' | 'otros' | 'artistas'>('obras');
+  const [activeTab, setActiveTab] = useState<'obras' | 'exposiciones' | 'otros' | 'artistas' | 'destacados'>('obras');
   const [loginError, setLoginError] = useState<string | null>(null);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
 
@@ -165,7 +167,7 @@ const Configuracion: React.FC<ConfiguracionProps> = ({
           <p className="text-zinc-400 text-sm font-light mt-2">Gestión de contenidos dinámicos del sitio web.</p>
         </div>
         <div className="flex bg-zinc-50 p-1 rounded-sm border border-zinc-100">
-          {(['obras', 'exposiciones', 'otros', 'artistas'] as const).map((tab) => (
+          {(['obras', 'exposiciones', 'otros', 'artistas', 'destacados'] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -405,6 +407,85 @@ const Configuracion: React.FC<ConfiguracionProps> = ({
                    )}
                 </div>
              ))}
+          </div>
+        </div>
+      )}
+
+      {/* DESTACADOS TAB */}
+      {activeTab === 'destacados' && (
+        <div className="space-y-8">
+          <div className="bg-zinc-50 p-8 rounded-sm">
+            <h2 className="text-xl serif italic mb-2">Obras Destacadas en Portada</h2>
+            <p className="text-zinc-400 text-sm mb-6">Selecciona hasta 3 obras de la colección para mostrar en la sección "Artistas Recomendados" de la página principal.</p>
+
+            <div className="flex flex-wrap gap-2 mb-8">
+              {featuredArtworkIds.length === 0 ? (
+                <span className="text-zinc-400 text-sm italic">No hay obras seleccionadas</span>
+              ) : (
+                featuredArtworkIds.map(id => {
+                  const art = artworks.find(a => a.id === id);
+                  if (!art) return null;
+                  return (
+                    <div key={id} className="flex items-center gap-2 bg-emerald-50 border border-emerald-200 px-3 py-2 rounded-sm">
+                      <img src={art.imageUrl} className="w-8 h-8 object-cover" />
+                      <span className="text-sm font-medium">{art.title}</span>
+                      <button
+                        onClick={() => onUpdateFeaturedArtworkIds(featuredArtworkIds.filter(fid => fid !== id))}
+                        className="text-emerald-600 hover:text-red-500 ml-2"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+
+            {featuredArtworkIds.length >= 3 && (
+              <p className="text-amber-600 text-sm mb-4">Has alcanzado el máximo de 3 obras destacadas.</p>
+            )}
+          </div>
+
+          <div>
+            <h3 className="text-lg serif italic mb-4">Seleccionar de la Colección</h3>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {artworks.map(art => {
+                const isSelected = featuredArtworkIds.includes(art.id);
+                const canSelect = featuredArtworkIds.length < 3;
+                return (
+                  <div
+                    key={art.id}
+                    className={`relative cursor-pointer border-2 transition-all ${
+                      isSelected
+                        ? 'border-emerald-500 shadow-lg'
+                        : canSelect
+                          ? 'border-zinc-100 hover:border-zinc-300'
+                          : 'border-zinc-100 opacity-50 cursor-not-allowed'
+                    }`}
+                    onClick={() => {
+                      if (isSelected) {
+                        onUpdateFeaturedArtworkIds(featuredArtworkIds.filter(id => id !== art.id));
+                      } else if (canSelect) {
+                        onUpdateFeaturedArtworkIds([...featuredArtworkIds, art.id]);
+                      }
+                    }}
+                  >
+                    <div className="aspect-square">
+                      <img src={art.imageUrl} className="w-full h-full object-cover" />
+                    </div>
+                    <div className="p-3 bg-white">
+                      <p className="font-bold text-[10px] uppercase tracking-widest truncate">{art.title}</p>
+                      <p className="text-[9px] text-zinc-400">{art.artistName}</p>
+                    </div>
+                    {isSelected && (
+                      <div className="absolute top-2 right-2 w-6 h-6 bg-emerald-500 rounded-full flex items-center justify-center text-white text-xs font-bold">
+                        {featuredArtworkIds.indexOf(art.id) + 1}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </div>
       )}

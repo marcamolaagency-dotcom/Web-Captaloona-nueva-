@@ -24,11 +24,13 @@ const App: React.FC = () => {
     artworks,
     events,
     otherEvents,
+    featuredArtworkIds,
     loading,
     setArtists,
     setArtworks,
     setEvents,
     setOtherEvents,
+    setFeaturedArtworkIds,
   } = useData();
 
   useEffect(() => {
@@ -46,26 +48,28 @@ const App: React.FC = () => {
 
   const renderPage = () => {
     switch (currentPath) {
-      case '#/': return <Home onNavigate={navigate} lang={lang} />;
+      case '#/': return <Home onNavigate={navigate} lang={lang} artworks={artworks} featuredArtworkIds={featuredArtworkIds} />;
       case '#/coleccion': return <Coleccion artworks={artworks} artists={artists} lang={lang} />;
       case '#/eventos': return <Eventos events={events} />;
       case '#/otros-eventos': return <OtrosEventos events={otherEvents} />;
       case '#/contacto': return <Contacto />;
       case '#/artista': return <Artista lang={lang} />;
       case '#/config': return (
-        <Configuracion 
+        <Configuracion
           artworks={artworks}
           events={events}
           otherEvents={otherEvents}
           artists={artists}
+          featuredArtworkIds={featuredArtworkIds}
           onUpdateArtworks={setArtworks}
           onUpdateEvents={setEvents}
           onUpdateOtherEvents={setOtherEvents}
           onUpdateArtists={setArtists}
+          onUpdateFeaturedArtworkIds={setFeaturedArtworkIds}
         />
       );
       case '#/espacio': return <Espacio lang={lang} />;
-      default: return <Home onNavigate={navigate} lang={lang} />;
+      default: return <Home onNavigate={navigate} lang={lang} artworks={artworks} featuredArtworkIds={featuredArtworkIds} />;
     }
   };
 
