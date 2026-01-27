@@ -45,10 +45,11 @@ function saveToLocalStorage<T>(key: string, data: T): void {
 // ============================================
 
 export async function getArtists(): Promise<LocalArtist[]> {
+  // Always check localStorage first as it might have user-added data
+  const storedArtists = getFromLocalStorage<LocalArtist[]>(STORAGE_KEYS.artists, []);
+
   if (!isSupabaseConfigured()) {
-    // Use localStorage when Supabase is not configured
-    const stored = getFromLocalStorage<LocalArtist[]>(STORAGE_KEYS.artists, []);
-    return stored.length > 0 ? stored : ARTISTS;
+    return storedArtists.length > 0 ? storedArtists : ARTISTS;
   }
 
   const { data, error } = await supabase
@@ -58,16 +59,28 @@ export async function getArtists(): Promise<LocalArtist[]> {
 
   if (error) {
     console.error('Error fetching artists:', error);
-    return getFromLocalStorage<LocalArtist[]>(STORAGE_KEYS.artists, ARTISTS);
+    return storedArtists.length > 0 ? storedArtists : ARTISTS;
   }
 
-  return data.map((artist) => ({
-    id: artist.id,
-    name: artist.name,
-    bio: artist.bio,
-    imageUrl: artist.image_url,
-    location: artist.location || undefined,
-  }));
+  // If Supabase returns empty but we have localStorage data, use localStorage
+  if (data.length === 0 && storedArtists.length > 0) {
+    return storedArtists;
+  }
+
+  // If Supabase has data, also save to localStorage as backup
+  if (data.length > 0) {
+    const artists = data.map((artist) => ({
+      id: artist.id,
+      name: artist.name,
+      bio: artist.bio,
+      imageUrl: artist.image_url,
+      location: artist.location || undefined,
+    }));
+    saveToLocalStorage(STORAGE_KEYS.artists, artists);
+    return artists;
+  }
+
+  return ARTISTS;
 }
 
 export async function createArtist(artist: Omit<LocalArtist, 'id'>): Promise<LocalArtist | null> {
@@ -80,10 +93,12 @@ export async function createArtist(artist: Omit<LocalArtist, 'id'>): Promise<Loc
     location: artist.location,
   };
 
+  // ALWAYS save to localStorage first as backup
+  const currentArtists = getFromLocalStorage<LocalArtist[]>(STORAGE_KEYS.artists, ARTISTS);
+  const updatedArtists = [...currentArtists.filter(a => a.id !== id), newArtist];
+  saveToLocalStorage(STORAGE_KEYS.artists, updatedArtists);
+
   if (!isSupabaseConfigured()) {
-    // Save to localStorage
-    const currentArtists = getFromLocalStorage<LocalArtist[]>(STORAGE_KEYS.artists, ARTISTS);
-    saveToLocalStorage(STORAGE_KEYS.artists, [...currentArtists, newArtist]);
     return newArtist;
   }
 
@@ -101,10 +116,7 @@ export async function createArtist(artist: Omit<LocalArtist, 'id'>): Promise<Loc
 
   if (error) {
     console.error('Error creating artist:', error);
-    // Fallback to localStorage on error
-    const currentArtists = getFromLocalStorage<LocalArtist[]>(STORAGE_KEYS.artists, ARTISTS);
-    saveToLocalStorage(STORAGE_KEYS.artists, [...currentArtists, newArtist]);
-    return newArtist;
+    return newArtist; // Already saved to localStorage
   }
 
   return {
@@ -141,13 +153,14 @@ export async function deleteArtist(id: string): Promise<boolean> {
 }
 
 export async function updateArtist(id: string, updates: Partial<LocalArtist>): Promise<boolean> {
+  // ALWAYS update localStorage first as backup
+  const currentArtists = getFromLocalStorage<LocalArtist[]>(STORAGE_KEYS.artists, ARTISTS);
+  const updatedArtists = currentArtists.map(a =>
+    a.id === id ? { ...a, ...updates } : a
+  );
+  saveToLocalStorage(STORAGE_KEYS.artists, updatedArtists);
+
   if (!isSupabaseConfigured()) {
-    // Update in localStorage
-    const currentArtists = getFromLocalStorage<LocalArtist[]>(STORAGE_KEYS.artists, ARTISTS);
-    const updatedArtists = currentArtists.map(a =>
-      a.id === id ? { ...a, ...updates } : a
-    );
-    saveToLocalStorage(STORAGE_KEYS.artists, updatedArtists);
     return true;
   }
 
@@ -163,13 +176,7 @@ export async function updateArtist(id: string, updates: Partial<LocalArtist>): P
 
   if (error) {
     console.error('Error updating artist:', error);
-    // Fallback to localStorage
-    const currentArtists = getFromLocalStorage<LocalArtist[]>(STORAGE_KEYS.artists, ARTISTS);
-    const updatedArtists = currentArtists.map(a =>
-      a.id === id ? { ...a, ...updates } : a
-    );
-    saveToLocalStorage(STORAGE_KEYS.artists, updatedArtists);
-    return false;
+    return false; // Already saved to localStorage
   }
 
   return true;
@@ -180,10 +187,11 @@ export async function updateArtist(id: string, updates: Partial<LocalArtist>): P
 // ============================================
 
 export async function getArtworks(): Promise<LocalArtwork[]> {
+  // Always check localStorage first as it might have user-added data
+  const storedArtworks = getFromLocalStorage<LocalArtwork[]>(STORAGE_KEYS.artworks, []);
+
   if (!isSupabaseConfigured()) {
-    // Use localStorage when Supabase is not configured
-    const stored = getFromLocalStorage<LocalArtwork[]>(STORAGE_KEYS.artworks, []);
-    return stored.length > 0 ? stored : INITIAL_ARTWORKS;
+    return storedArtworks.length > 0 ? storedArtworks : INITIAL_ARTWORKS;
   }
 
   const { data, error } = await supabase
@@ -196,21 +204,33 @@ export async function getArtworks(): Promise<LocalArtwork[]> {
 
   if (error) {
     console.error('Error fetching artworks:', error);
-    return getFromLocalStorage<LocalArtwork[]>(STORAGE_KEYS.artworks, INITIAL_ARTWORKS);
+    return storedArtworks.length > 0 ? storedArtworks : INITIAL_ARTWORKS;
   }
 
-  return data.map((artwork: any) => ({
-    id: artwork.id,
-    title: artwork.title,
-    artistId: artwork.artist_id,
-    artistName: artwork.artists?.name || '',
-    medium: artwork.medium,
-    size: artwork.size,
-    price: artwork.price,
-    imageUrl: artwork.image_url,
-    category: artwork.category,
-    status: artwork.status,
-  }));
+  // If Supabase returns empty but we have localStorage data, use localStorage
+  if (data.length === 0 && storedArtworks.length > 0) {
+    return storedArtworks;
+  }
+
+  // If Supabase has data, also save to localStorage as backup
+  if (data.length > 0) {
+    const artworks = data.map((artwork: any) => ({
+      id: artwork.id,
+      title: artwork.title,
+      artistId: artwork.artist_id,
+      artistName: artwork.artists?.name || '',
+      medium: artwork.medium,
+      size: artwork.size,
+      price: artwork.price,
+      imageUrl: artwork.image_url,
+      category: artwork.category,
+      status: artwork.status,
+    }));
+    saveToLocalStorage(STORAGE_KEYS.artworks, artworks);
+    return artworks;
+  }
+
+  return INITIAL_ARTWORKS;
 }
 
 export async function createArtwork(artwork: Omit<LocalArtwork, 'id'>): Promise<LocalArtwork | null> {
@@ -219,10 +239,11 @@ export async function createArtwork(artwork: Omit<LocalArtwork, 'id'>): Promise<
     id: Date.now().toString(),
   };
 
+  // ALWAYS save to localStorage first as backup
+  const currentArtworks = getFromLocalStorage<LocalArtwork[]>(STORAGE_KEYS.artworks, INITIAL_ARTWORKS);
+  saveToLocalStorage(STORAGE_KEYS.artworks, [newArtwork, ...currentArtworks]);
+
   if (!isSupabaseConfigured()) {
-    // Save to localStorage
-    const currentArtworks = getFromLocalStorage<LocalArtwork[]>(STORAGE_KEYS.artworks, INITIAL_ARTWORKS);
-    saveToLocalStorage(STORAGE_KEYS.artworks, [newArtwork, ...currentArtworks]);
     return newArtwork;
   }
 
@@ -246,13 +267,10 @@ export async function createArtwork(artwork: Omit<LocalArtwork, 'id'>): Promise<
 
   if (error) {
     console.error('Error creating artwork:', error);
-    // Fallback to localStorage on error
-    const currentArtworks = getFromLocalStorage<LocalArtwork[]>(STORAGE_KEYS.artworks, INITIAL_ARTWORKS);
-    saveToLocalStorage(STORAGE_KEYS.artworks, [newArtwork, ...currentArtworks]);
-    return newArtwork;
+    return newArtwork; // Already saved to localStorage
   }
 
-  return {
+  const savedArtwork = {
     id: data.id,
     title: data.title,
     artistId: data.artist_id,
@@ -264,6 +282,12 @@ export async function createArtwork(artwork: Omit<LocalArtwork, 'id'>): Promise<
     category: data.category,
     status: data.status,
   };
+
+  // Update localStorage with the Supabase ID
+  const updatedArtworks = currentArtworks.filter(a => a.id !== newArtwork.id);
+  saveToLocalStorage(STORAGE_KEYS.artworks, [savedArtwork, ...updatedArtworks]);
+
+  return savedArtwork;
 }
 
 export async function updateArtwork(id: string, updates: Partial<LocalArtwork>): Promise<boolean> {
@@ -322,10 +346,11 @@ export async function deleteArtwork(id: string): Promise<boolean> {
 // ============================================
 
 export async function getEvents(): Promise<EventItem[]> {
+  // Always check localStorage first
+  const storedEvents = getFromLocalStorage<EventItem[]>(STORAGE_KEYS.events, []);
+
   if (!isSupabaseConfigured()) {
-    // Use localStorage when Supabase is not configured
-    const stored = getFromLocalStorage<EventItem[]>(STORAGE_KEYS.events, []);
-    return stored.length > 0 ? stored : INITIAL_EVENTS;
+    return storedEvents.length > 0 ? storedEvents : INITIAL_EVENTS;
   }
 
   const { data, error } = await supabase
@@ -336,17 +361,28 @@ export async function getEvents(): Promise<EventItem[]> {
 
   if (error) {
     console.error('Error fetching events:', error);
-    return getFromLocalStorage<EventItem[]>(STORAGE_KEYS.events, INITIAL_EVENTS);
+    return storedEvents.length > 0 ? storedEvents : INITIAL_EVENTS;
   }
 
-  return data.map((event) => ({
-    id: event.id,
-    title: event.title,
-    date: event.date,
-    location: event.location,
-    description: event.description,
-    imageUrl: event.image_url,
-  }));
+  // If Supabase returns empty but we have localStorage data, use localStorage
+  if (data.length === 0 && storedEvents.length > 0) {
+    return storedEvents;
+  }
+
+  if (data.length > 0) {
+    const events = data.map((event) => ({
+      id: event.id,
+      title: event.title,
+      date: event.date,
+      location: event.location,
+      description: event.description,
+      imageUrl: event.image_url,
+    }));
+    saveToLocalStorage(STORAGE_KEYS.events, events);
+    return events;
+  }
+
+  return INITIAL_EVENTS;
 }
 
 export async function createEvent(event: Omit<EventItem, 'id'>): Promise<EventItem | null> {
@@ -355,10 +391,11 @@ export async function createEvent(event: Omit<EventItem, 'id'>): Promise<EventIt
     id: Date.now().toString(),
   };
 
+  // ALWAYS save to localStorage first as backup
+  const currentEvents = getFromLocalStorage<EventItem[]>(STORAGE_KEYS.events, INITIAL_EVENTS);
+  saveToLocalStorage(STORAGE_KEYS.events, [newEvent, ...currentEvents]);
+
   if (!isSupabaseConfigured()) {
-    // Save to localStorage
-    const currentEvents = getFromLocalStorage<EventItem[]>(STORAGE_KEYS.events, INITIAL_EVENTS);
-    saveToLocalStorage(STORAGE_KEYS.events, [newEvent, ...currentEvents]);
     return newEvent;
   }
 
@@ -377,10 +414,7 @@ export async function createEvent(event: Omit<EventItem, 'id'>): Promise<EventIt
 
   if (error) {
     console.error('Error creating event:', error);
-    // Fallback to localStorage on error
-    const currentEvents = getFromLocalStorage<EventItem[]>(STORAGE_KEYS.events, INITIAL_EVENTS);
-    saveToLocalStorage(STORAGE_KEYS.events, [newEvent, ...currentEvents]);
-    return newEvent;
+    return newEvent; // Already saved to localStorage
   }
 
   return {
@@ -444,10 +478,11 @@ const INITIAL_OTHER_EVENTS_DB: OtherEvent[] = [
 ];
 
 export async function getOtherEvents(): Promise<OtherEvent[]> {
+  // Always check localStorage first
+  const storedOtherEvents = getFromLocalStorage<OtherEvent[]>(STORAGE_KEYS.otherEvents, []);
+
   if (!isSupabaseConfigured()) {
-    // Use localStorage when Supabase is not configured
-    const stored = getFromLocalStorage<OtherEvent[]>(STORAGE_KEYS.otherEvents, []);
-    return stored.length > 0 ? stored : INITIAL_OTHER_EVENTS_DB;
+    return storedOtherEvents.length > 0 ? storedOtherEvents : INITIAL_OTHER_EVENTS_DB;
   }
 
   const { data, error } = await supabase
@@ -458,17 +493,28 @@ export async function getOtherEvents(): Promise<OtherEvent[]> {
 
   if (error) {
     console.error('Error fetching other events:', error);
-    return getFromLocalStorage<OtherEvent[]>(STORAGE_KEYS.otherEvents, INITIAL_OTHER_EVENTS_DB);
+    return storedOtherEvents.length > 0 ? storedOtherEvents : INITIAL_OTHER_EVENTS_DB;
   }
 
-  return data.map((event) => ({
-    id: event.id,
-    title: event.title,
-    date: event.date,
-    category: event.category || '',
-    description: event.description,
-    imageUrl: event.image_url,
-  }));
+  // If Supabase returns empty but we have localStorage data, use localStorage
+  if (data.length === 0 && storedOtherEvents.length > 0) {
+    return storedOtherEvents;
+  }
+
+  if (data.length > 0) {
+    const events = data.map((event) => ({
+      id: event.id,
+      title: event.title,
+      date: event.date,
+      category: event.category || '',
+      description: event.description,
+      imageUrl: event.image_url,
+    }));
+    saveToLocalStorage(STORAGE_KEYS.otherEvents, events);
+    return events;
+  }
+
+  return INITIAL_OTHER_EVENTS_DB;
 }
 
 export async function createOtherEvent(event: Omit<OtherEvent, 'id'>): Promise<OtherEvent | null> {
@@ -477,10 +523,11 @@ export async function createOtherEvent(event: Omit<OtherEvent, 'id'>): Promise<O
     id: Date.now().toString(),
   };
 
+  // ALWAYS save to localStorage first as backup
+  const currentEvents = getFromLocalStorage<OtherEvent[]>(STORAGE_KEYS.otherEvents, INITIAL_OTHER_EVENTS_DB);
+  saveToLocalStorage(STORAGE_KEYS.otherEvents, [newEvent, ...currentEvents]);
+
   if (!isSupabaseConfigured()) {
-    // Save to localStorage
-    const currentEvents = getFromLocalStorage<OtherEvent[]>(STORAGE_KEYS.otherEvents, INITIAL_OTHER_EVENTS_DB);
-    saveToLocalStorage(STORAGE_KEYS.otherEvents, [newEvent, ...currentEvents]);
     return newEvent;
   }
 
@@ -500,10 +547,7 @@ export async function createOtherEvent(event: Omit<OtherEvent, 'id'>): Promise<O
 
   if (error) {
     console.error('Error creating other event:', error);
-    // Fallback to localStorage on error
-    const currentEvents = getFromLocalStorage<OtherEvent[]>(STORAGE_KEYS.otherEvents, INITIAL_OTHER_EVENTS_DB);
-    saveToLocalStorage(STORAGE_KEYS.otherEvents, [newEvent, ...currentEvents]);
-    return newEvent;
+    return newEvent; // Already saved to localStorage
   }
 
   return {
