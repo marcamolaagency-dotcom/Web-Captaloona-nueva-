@@ -12,12 +12,43 @@ import { INITIAL_ARTWORKS, INITIAL_EVENTS, ARTISTS } from '../constants';
 import type { Artwork as LocalArtwork, EventItem, OtherEvent, Artist as LocalArtist } from '../types';
 
 // ============================================
+// LOCAL STORAGE HELPERS
+// ============================================
+
+const STORAGE_KEYS = {
+  artists: 'captaloona_artists',
+  artworks: 'captaloona_artworks',
+  events: 'captaloona_events',
+  otherEvents: 'captaloona_other_events',
+  featuredArtworkIds: 'featuredArtworkIds',
+};
+
+function getFromLocalStorage<T>(key: string, defaultValue: T): T {
+  try {
+    const stored = localStorage.getItem(key);
+    return stored ? JSON.parse(stored) : defaultValue;
+  } catch {
+    return defaultValue;
+  }
+}
+
+function saveToLocalStorage<T>(key: string, data: T): void {
+  try {
+    localStorage.setItem(key, JSON.stringify(data));
+  } catch (e) {
+    console.error('Error saving to localStorage:', e);
+  }
+}
+
+// ============================================
 // ARTISTS
 // ============================================
 
 export async function getArtists(): Promise<LocalArtist[]> {
   if (!isSupabaseConfigured()) {
-    return ARTISTS;
+    // Use localStorage when Supabase is not configured
+    const stored = getFromLocalStorage<LocalArtist[]>(STORAGE_KEYS.artists, []);
+    return stored.length > 0 ? stored : ARTISTS;
   }
 
   const { data, error } = await supabase
@@ -27,7 +58,7 @@ export async function getArtists(): Promise<LocalArtist[]> {
 
   if (error) {
     console.error('Error fetching artists:', error);
-    return ARTISTS;
+    return getFromLocalStorage<LocalArtist[]>(STORAGE_KEYS.artists, ARTISTS);
   }
 
   return data.map((artist) => ({
@@ -40,11 +71,21 @@ export async function getArtists(): Promise<LocalArtist[]> {
 }
 
 export async function createArtist(artist: Omit<LocalArtist, 'id'>): Promise<LocalArtist | null> {
-  if (!isSupabaseConfigured()) {
-    return null;
-  }
-
   const id = artist.name.toLowerCase().replace(/\s+/g, '-');
+  const newArtist: LocalArtist = {
+    id,
+    name: artist.name,
+    bio: artist.bio,
+    imageUrl: artist.imageUrl,
+    location: artist.location,
+  };
+
+  if (!isSupabaseConfigured()) {
+    // Save to localStorage
+    const currentArtists = getFromLocalStorage<LocalArtist[]>(STORAGE_KEYS.artists, ARTISTS);
+    saveToLocalStorage(STORAGE_KEYS.artists, [...currentArtists, newArtist]);
+    return newArtist;
+  }
 
   const { data, error } = await supabase
     .from('artists')
@@ -60,7 +101,10 @@ export async function createArtist(artist: Omit<LocalArtist, 'id'>): Promise<Loc
 
   if (error) {
     console.error('Error creating artist:', error);
-    return null;
+    // Fallback to localStorage on error
+    const currentArtists = getFromLocalStorage<LocalArtist[]>(STORAGE_KEYS.artists, ARTISTS);
+    saveToLocalStorage(STORAGE_KEYS.artists, [...currentArtists, newArtist]);
+    return newArtist;
   }
 
   return {
@@ -74,7 +118,10 @@ export async function createArtist(artist: Omit<LocalArtist, 'id'>): Promise<Loc
 
 export async function deleteArtist(id: string): Promise<boolean> {
   if (!isSupabaseConfigured()) {
-    return false;
+    // Delete from localStorage
+    const currentArtists = getFromLocalStorage<LocalArtist[]>(STORAGE_KEYS.artists, ARTISTS);
+    saveToLocalStorage(STORAGE_KEYS.artists, currentArtists.filter(a => a.id !== id));
+    return true;
   }
 
   const { error } = await supabase
@@ -84,6 +131,44 @@ export async function deleteArtist(id: string): Promise<boolean> {
 
   if (error) {
     console.error('Error deleting artist:', error);
+    // Still delete from localStorage as fallback
+    const currentArtists = getFromLocalStorage<LocalArtist[]>(STORAGE_KEYS.artists, ARTISTS);
+    saveToLocalStorage(STORAGE_KEYS.artists, currentArtists.filter(a => a.id !== id));
+    return false;
+  }
+
+  return true;
+}
+
+export async function updateArtist(id: string, updates: Partial<LocalArtist>): Promise<boolean> {
+  if (!isSupabaseConfigured()) {
+    // Update in localStorage
+    const currentArtists = getFromLocalStorage<LocalArtist[]>(STORAGE_KEYS.artists, ARTISTS);
+    const updatedArtists = currentArtists.map(a =>
+      a.id === id ? { ...a, ...updates } : a
+    );
+    saveToLocalStorage(STORAGE_KEYS.artists, updatedArtists);
+    return true;
+  }
+
+  const { error } = await supabase
+    .from('artists')
+    .update({
+      name: updates.name,
+      bio: updates.bio,
+      image_url: updates.imageUrl,
+      location: updates.location,
+    })
+    .eq('id', id);
+
+  if (error) {
+    console.error('Error updating artist:', error);
+    // Fallback to localStorage
+    const currentArtists = getFromLocalStorage<LocalArtist[]>(STORAGE_KEYS.artists, ARTISTS);
+    const updatedArtists = currentArtists.map(a =>
+      a.id === id ? { ...a, ...updates } : a
+    );
+    saveToLocalStorage(STORAGE_KEYS.artists, updatedArtists);
     return false;
   }
 
@@ -96,7 +181,9 @@ export async function deleteArtist(id: string): Promise<boolean> {
 
 export async function getArtworks(): Promise<LocalArtwork[]> {
   if (!isSupabaseConfigured()) {
-    return INITIAL_ARTWORKS;
+    // Use localStorage when Supabase is not configured
+    const stored = getFromLocalStorage<LocalArtwork[]>(STORAGE_KEYS.artworks, []);
+    return stored.length > 0 ? stored : INITIAL_ARTWORKS;
   }
 
   const { data, error } = await supabase
@@ -109,7 +196,7 @@ export async function getArtworks(): Promise<LocalArtwork[]> {
 
   if (error) {
     console.error('Error fetching artworks:', error);
-    return INITIAL_ARTWORKS;
+    return getFromLocalStorage<LocalArtwork[]>(STORAGE_KEYS.artworks, INITIAL_ARTWORKS);
   }
 
   return data.map((artwork: any) => ({
@@ -127,8 +214,16 @@ export async function getArtworks(): Promise<LocalArtwork[]> {
 }
 
 export async function createArtwork(artwork: Omit<LocalArtwork, 'id'>): Promise<LocalArtwork | null> {
+  const newArtwork: LocalArtwork = {
+    ...artwork,
+    id: Date.now().toString(),
+  };
+
   if (!isSupabaseConfigured()) {
-    return null;
+    // Save to localStorage
+    const currentArtworks = getFromLocalStorage<LocalArtwork[]>(STORAGE_KEYS.artworks, INITIAL_ARTWORKS);
+    saveToLocalStorage(STORAGE_KEYS.artworks, [newArtwork, ...currentArtworks]);
+    return newArtwork;
   }
 
   const { data, error } = await supabase
@@ -151,7 +246,10 @@ export async function createArtwork(artwork: Omit<LocalArtwork, 'id'>): Promise<
 
   if (error) {
     console.error('Error creating artwork:', error);
-    return null;
+    // Fallback to localStorage on error
+    const currentArtworks = getFromLocalStorage<LocalArtwork[]>(STORAGE_KEYS.artworks, INITIAL_ARTWORKS);
+    saveToLocalStorage(STORAGE_KEYS.artworks, [newArtwork, ...currentArtworks]);
+    return newArtwork;
   }
 
   return {
@@ -197,7 +295,10 @@ export async function updateArtwork(id: string, updates: Partial<LocalArtwork>):
 
 export async function deleteArtwork(id: string): Promise<boolean> {
   if (!isSupabaseConfigured()) {
-    return false;
+    // Delete from localStorage
+    const currentArtworks = getFromLocalStorage<LocalArtwork[]>(STORAGE_KEYS.artworks, INITIAL_ARTWORKS);
+    saveToLocalStorage(STORAGE_KEYS.artworks, currentArtworks.filter(a => a.id !== id));
+    return true;
   }
 
   const { error } = await supabase
@@ -207,6 +308,9 @@ export async function deleteArtwork(id: string): Promise<boolean> {
 
   if (error) {
     console.error('Error deleting artwork:', error);
+    // Still delete from localStorage as fallback
+    const currentArtworks = getFromLocalStorage<LocalArtwork[]>(STORAGE_KEYS.artworks, INITIAL_ARTWORKS);
+    saveToLocalStorage(STORAGE_KEYS.artworks, currentArtworks.filter(a => a.id !== id));
     return false;
   }
 
@@ -219,7 +323,9 @@ export async function deleteArtwork(id: string): Promise<boolean> {
 
 export async function getEvents(): Promise<EventItem[]> {
   if (!isSupabaseConfigured()) {
-    return INITIAL_EVENTS;
+    // Use localStorage when Supabase is not configured
+    const stored = getFromLocalStorage<EventItem[]>(STORAGE_KEYS.events, []);
+    return stored.length > 0 ? stored : INITIAL_EVENTS;
   }
 
   const { data, error } = await supabase
@@ -230,7 +336,7 @@ export async function getEvents(): Promise<EventItem[]> {
 
   if (error) {
     console.error('Error fetching events:', error);
-    return INITIAL_EVENTS;
+    return getFromLocalStorage<EventItem[]>(STORAGE_KEYS.events, INITIAL_EVENTS);
   }
 
   return data.map((event) => ({
@@ -244,8 +350,16 @@ export async function getEvents(): Promise<EventItem[]> {
 }
 
 export async function createEvent(event: Omit<EventItem, 'id'>): Promise<EventItem | null> {
+  const newEvent: EventItem = {
+    ...event,
+    id: Date.now().toString(),
+  };
+
   if (!isSupabaseConfigured()) {
-    return null;
+    // Save to localStorage
+    const currentEvents = getFromLocalStorage<EventItem[]>(STORAGE_KEYS.events, INITIAL_EVENTS);
+    saveToLocalStorage(STORAGE_KEYS.events, [newEvent, ...currentEvents]);
+    return newEvent;
   }
 
   const { data, error } = await supabase
@@ -263,7 +377,10 @@ export async function createEvent(event: Omit<EventItem, 'id'>): Promise<EventIt
 
   if (error) {
     console.error('Error creating event:', error);
-    return null;
+    // Fallback to localStorage on error
+    const currentEvents = getFromLocalStorage<EventItem[]>(STORAGE_KEYS.events, INITIAL_EVENTS);
+    saveToLocalStorage(STORAGE_KEYS.events, [newEvent, ...currentEvents]);
+    return newEvent;
   }
 
   return {
@@ -278,7 +395,13 @@ export async function createEvent(event: Omit<EventItem, 'id'>): Promise<EventIt
 
 export async function deleteEvent(id: string): Promise<boolean> {
   if (!isSupabaseConfigured()) {
-    return false;
+    // Delete from localStorage
+    const currentEvents = getFromLocalStorage<EventItem[]>(STORAGE_KEYS.events, INITIAL_EVENTS);
+    saveToLocalStorage(STORAGE_KEYS.events, currentEvents.filter(e => e.id !== id));
+    // Also delete from other events
+    const currentOtherEvents = getFromLocalStorage<OtherEvent[]>(STORAGE_KEYS.otherEvents, []);
+    saveToLocalStorage(STORAGE_KEYS.otherEvents, currentOtherEvents.filter(e => e.id !== id));
+    return true;
   }
 
   const { error } = await supabase
@@ -288,6 +411,9 @@ export async function deleteEvent(id: string): Promise<boolean> {
 
   if (error) {
     console.error('Error deleting event:', error);
+    // Still delete from localStorage as fallback
+    const currentEvents = getFromLocalStorage<EventItem[]>(STORAGE_KEYS.events, INITIAL_EVENTS);
+    saveToLocalStorage(STORAGE_KEYS.events, currentEvents.filter(e => e.id !== id));
     return false;
   }
 
@@ -298,9 +424,30 @@ export async function deleteEvent(id: string): Promise<boolean> {
 // OTHER EVENTS (Talleres, Charlas, etc.)
 // ============================================
 
+const INITIAL_OTHER_EVENTS_DB: OtherEvent[] = [
+  {
+    id: 'o1',
+    date: '15 DIC 2024',
+    title: 'Taller de Materia y Textura',
+    category: 'Taller',
+    imageUrl: 'https://images.unsplash.com/photo-1513364776144-60967b0f800f?q=80&w=800',
+    description: 'Explora el uso de materiales no convencionales en la pintura contemporánea de la mano de nuestros artistas residentes.'
+  },
+  {
+    id: 'o2',
+    date: '20 DIC 2024',
+    title: 'Presentación: La Poesía del Caos',
+    category: 'Literatura',
+    imageUrl: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?q=80&w=800',
+    description: 'Una tarde dedicada a la narrativa introspectiva y su relación con el arte visual moderno.'
+  }
+];
+
 export async function getOtherEvents(): Promise<OtherEvent[]> {
   if (!isSupabaseConfigured()) {
-    return [];
+    // Use localStorage when Supabase is not configured
+    const stored = getFromLocalStorage<OtherEvent[]>(STORAGE_KEYS.otherEvents, []);
+    return stored.length > 0 ? stored : INITIAL_OTHER_EVENTS_DB;
   }
 
   const { data, error } = await supabase
@@ -311,7 +458,7 @@ export async function getOtherEvents(): Promise<OtherEvent[]> {
 
   if (error) {
     console.error('Error fetching other events:', error);
-    return [];
+    return getFromLocalStorage<OtherEvent[]>(STORAGE_KEYS.otherEvents, INITIAL_OTHER_EVENTS_DB);
   }
 
   return data.map((event) => ({
@@ -325,8 +472,16 @@ export async function getOtherEvents(): Promise<OtherEvent[]> {
 }
 
 export async function createOtherEvent(event: Omit<OtherEvent, 'id'>): Promise<OtherEvent | null> {
+  const newEvent: OtherEvent = {
+    ...event,
+    id: Date.now().toString(),
+  };
+
   if (!isSupabaseConfigured()) {
-    return null;
+    // Save to localStorage
+    const currentEvents = getFromLocalStorage<OtherEvent[]>(STORAGE_KEYS.otherEvents, INITIAL_OTHER_EVENTS_DB);
+    saveToLocalStorage(STORAGE_KEYS.otherEvents, [newEvent, ...currentEvents]);
+    return newEvent;
   }
 
   const { data, error } = await supabase
@@ -345,7 +500,10 @@ export async function createOtherEvent(event: Omit<OtherEvent, 'id'>): Promise<O
 
   if (error) {
     console.error('Error creating other event:', error);
-    return null;
+    // Fallback to localStorage on error
+    const currentEvents = getFromLocalStorage<OtherEvent[]>(STORAGE_KEYS.otherEvents, INITIAL_OTHER_EVENTS_DB);
+    saveToLocalStorage(STORAGE_KEYS.otherEvents, [newEvent, ...currentEvents]);
+    return newEvent;
   }
 
   return {
@@ -359,6 +517,12 @@ export async function createOtherEvent(event: Omit<OtherEvent, 'id'>): Promise<O
 }
 
 export async function deleteOtherEvent(id: string): Promise<boolean> {
+  if (!isSupabaseConfigured()) {
+    // Delete from localStorage
+    const currentEvents = getFromLocalStorage<OtherEvent[]>(STORAGE_KEYS.otherEvents, INITIAL_OTHER_EVENTS_DB);
+    saveToLocalStorage(STORAGE_KEYS.otherEvents, currentEvents.filter(e => e.id !== id));
+    return true;
+  }
   return deleteEvent(id);
 }
 

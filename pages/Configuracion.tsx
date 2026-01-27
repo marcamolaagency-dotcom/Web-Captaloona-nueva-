@@ -18,6 +18,7 @@ interface ConfiguracionProps {
   onAddOtherEvent: (event: Omit<OtherEvent, 'id'>) => Promise<void>;
   onRemoveOtherEvent: (id: string) => Promise<void>;
   onAddArtist: (artist: Omit<Artist, 'id'>) => Promise<void>;
+  onEditArtist: (id: string, updates: Partial<Artist>) => Promise<void>;
   onRemoveArtist: (id: string) => Promise<void>;
   onUpdateFeaturedArtworkIds: (ids: string[]) => void;
 }
@@ -25,10 +26,13 @@ interface ConfiguracionProps {
 const Configuracion: React.FC<ConfiguracionProps> = ({
   artworks, events, otherEvents, artists, featuredArtworkIds,
   onAddArtwork, onRemoveArtwork, onAddEvent, onRemoveEvent,
-  onAddOtherEvent, onRemoveOtherEvent, onAddArtist, onRemoveArtist,
+  onAddOtherEvent, onRemoveOtherEvent, onAddArtist, onEditArtist, onRemoveArtist,
   onUpdateFeaturedArtworkIds
 }) => {
   const [isSaving, setIsSaving] = useState(false);
+
+  // Artist editing state
+  const [editingArtist, setEditingArtist] = useState<Artist | null>(null);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [activeTab, setActiveTab] = useState<'obras' | 'exposiciones' | 'otros' | 'artistas' | 'destacados'>('obras');
@@ -378,52 +382,103 @@ const Configuracion: React.FC<ConfiguracionProps> = ({
       {activeTab === 'artistas' && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-16">
           <div className="lg:col-span-1 space-y-8 bg-zinc-50 p-8 rounded-sm">
-            <h2 className="text-xl serif italic mb-6">Gestionar Artistas</h2>
-            <form className="space-y-4" onSubmit={async (e) => {
-                e.preventDefault();
-                setIsSaving(true);
-                const form = e.target as any;
-                const newArtist: Omit<Artist, 'id'> = {
-                    name: form.name.value,
-                    bio: form.bio.value,
-                    location: form.location.value,
-                    imageUrl: artistImageUrl || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d'
-                };
-                await onAddArtist(newArtist);
-                form.reset();
-                resetArtistForm();
-                setIsSaving(false);
-            }}>
-              <input name="name" placeholder="Nombre completo" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" required />
-              <input name="location" placeholder="Ubicación" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" />
-              <textarea name="bio" placeholder="Biografía" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm h-40 resize-none" />
+            <h2 className="text-xl serif italic mb-6">
+              {editingArtist ? 'Editar Artista' : 'Añadir Nuevo Artista'}
+            </h2>
 
-              {/* Image Upload Component */}
-              <ImageUpload
-                onImageUploaded={setArtistImageUrl}
-                currentImageUrl={artistImageUrl}
-                folder="artists"
-                label="Foto del artista"
-              />
+            {editingArtist ? (
+              // Edit form
+              <form className="space-y-4" onSubmit={async (e) => {
+                  e.preventDefault();
+                  setIsSaving(true);
+                  const form = e.target as any;
+                  const updates: Partial<Artist> = {
+                      name: form.name.value,
+                      bio: form.bio.value,
+                      location: form.location.value,
+                      imageUrl: artistImageUrl || editingArtist.imageUrl
+                  };
+                  await onEditArtist(editingArtist.id, updates);
+                  setEditingArtist(null);
+                  resetArtistForm();
+                  setIsSaving(false);
+              }}>
+                <input name="name" defaultValue={editingArtist.name} placeholder="Nombre completo" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" required />
+                <input name="location" defaultValue={editingArtist.location || ''} placeholder="Ubicación" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" />
+                <textarea name="bio" defaultValue={editingArtist.bio} placeholder="Biografía" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm h-40 resize-none" />
 
-              <button disabled={isSaving} className="w-full bg-zinc-900 text-white py-4 text-[9px] font-bold uppercase tracking-[0.3em] hover:bg-emerald-600 transition-all disabled:opacity-50">
-                {isSaving ? 'Guardando...' : 'Registrar Artista'}
-              </button>
-            </form>
+                <ImageUpload
+                  onImageUploaded={setArtistImageUrl}
+                  currentImageUrl={artistImageUrl || editingArtist.imageUrl}
+                  folder="artists"
+                  label="Foto del artista"
+                />
+
+                <div className="flex gap-2">
+                  <button type="submit" disabled={isSaving} className="flex-1 bg-emerald-600 text-white py-4 text-[9px] font-bold uppercase tracking-[0.3em] hover:bg-emerald-700 transition-all disabled:opacity-50">
+                    {isSaving ? 'Guardando...' : 'Guardar Cambios'}
+                  </button>
+                  <button type="button" onClick={() => { setEditingArtist(null); resetArtistForm(); }} className="px-6 bg-zinc-200 text-zinc-600 py-4 text-[9px] font-bold uppercase tracking-[0.3em] hover:bg-zinc-300 transition-all">
+                    Cancelar
+                  </button>
+                </div>
+              </form>
+            ) : (
+              // Add new artist form
+              <form className="space-y-4" onSubmit={async (e) => {
+                  e.preventDefault();
+                  setIsSaving(true);
+                  const form = e.target as any;
+                  const newArtist: Omit<Artist, 'id'> = {
+                      name: form.name.value,
+                      bio: form.bio.value,
+                      location: form.location.value,
+                      imageUrl: artistImageUrl || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d'
+                  };
+                  await onAddArtist(newArtist);
+                  form.reset();
+                  resetArtistForm();
+                  setIsSaving(false);
+              }}>
+                <input name="name" placeholder="Nombre completo" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" required />
+                <input name="location" placeholder="Ubicación" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" />
+                <textarea name="bio" placeholder="Biografía" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm h-40 resize-none" />
+
+                <ImageUpload
+                  onImageUploaded={setArtistImageUrl}
+                  currentImageUrl={artistImageUrl}
+                  folder="artists"
+                  label="Foto del artista"
+                />
+
+                <button disabled={isSaving} className="w-full bg-zinc-900 text-white py-4 text-[9px] font-bold uppercase tracking-[0.3em] hover:bg-emerald-600 transition-all disabled:opacity-50">
+                  {isSaving ? 'Guardando...' : 'Registrar Artista'}
+                </button>
+              </form>
+            )}
           </div>
           <div className="lg:col-span-2 space-y-4">
              {artists.map(a => (
-                <div key={a.id} className="flex gap-6 p-6 border border-zinc-100 bg-white items-center">
+                <div key={a.id} className={`flex gap-6 p-6 border bg-white items-center ${editingArtist?.id === a.id ? 'border-emerald-500 bg-emerald-50' : 'border-zinc-100'}`}>
                    <img src={a.imageUrl} className="w-16 h-16 rounded-full object-cover grayscale" />
                    <div className="flex-grow">
                       <h3 className="text-lg serif italic">{a.name}</h3>
                       <p className="text-[10px] text-zinc-400 uppercase tracking-widest">{a.location}</p>
                    </div>
-                   {a.id !== 'claudio-fiorentini' && (
-                     <button onClick={() => onRemoveArtist(a.id)} className="text-zinc-300 hover:text-red-500">
+                   <div className="flex gap-3">
+                     <button
+                       onClick={() => {
+                         setEditingArtist(a);
+                         setArtistImageUrl(a.imageUrl);
+                       }}
+                       className="text-zinc-400 hover:text-emerald-600 text-sm"
+                     >
+                       Editar
+                     </button>
+                     <button onClick={() => onRemoveArtist(a.id)} className="text-zinc-300 hover:text-red-500 text-sm">
                         Eliminar
                      </button>
-                   )}
+                   </div>
                 </div>
              ))}
           </div>

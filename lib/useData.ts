@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import {
   getArtists,
   createArtist,
+  updateArtist,
   deleteArtist,
   getArtworks,
   createArtwork,
@@ -33,6 +34,7 @@ interface UseDataReturn {
 
   // Actions
   addArtist: (artist: Omit<Artist, 'id'>) => Promise<void>;
+  editArtist: (id: string, updates: Partial<Artist>) => Promise<void>;
   removeArtist: (id: string) => Promise<void>;
 
   addArtwork: (artwork: Omit<Artwork, 'id'>) => Promise<void>;
@@ -137,6 +139,13 @@ export function useData(): UseDataReturn {
     }
   };
 
+  const editArtist = async (id: string, updates: Partial<Artist>) => {
+    await updateArtist(id, updates);
+    setArtists((prev) =>
+      prev.map((a) => (a.id === id ? { ...a, ...updates } : a))
+    );
+  };
+
   const removeArtist = async (id: string) => {
     const success = await deleteArtist(id);
     if (success || !success) {
@@ -219,6 +228,7 @@ export function useData(): UseDataReturn {
     loading,
     error,
     addArtist,
+    editArtist,
     removeArtist,
     addArtwork,
     editArtwork,

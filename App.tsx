@@ -27,6 +27,7 @@ const App: React.FC = () => {
     featuredArtworkIds,
     loading,
     addArtist,
+    editArtist,
     removeArtist,
     addArtwork,
     removeArtwork,
@@ -72,6 +73,7 @@ const App: React.FC = () => {
           onAddOtherEvent={addOtherEvent}
           onRemoveOtherEvent={removeOtherEvent}
           onAddArtist={addArtist}
+          onEditArtist={editArtist}
           onRemoveArtist={removeArtist}
           onUpdateFeaturedArtworkIds={setFeaturedArtworkIds}
         />
