@@ -140,6 +140,41 @@ export async function deleteArtist(id: string): Promise<boolean> {
   return true;
 }
 
+export async function updateArtist(id: string, updates: Partial<LocalArtist>): Promise<boolean> {
+  if (!isSupabaseConfigured()) {
+    // Update in localStorage
+    const currentArtists = getFromLocalStorage<LocalArtist[]>(STORAGE_KEYS.artists, ARTISTS);
+    const updatedArtists = currentArtists.map(a =>
+      a.id === id ? { ...a, ...updates } : a
+    );
+    saveToLocalStorage(STORAGE_KEYS.artists, updatedArtists);
+    return true;
+  }
+
+  const { error } = await supabase
+    .from('artists')
+    .update({
+      name: updates.name,
+      bio: updates.bio,
+      image_url: updates.imageUrl,
+      location: updates.location,
+    })
+    .eq('id', id);
+
+  if (error) {
+    console.error('Error updating artist:', error);
+    // Fallback to localStorage
+    const currentArtists = getFromLocalStorage<LocalArtist[]>(STORAGE_KEYS.artists, ARTISTS);
+    const updatedArtists = currentArtists.map(a =>
+      a.id === id ? { ...a, ...updates } : a
+    );
+    saveToLocalStorage(STORAGE_KEYS.artists, updatedArtists);
+    return false;
+  }
+
+  return true;
+}
+
 // ============================================
 // ARTWORKS
 // ============================================
