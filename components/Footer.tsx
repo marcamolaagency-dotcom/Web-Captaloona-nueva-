@@ -119,7 +119,7 @@ const Footer: React.FC = () => {
           <div className="flex space-x-6 mt-4 md:mt-0">
             <a href="https://www.instagram.com/captaloona_art/" target="_blank" rel="noopener noreferrer" className="hover:text-emerald-600">Instagram</a>
             <a href="https://www.facebook.com/captaloona/" target="_blank" rel="noopener noreferrer" className="hover:text-emerald-600">Facebook</a>
-            <a href="https://www.linkedin.com/company/captaloona" target="_blank" rel="noopener noreferrer" className="hover:text-emerald-600">LinkedIn</a>
+            <a href="https://www.linkedin.com/in/claudio-fiorentini-12232b" target="_blank" rel="noopener noreferrer" className="hover:text-emerald-600">LinkedIn</a>
           </div>
         </div>
       </div>
