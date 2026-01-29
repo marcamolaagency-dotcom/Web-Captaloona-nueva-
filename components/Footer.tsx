@@ -44,6 +44,7 @@ const Footer: React.FC = () => {
                 <p>C. de Andrés Mellado, 55</p>
                 <p>28015 Madrid, España</p>
                 <p>+34 669 61 62 20</p>
+                <p><a href="mailto:info@loonacontemporary.com" className="hover:text-emerald-600">info@loonacontemporary.com</a></p>
               </address>
             </div>
           </div>
@@ -52,9 +53,9 @@ const Footer: React.FC = () => {
         <div className="flex flex-col md:flex-row items-center justify-between border-t border-zinc-200 pt-8 text-xs text-zinc-400 uppercase tracking-widest">
           <p>© {new Date().getFullYear()} CAPTALOONA ART MADRID</p>
           <div className="flex space-x-6 mt-4 md:mt-0">
-            <a href="#" className="hover:text-emerald-600">Instagram</a>
-            <a href="#" className="hover:text-emerald-600">Facebook</a>
-            <a href="#" className="hover:text-emerald-600">Artsper</a>
+            <a href="https://www.instagram.com/captaloona_art/" target="_blank" rel="noopener noreferrer" className="hover:text-emerald-600">Instagram</a>
+            <a href="https://www.facebook.com/captaloona/" target="_blank" rel="noopener noreferrer" className="hover:text-emerald-600">Facebook</a>
+            <a href="https://www.linkedin.com/company/captaloona" target="_blank" rel="noopener noreferrer" className="hover:text-emerald-600">LinkedIn</a>
           </div>
         </div>
       </div>

@@ -175,8 +175,8 @@ const Contacto: React.FC = () => {
               </div>
               <div>
                 <h4 className="font-bold uppercase text-xs tracking-[0.2em] mb-4 text-emerald-600">Email</h4>
-                <a href="mailto:captaloona@gmail.com" className="text-zinc-900 font-medium hover:text-emerald-600 transition-colors">
-                  captaloona@gmail.com
+                <a href="mailto:info@loonacontemporary.com" className="text-zinc-900 font-medium hover:text-emerald-600 transition-colors">
+                  info@loonacontemporary.com
                 </a>
               </div>
               <div className="sm:col-span-2">
