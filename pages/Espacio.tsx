@@ -124,7 +124,7 @@ const Espacio: React.FC<EspacioProps> = ({ lang }) => {
             <div className="h-16 w-px bg-zinc-100" />
             <div>
               <h4 className="text-[10px] uppercase tracking-widest font-bold text-zinc-400 mb-2">{t.contact}</h4>
-              <p className="text-sm text-zinc-600">info@captaloonaart.com</p>
+              <p className="text-sm text-zinc-600"><a href="mailto:info@loonacontemporary.com" className="hover:text-emerald-600 transition-colors">info@loonacontemporary.com</a></p>
               <p className="text-sm text-zinc-600">+34 669 61 62 20</p>
             </div>
           </div>
