@@ -107,11 +107,27 @@ export function useData(): UseDataReturn {
       ]);
 
       // Use fetched data if available, otherwise use initial constants
-      setArtists(artistsData.length > 0 ? artistsData : ARTISTS);
-      setArtworks(artworksData.length > 0 ? artworksData : INITIAL_ARTWORKS);
-      setEvents(eventsData.length > 0 ? eventsData : INITIAL_EVENTS);
-      setOtherEvents(otherEventsData.length > 0 ? otherEventsData : INITIAL_OTHER_EVENTS);
-      setFeaturedArtworkIdsState(featuredIds);
+      const finalArtists = artistsData.length > 0 ? artistsData : ARTISTS;
+      const finalArtworks = artworksData.length > 0 ? artworksData : INITIAL_ARTWORKS;
+      const finalEvents = eventsData.length > 0 ? eventsData : INITIAL_EVENTS;
+      const finalOtherEvents = otherEventsData.length > 0 ? otherEventsData : INITIAL_OTHER_EVENTS;
+
+      // Clean up orphaned featured artwork IDs (IDs that don't exist in current artworks)
+      const validFeaturedIds = featuredIds.filter(id =>
+        finalArtworks.some(artwork => artwork.id === id)
+      );
+
+      // If orphaned IDs were found, save the cleaned list
+      if (validFeaturedIds.length !== featuredIds.length) {
+        console.log('Cleaned up orphaned featured artwork IDs');
+        await saveFeaturedArtworkIds(validFeaturedIds);
+      }
+
+      setArtists(finalArtists);
+      setArtworks(finalArtworks);
+      setEvents(finalEvents);
+      setOtherEvents(finalOtherEvents);
+      setFeaturedArtworkIdsState(validFeaturedIds);
     } catch (err) {
       console.error('Error loading data:', err);
       setError('Error al cargar los datos. Usando datos locales.');
