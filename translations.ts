@@ -30,7 +30,10 @@ export const TRANSLATIONS: Record<Language, any> = {
       coachDesc: 'Claudio Fiorentini guía a artistas y coleccionistas a través de una visión matérica y espiritual del mercado del arte moderno.',
       coachBtn: 'Trayectoria de Claudio',
       featuredTitle: 'Artistas Recomendados',
-      featuredSub: 'Una selección curada por Loona Contemporary'
+      featuredSub: 'Una selección curada por Loona Contemporary',
+      latestEventLabel: 'PRÓXIMA EXPOSICIÓN',
+      latestEventTitle: 'No te pierdas nuestra última exposición',
+      latestEventBtn: 'Ver Todas las Exposiciones'
     },
     artist: {
       title: 'Claudio Fiorentini',
@@ -130,7 +133,10 @@ export const TRANSLATIONS: Record<Language, any> = {
       coachDesc: 'Claudio Fiorentini guides artists and collectors through a material and spiritual vision of the modern art market.',
       coachBtn: 'Claudio\'s Journey',
       featuredTitle: 'Recommended Artists',
-      featuredSub: 'A curated selection by Loona Contemporary'
+      featuredSub: 'A curated selection by Loona Contemporary',
+      latestEventLabel: 'UPCOMING EXHIBITION',
+      latestEventTitle: 'Don\'t miss our latest exhibition',
+      latestEventBtn: 'View All Exhibitions'
     },
     artist: {
       title: 'Claudio Fiorentini',
@@ -230,7 +236,10 @@ export const TRANSLATIONS: Record<Language, any> = {
       coachDesc: 'Claudio Fiorentini guide les artistes et collectionneurs à travers une vision matérielle et spirituelle du marché de l\'art moderne.',
       coachBtn: 'Parcours de Claudio',
       featuredTitle: 'Artistes Recommandés',
-      featuredSub: 'Une sélection organisée par Loona Contemporary'
+      featuredSub: 'Une sélection organisée par Loona Contemporary',
+      latestEventLabel: 'PROCHAINE EXPOSITION',
+      latestEventTitle: 'Ne manquez pas notre dernière exposition',
+      latestEventBtn: 'Voir Toutes les Expositions'
     },
     artist: {
       title: 'Claudio Fiorentini',
@@ -330,7 +339,10 @@ export const TRANSLATIONS: Record<Language, any> = {
       coachDesc: 'Claudio Fiorentini guida artisti e collezionisti attraverso una visione materica e spirituale del mercato dell\'arte moderna.',
       coachBtn: 'Percorso di Claudio',
       featuredTitle: 'Artisti Consigliati',
-      featuredSub: 'Una selezione curata da Loona Contemporary'
+      featuredSub: 'Una selezione curata da Loona Contemporary',
+      latestEventLabel: 'PROSSIMA MOSTRA',
+      latestEventTitle: 'Non perdere la nostra ultima mostra',
+      latestEventBtn: 'Vedi Tutte le Mostre'
     },
     artist: {
       title: 'Claudio Fiorentini',

@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Language, Artwork } from '../types.ts';
+import { Language, Artwork, EventItem } from '../types.ts';
 import { TRANSLATIONS } from '../translations.ts';
 
 interface HomeProps {
@@ -8,9 +8,10 @@ interface HomeProps {
   lang: Language;
   artworks: Artwork[];
   featuredArtworkIds: string[];
+  events: EventItem[];
 }
 
-const Home: React.FC<HomeProps> = ({ onNavigate, lang, artworks, featuredArtworkIds }) => {
+const Home: React.FC<HomeProps> = ({ onNavigate, lang, artworks, featuredArtworkIds, events }) => {
   const t = TRANSLATIONS[lang]?.home || TRANSLATIONS['ES'].home;
 
   // Get Claudio's artworks for the Coach section
@@ -184,8 +185,69 @@ const Home: React.FC<HomeProps> = ({ onNavigate, lang, artworks, featuredArtwork
         </div>
       </section>
 
+      {/* Latest Event Highlight */}
+      {events.length > 0 && (() => {
+        const latestEvent = events[0];
+        return (
+          <section className="py-32 bg-zinc-50 border-t border-zinc-100 relative overflow-hidden">
+            <div className="absolute inset-0 opacity-[0.03]">
+              <div className="absolute inset-0" style={{
+                backgroundImage: 'radial-gradient(circle at 1px 1px, black 1px, transparent 0)',
+                backgroundSize: '32px 32px'
+              }}></div>
+            </div>
+
+            <div className="max-w-7xl mx-auto px-8 relative z-10">
+              <div className="text-center mb-16 space-y-4">
+                <span className="text-emerald-600 text-[10px] font-bold uppercase tracking-[0.5em]">
+                  {t.latestEventLabel}
+                </span>
+                <h2 className="text-5xl md:text-6xl serif italic">{t.latestEventTitle}</h2>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+                <div className="relative aspect-[4/3] overflow-hidden shadow-2xl group">
+                  <img
+                    src={latestEvent.imageUrl}
+                    alt={latestEvent.title}
+                    className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-1000 group-hover:scale-105"
+                  />
+                  <div className="absolute top-0 left-0 bg-zinc-900/90 px-6 py-3">
+                    <span className="text-emerald-400 text-[10px] font-bold uppercase tracking-[0.3em]">
+                      {latestEvent.date}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="space-y-8">
+                  <h3 className="text-4xl serif italic leading-tight">{latestEvent.title}</h3>
+                  {latestEvent.location && (
+                    <div className="flex items-center gap-3 text-zinc-500">
+                      <svg className="w-5 h-5 text-emerald-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                      <span className="text-sm font-light">{latestEvent.location}</span>
+                    </div>
+                  )}
+                  <p className="text-zinc-500 text-lg leading-relaxed font-light italic line-clamp-4">
+                    {latestEvent.description}
+                  </p>
+                  <button
+                    onClick={() => onNavigate('/eventos')}
+                    className="px-12 py-5 border border-zinc-900 text-zinc-900 text-[10px] tracking-[0.3em] uppercase font-bold hover:bg-zinc-900 hover:text-white transition-all"
+                  >
+                    {t.latestEventBtn}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </section>
+        );
+      })()}
+
       {/* Featured Grid */}
-      <section className="py-40 bg-zinc-50 border-t border-zinc-100">
+      <section className="py-40 bg-white border-t border-zinc-100">
         <div className="max-w-7xl mx-auto px-8">
           <div className="text-center mb-32 space-y-6">
             <h2 className="text-6xl serif italic">{t.featuredTitle}</h2>
