@@ -6,17 +6,43 @@ interface EventosProps {
   events: EventItem[];
 }
 
+// Helper function to parse date strings like "24 NOV 2024" to Date objects
+const parseEventDate = (dateStr: string): Date => {
+  const months: Record<string, number> = {
+    'ENE': 0, 'FEB': 1, 'MAR': 2, 'ABR': 3, 'MAY': 4, 'JUN': 5,
+    'JUL': 6, 'AGO': 7, 'SEP': 8, 'OCT': 9, 'NOV': 10, 'DIC': 11,
+    'JAN': 0, 'APR': 3, 'AUG': 7, 'DEC': 11
+  };
+
+  const parts = dateStr.trim().toUpperCase().split(/\s+/);
+  if (parts.length >= 3) {
+    const day = parseInt(parts[0], 10);
+    const month = months[parts[1]] ?? 0;
+    const year = parseInt(parts[2], 10);
+    return new Date(year, month, day);
+  }
+  return new Date(0); // Return epoch if parsing fails
+};
+
 const Eventos: React.FC<EventosProps> = ({ events }) => {
+  // Sort events by date: most recent/upcoming first
+  const sortedEvents = [...events].sort((a, b) => {
+    const dateA = parseEventDate(a.date);
+    const dateB = parseEventDate(b.date);
+    return dateB.getTime() - dateA.getTime(); // Descending order (newest first)
+  });
+
   return (
     <div className="pt-32 pb-24">
       <div className="max-w-7xl mx-auto px-6">
         <header className="mb-20">
           <span className="text-emerald-600 text-xs font-bold uppercase tracking-[0.3em] mb-4 block">Agenda Cultural</span>
-          <h1 className="text-5xl serif">Próximos Eventos</h1>
+          <h1 className="text-5xl serif">Exposiciones</h1>
+          <p className="text-zinc-500 mt-4 text-lg italic">No te pierdas nuestras exposiciones</p>
         </header>
 
         <div className="space-y-24">
-          {events.map((ev, idx) => (
+          {sortedEvents.map((ev, idx) => (
             <div key={ev.id} className={`flex flex-col ${idx % 2 === 0 ? 'lg:flex-row' : 'lg:flex-row-reverse'} gap-16 items-center`}>
               <div className="flex-1 w-full">
                 <div className="relative overflow-hidden aspect-video">
@@ -40,7 +66,7 @@ const Eventos: React.FC<EventosProps> = ({ events }) => {
             </div>
           ))}
 
-          {events.length === 0 && (
+          {sortedEvents.length === 0 && (
             <div className="py-40 text-center text-zinc-400 italic">
               No hay eventos programados en este momento. Vuelve pronto.
             </div>
