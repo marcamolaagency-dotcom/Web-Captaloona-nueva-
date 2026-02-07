@@ -623,14 +623,11 @@ export async function getContactMessages() {
 // ============================================
 
 export async function getFeaturedArtworkIds(): Promise<string[]> {
+  // Always check localStorage first as it might have user-saved data
+  const storedIds = getFromLocalStorage<string[]>(STORAGE_KEYS.featuredArtworkIds, []);
+
   if (!isSupabaseConfigured()) {
-    // Fallback to localStorage
-    try {
-      const stored = localStorage.getItem('featuredArtworkIds');
-      return stored ? JSON.parse(stored) : [];
-    } catch {
-      return [];
-    }
+    return storedIds;
   }
 
   const { data, error } = await supabase
@@ -640,15 +637,26 @@ export async function getFeaturedArtworkIds(): Promise<string[]> {
     .single();
 
   if (error) {
-    // If no setting found, return empty array (not an error)
+    // If no setting found in Supabase, fall back to localStorage
     if (error.code === 'PGRST116') {
-      return [];
+      return storedIds;
     }
     console.error('Error fetching featured artwork IDs:', error);
-    return [];
+    return storedIds;
   }
 
-  return data?.value || [];
+  // If Supabase returns empty but we have localStorage data, use localStorage
+  const ids = data?.value || [];
+  if (ids.length === 0 && storedIds.length > 0) {
+    return storedIds;
+  }
+
+  // If Supabase has data, also save to localStorage as backup
+  if (ids.length > 0) {
+    saveToLocalStorage(STORAGE_KEYS.featuredArtworkIds, ids);
+  }
+
+  return ids;
 }
 
 export async function saveFeaturedArtworkIds(ids: string[]): Promise<boolean> {

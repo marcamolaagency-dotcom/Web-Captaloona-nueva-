@@ -29,6 +29,7 @@ const parseEventDate = (dateStr: string): Date => {
   return new Date(0);
 };
 
+
 const Home: React.FC<HomeProps> = ({ onNavigate, lang, artworks, featuredArtworkIds, events }) => {
   const t = TRANSLATIONS[lang]?.home || TRANSLATIONS['ES'].home;
 
@@ -272,7 +273,7 @@ const Home: React.FC<HomeProps> = ({ onNavigate, lang, artworks, featuredArtwork
       )}
 
       {/* Featured Grid */}
-      <section className="py-40 bg-zinc-50 border-t border-zinc-100">
+      <section className="py-40 bg-white border-t border-zinc-100">
         <div className="max-w-7xl mx-auto px-8">
           <div className="text-center mb-32 space-y-6">
             <h2 className="text-6xl serif italic">{t.featuredTitle}</h2>
