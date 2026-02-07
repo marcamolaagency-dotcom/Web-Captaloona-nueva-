@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { submitContactMessage } from '../lib/database';
 import { isSupabaseConfigured } from '../lib/supabase';
+import { submitContactToGHL, isGHLConfigured } from '../lib/ghl';
 
 const Contacto: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -45,6 +46,15 @@ const Contacto: React.FC = () => {
         if (!success) {
           throw new Error('Error al enviar el mensaje. Inténtalo de nuevo.');
         }
+      }
+
+      // Submit to GHL (GoHighLevel) if configured
+      if (isGHLConfigured()) {
+        await submitContactToGHL(
+          formData.name,
+          formData.email,
+          formData.message
+        );
       }
 
       // Also submit to Netlify Forms (works even without Supabase)

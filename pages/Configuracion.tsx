@@ -486,17 +486,27 @@ const Configuracion: React.FC<ConfiguracionProps> = ({
       )}
 
       {/* DESTACADOS TAB */}
-      {activeTab === 'destacados' && (
+      {activeTab === 'destacados' && (() => {
+        // Filter out orphaned IDs (IDs that don't exist in current artworks)
+        const validFeaturedIds = featuredArtworkIds.filter(id => artworks.some(a => a.id === id));
+        const hasOrphanedIds = validFeaturedIds.length !== featuredArtworkIds.length;
+
+        // Auto-cleanup orphaned IDs
+        if (hasOrphanedIds) {
+          setTimeout(() => onUpdateFeaturedArtworkIds(validFeaturedIds), 0);
+        }
+
+        return (
         <div className="space-y-8">
           <div className="bg-zinc-50 p-8 rounded-sm">
             <h2 className="text-xl serif italic mb-2">Obras Destacadas en Portada</h2>
             <p className="text-zinc-400 text-sm mb-6">Selecciona hasta 3 obras de la colección para mostrar en la sección "Artistas Recomendados" de la página principal.</p>
 
             <div className="flex flex-wrap gap-2 mb-8">
-              {featuredArtworkIds.length === 0 ? (
+              {validFeaturedIds.length === 0 ? (
                 <span className="text-zinc-400 text-sm italic">No hay obras seleccionadas</span>
               ) : (
-                featuredArtworkIds.map(id => {
+                validFeaturedIds.map(id => {
                   const art = artworks.find(a => a.id === id);
                   if (!art) return null;
                   return (
@@ -504,7 +514,7 @@ const Configuracion: React.FC<ConfiguracionProps> = ({
                       <img src={art.imageUrl} className="w-8 h-8 object-cover" />
                       <span className="text-sm font-medium">{art.title}</span>
                       <button
-                        onClick={() => onUpdateFeaturedArtworkIds(featuredArtworkIds.filter(fid => fid !== id))}
+                        onClick={() => onUpdateFeaturedArtworkIds(validFeaturedIds.filter(fid => fid !== id))}
                         className="text-emerald-600 hover:text-red-500 ml-2"
                       >
                         ×
@@ -515,7 +525,7 @@ const Configuracion: React.FC<ConfiguracionProps> = ({
               )}
             </div>
 
-            {featuredArtworkIds.length >= 3 && (
+            {validFeaturedIds.length >= 3 && (
               <p className="text-amber-600 text-sm mb-4">Has alcanzado el máximo de 3 obras destacadas.</p>
             )}
           </div>
@@ -524,8 +534,8 @@ const Configuracion: React.FC<ConfiguracionProps> = ({
             <h3 className="text-lg serif italic mb-4">Seleccionar de la Colección</h3>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {artworks.map(art => {
-                const isSelected = featuredArtworkIds.includes(art.id);
-                const canSelect = featuredArtworkIds.length < 3;
+                const isSelected = validFeaturedIds.includes(art.id);
+                const canSelect = validFeaturedIds.length < 3;
                 return (
                   <div
                     key={art.id}
@@ -538,9 +548,9 @@ const Configuracion: React.FC<ConfiguracionProps> = ({
                     }`}
                     onClick={() => {
                       if (isSelected) {
-                        onUpdateFeaturedArtworkIds(featuredArtworkIds.filter(id => id !== art.id));
+                        onUpdateFeaturedArtworkIds(validFeaturedIds.filter(id => id !== art.id));
                       } else if (canSelect) {
-                        onUpdateFeaturedArtworkIds([...featuredArtworkIds, art.id]);
+                        onUpdateFeaturedArtworkIds([...validFeaturedIds, art.id]);
                       }
                     }}
                   >
@@ -553,7 +563,7 @@ const Configuracion: React.FC<ConfiguracionProps> = ({
                     </div>
                     {isSelected && (
                       <div className="absolute top-2 right-2 w-6 h-6 bg-emerald-500 rounded-full flex items-center justify-center text-white text-xs font-bold">
-                        {featuredArtworkIds.indexOf(art.id) + 1}
+                        {validFeaturedIds.indexOf(art.id) + 1}
                       </div>
                     )}
                   </div>
@@ -562,7 +572,8 @@ const Configuracion: React.FC<ConfiguracionProps> = ({
             </div>
           </div>
         </div>
-      )}
+        );
+      })()}
     </div>
   );
 };
