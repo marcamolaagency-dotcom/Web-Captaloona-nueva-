@@ -156,20 +156,10 @@ const Home: React.FC<HomeProps> = ({ onNavigate, lang, artworks, featuredArtwork
               <div className="relative aspect-[4/3] rounded-sm overflow-hidden shadow-2xl border border-zinc-700">
                 {/* Room mockup with art */}
                 <img
-                  src="https://images.unsplash.com/photo-1586023492125-27b2c045efd7?q=80&w=1200&auto=format&fit=crop"
-                  alt="Interior room preview"
+                  src="/images/Innervision-home.jpg"
+                  alt="Visualiza el arte en tu espacio"
                   className="w-full h-full object-cover"
                 />
-                {/* Overlay artwork simulation */}
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="relative w-1/3 aspect-[3/4] shadow-2xl transform -rotate-2 hover:rotate-0 transition-transform duration-500">
-                    <img
-                      src="https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?q=80&w=400&auto=format&fit=crop"
-                      alt="Artwork preview"
-                      className="w-full h-full object-cover border-8 border-white shadow-lg"
-                    />
-                  </div>
-                </div>
                 {/* Glowing effect */}
                 <div className="absolute inset-0 bg-gradient-to-t from-zinc-900/60 via-transparent to-transparent"></div>
               </div>
