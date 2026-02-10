@@ -1,6 +1,7 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { EventItem } from '../types';
+import ImageLightbox from '../components/ImageLightbox';
 
 interface EventosProps {
   events: EventItem[];
@@ -25,6 +26,8 @@ const parseEventDate = (dateStr: string): Date => {
 };
 
 const Eventos: React.FC<EventosProps> = ({ events }) => {
+  const [lightboxImage, setLightboxImage] = useState<{url: string; title: string} | null>(null);
+
   // Sort events by date: most recent/upcoming first
   const sortedEvents = [...events].sort((a, b) => {
     const dateA = parseEventDate(a.date);
@@ -45,8 +48,17 @@ const Eventos: React.FC<EventosProps> = ({ events }) => {
           {sortedEvents.map((ev, idx) => (
             <div key={ev.id} className={`flex flex-col ${idx % 2 === 0 ? 'lg:flex-row' : 'lg:flex-row-reverse'} gap-16 items-center`}>
               <div className="flex-1 w-full">
-                <div className="relative overflow-hidden aspect-video">
-                  <img src={ev.imageUrl} alt={ev.title} className="w-full h-full object-cover transition-transform duration-1000 hover:scale-105" />
+                <div
+                  className="relative overflow-hidden aspect-video cursor-zoom-in group"
+                  onClick={() => setLightboxImage({url: ev.imageUrl, title: ev.title})}
+                >
+                  <img src={ev.imageUrl} alt={ev.title} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" />
+                  {/* Zoom indicator */}
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+                    <span className="bg-white/90 px-4 py-2 rounded-full text-xs font-medium text-zinc-700 shadow-lg">
+                      Click para ampliar
+                    </span>
+                  </div>
                 </div>
               </div>
               <div className="flex-1 space-y-6">
@@ -73,6 +85,15 @@ const Eventos: React.FC<EventosProps> = ({ events }) => {
           )}
         </div>
       </div>
+
+      {/* Image Lightbox */}
+      <ImageLightbox
+        isOpen={!!lightboxImage}
+        imageUrl={lightboxImage?.url || ''}
+        alt={lightboxImage?.title || ''}
+        title={lightboxImage?.title}
+        onClose={() => setLightboxImage(null)}
+      />
     </div>
   );
 };
