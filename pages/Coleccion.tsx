@@ -2,6 +2,7 @@
 import React, { useState, useMemo } from 'react';
 import { Artwork, Artist, Language } from '../types';
 import { TRANSLATIONS } from '../translations';
+import ImageLightbox from '../components/ImageLightbox';
 
 interface ColeccionProps {
   artworks: Artwork[];
@@ -14,6 +15,7 @@ const Coleccion: React.FC<ColeccionProps> = ({ artworks, artists = [], lang }) =
   const [filterCategory, setFilterCategory] = useState('all');
   const [filterArtist, setFilterArtist] = useState('all');
   const [showArtistSelector, setShowArtistSelector] = useState(false);
+  const [lightboxImage, setLightboxImage] = useState<{url: string; title: string; artist: string} | null>(null);
 
   const t = TRANSLATIONS[lang].collection;
 
@@ -134,6 +136,7 @@ const Coleccion: React.FC<ColeccionProps> = ({ artworks, artists = [], lang }) =
             onArtistClick={setSelectedArtistProfile}
             findArtist={findArtist}
             t={t}
+            onImageClick={(url, title, artist) => setLightboxImage({url, title, artist})}
           />
         </div>
       </div>
@@ -249,6 +252,7 @@ const Coleccion: React.FC<ColeccionProps> = ({ artworks, artists = [], lang }) =
               onArtistClick={setSelectedArtistProfile}
               findArtist={findArtist}
               t={t}
+              onImageClick={(url, title, artist) => setLightboxImage({url, title, artist})}
             />
           ) : (
             <div className="text-center py-20">
@@ -266,6 +270,16 @@ const Coleccion: React.FC<ColeccionProps> = ({ artworks, artists = [], lang }) =
           )
         )}
       </div>
+
+      {/* Image Lightbox */}
+      <ImageLightbox
+        isOpen={!!lightboxImage}
+        imageUrl={lightboxImage?.url || ''}
+        alt={lightboxImage?.title || ''}
+        title={lightboxImage?.title}
+        artist={lightboxImage?.artist}
+        onClose={() => setLightboxImage(null)}
+      />
     </div>
   );
 };
@@ -275,13 +289,17 @@ interface ArtGridProps {
   onArtistClick: (a: Artist) => void;
   findArtist: (artistId: string, artistName: string) => Artist | null;
   t: any;
+  onImageClick: (url: string, title: string, artist: string) => void;
 }
 
-const ArtGrid: React.FC<ArtGridProps> = ({ artworks, onArtistClick, findArtist, t }) => (
+const ArtGrid: React.FC<ArtGridProps> = ({ artworks, onArtistClick, findArtist, t, onImageClick }) => (
   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-12 gap-y-20">
     {artworks.map((art) => (
-      <div key={art.id} className="group cursor-pointer">
-        <div className="relative aspect-[3/4] mb-8 overflow-hidden bg-zinc-100">
+      <div key={art.id} className="group">
+        <div
+          className="relative aspect-[3/4] mb-8 overflow-hidden bg-zinc-100 cursor-zoom-in"
+          onClick={() => onImageClick(art.imageUrl, art.title, art.artistName)}
+        >
           <img
             src={art.imageUrl}
             alt={art.title}
@@ -293,6 +311,12 @@ const ArtGrid: React.FC<ArtGridProps> = ({ artworks, onArtistClick, findArtist, 
             </span>
             <span className="bg-white/80 px-3 py-1 text-[8px] uppercase tracking-tighter text-zinc-500 backdrop-blur-md">
               {art.category}
+            </span>
+          </div>
+          {/* Zoom indicator on hover */}
+          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+            <span className="bg-white/90 px-4 py-2 rounded-full text-xs font-medium text-zinc-700 shadow-lg">
+              Click para ampliar
             </span>
           </div>
         </div>
