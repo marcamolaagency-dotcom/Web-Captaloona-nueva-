@@ -174,16 +174,16 @@ const ImageLightbox: React.FC<ImageLightboxProps> = ({
       {/* Close button */}
       <button
         onClick={onClose}
-        className="absolute top-4 right-4 md:top-6 md:right-6 z-50 w-11 h-11 md:w-12 md:h-12 flex items-center justify-center text-white/80 hover:text-white transition-colors bg-black/30 hover:bg-black/50 rounded-full"
+        className="absolute top-4 right-4 md:top-6 md:right-6 z-50 w-12 h-12 md:w-14 md:h-14 flex items-center justify-center text-white hover:text-white transition-colors bg-black/50 hover:bg-black/70 rounded-full shadow-lg"
         aria-label="Cerrar"
       >
-        <svg className="w-6 h-6 md:w-8 md:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+        <svg className="w-7 h-7 md:w-8 md:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" />
         </svg>
       </button>
 
       {/* Zoom controls */}
-      <div className="absolute bottom-4 md:bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 md:gap-3 bg-black/50 backdrop-blur-sm px-3 md:px-4 py-2 rounded-full">
+      <div className="absolute bottom-6 md:bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 md:gap-3 bg-black/60 backdrop-blur-sm px-4 md:px-5 py-3 rounded-full shadow-lg">
         <button
           onClick={zoomOut}
           disabled={scale <= 1}
@@ -228,14 +228,14 @@ const ImageLightbox: React.FC<ImageLightboxProps> = ({
       </div>
 
       {/* Mobile hint */}
-      <div className="md:hidden absolute top-16 left-1/2 -translate-x-1/2 z-50 text-white/50 text-[10px] tracking-wide text-center">
+      <div className="md:hidden absolute top-20 left-1/2 -translate-x-1/2 z-50 text-white/50 text-[11px] tracking-wide text-center px-4">
         Pellizca para zoom - Doble tap para ampliar
       </div>
 
       {/* Image container */}
       <div
         ref={containerRef}
-        className="w-full h-full flex items-center justify-center overflow-hidden touch-none"
+        className="w-full h-full flex items-center justify-center overflow-hidden touch-none px-4 py-20 md:py-24"
         onWheel={handleWheel}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
@@ -251,7 +251,7 @@ const ImageLightbox: React.FC<ImageLightboxProps> = ({
           ref={imageRef}
           src={imageUrl}
           alt={alt}
-          className="max-w-[95vw] md:max-w-[90vw] max-h-[80vh] md:max-h-[85vh] object-contain select-none transition-transform duration-100"
+          className="max-w-[90vw] md:max-w-[85vw] max-h-[60vh] md:max-h-[70vh] object-contain select-none transition-transform duration-100"
           style={{
             transform: `scale(${scale}) translate(${position.x / scale}px, ${position.y / scale}px)`,
           }}
