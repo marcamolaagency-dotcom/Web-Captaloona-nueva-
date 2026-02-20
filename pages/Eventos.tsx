@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { EventItem } from '../types';
 import ImageLightbox from '../components/ImageLightbox';
 
@@ -28,12 +28,18 @@ const parseEventDate = (dateStr: string): Date => {
 const Eventos: React.FC<EventosProps> = ({ events }) => {
   const [lightboxImage, setLightboxImage] = useState<{url: string; title: string} | null>(null);
 
-  // Sort events by date: most recent/upcoming first
-  const sortedEvents = [...events].sort((a, b) => {
-    const dateA = parseEventDate(a.date);
-    const dateB = parseEventDate(b.date);
-    return dateB.getTime() - dateA.getTime(); // Descending order (newest first)
-  });
+  // Sort events: upcoming first (closest to today, ascending), then past (most recent, descending)
+  const sortedEvents = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const upcoming = events
+      .filter(e => parseEventDate(e.date) >= today)
+      .sort((a, b) => parseEventDate(a.date).getTime() - parseEventDate(b.date).getTime());
+    const past = events
+      .filter(e => parseEventDate(e.date) < today)
+      .sort((a, b) => parseEventDate(b.date).getTime() - parseEventDate(a.date).getTime());
+    return [...upcoming, ...past];
+  }, [events]);
 
   return (
     <div className="pt-32 pb-24">
@@ -52,7 +58,7 @@ const Eventos: React.FC<EventosProps> = ({ events }) => {
                   className="relative overflow-hidden aspect-video cursor-zoom-in group"
                   onClick={() => setLightboxImage({url: ev.imageUrl, title: ev.title})}
                 >
-                  <img src={ev.imageUrl} alt={ev.title} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" />
+                  <img src={ev.imageUrl} alt={ev.title} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" loading="lazy" />
                   {/* Zoom indicator */}
                   <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
                     <span className="bg-white/90 px-4 py-2 rounded-full text-xs font-medium text-zinc-700 shadow-lg">
