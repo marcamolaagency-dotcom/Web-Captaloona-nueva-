@@ -12,7 +12,8 @@ interface HomeProps {
   events: EventItem[];
 }
 
-// Helper function to parse date strings like "24 NOV 2024" to Date objects
+// Helper function to parse date strings like "24 NOV 2024" to Date objects.
+// Always returns a valid Date — never Invalid Date — so filtering never drops events.
 const parseEventDate = (dateStr: string): Date => {
   const months: Record<string, number> = {
     'ENE': 0, 'FEB': 1, 'MAR': 2, 'ABR': 3, 'MAY': 4, 'JUN': 5,
@@ -25,9 +26,11 @@ const parseEventDate = (dateStr: string): Date => {
     const day = parseInt(parts[0], 10);
     const month = months[parts[1]] ?? 0;
     const year = parseInt(parts[2], 10);
-    return new Date(year, month, day);
+    if (!isNaN(day) && !isNaN(year)) {
+      return new Date(year, month, day);
+    }
   }
-  return new Date(0);
+  return new Date(0); // Fallback to epoch so the event still appears as past
 };
 
 
@@ -54,12 +57,13 @@ const Home: React.FC<HomeProps> = ({ onNavigate, lang, artworks, featuredArtwork
     if (events.length === 0) return null;
     const today = new Date();
     today.setHours(0, 0, 0, 0);
+    const todayMs = today.getTime();
     const upcoming = events
-      .filter(e => parseEventDate(e.date) >= today)
+      .filter(e => parseEventDate(e.date).getTime() >= todayMs)
       .sort((a, b) => parseEventDate(a.date).getTime() - parseEventDate(b.date).getTime());
     if (upcoming.length > 0) return upcoming[0];
     const past = events
-      .filter(e => parseEventDate(e.date) < today)
+      .filter(e => parseEventDate(e.date).getTime() < todayMs)
       .sort((a, b) => parseEventDate(b.date).getTime() - parseEventDate(a.date).getTime());
     return past.length > 0 ? past[0] : null;
   }, [events]);
