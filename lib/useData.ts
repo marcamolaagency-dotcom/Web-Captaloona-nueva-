@@ -112,13 +112,17 @@ export function useData(): UseDataReturn {
       const finalEvents = eventsData.length > 0 ? eventsData : INITIAL_EVENTS;
       const finalOtherEvents = otherEventsData.length > 0 ? otherEventsData : INITIAL_OTHER_EVENTS;
 
-      // Clean up orphaned featured artwork IDs (IDs that don't exist in current artworks)
-      const validFeaturedIds = featuredIds.filter(id =>
-        finalArtworks.some(artwork => artwork.id === id)
-      );
+      // Only clean up orphaned featured artwork IDs when we have real artwork data from the DB.
+      // If artworksData is empty we fell back to INITIAL_ARTWORKS (hardcoded IDs '1','2'), so
+      // filtering against those would incorrectly remove valid Supabase UUIDs and permanently
+      // erase the featured-artworks configuration from Supabase.
+      const hasRealArtworks = artworksData.length > 0;
+      const validFeaturedIds = hasRealArtworks
+        ? featuredIds.filter(id => finalArtworks.some(artwork => artwork.id === id))
+        : featuredIds;
 
-      // If orphaned IDs were found, save the cleaned list
-      if (validFeaturedIds.length !== featuredIds.length) {
+      // Persist the cleaned list only when we are sure we used real artwork data
+      if (hasRealArtworks && validFeaturedIds.length !== featuredIds.length) {
         console.log('Cleaned up orphaned featured artwork IDs');
         await saveFeaturedArtworkIds(validFeaturedIds);
       }

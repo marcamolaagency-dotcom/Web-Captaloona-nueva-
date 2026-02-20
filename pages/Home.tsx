@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Language, Artwork, EventItem } from '../types.ts';
 import { TRANSLATIONS } from '../translations.ts';
 import ImageLightbox from '../components/ImageLightbox.tsx';
@@ -36,27 +36,41 @@ const Home: React.FC<HomeProps> = ({ onNavigate, lang, artworks, featuredArtwork
   const [lightboxImage, setLightboxImage] = useState<{url: string; title: string; artist: string} | null>(null);
 
   // Get Claudio's artworks for the Coach section
-  const claudioArtworks = artworks.filter(a =>
-    a.artistId === 'claudio-fiorentini' ||
-    a.artistName?.toLowerCase().includes('claudio') ||
-    a.artistName?.toLowerCase().includes('fiorentini')
-  );
-  const coachImage = claudioArtworks.length > 0
-    ? claudioArtworks[0].imageUrl
-    : "https://images.unsplash.com/photo-1541701494587-cb58502866ab?q=80&w=1200";
+  const coachImage = useMemo(() => {
+    const claudioArtworks = artworks.filter(a =>
+      a.artistId === 'claudio-fiorentini' ||
+      a.artistName?.toLowerCase().includes('claudio') ||
+      a.artistName?.toLowerCase().includes('fiorentini')
+    );
+    return claudioArtworks.length > 0
+      ? claudioArtworks[0].imageUrl
+      : "https://images.unsplash.com/photo-1541701494587-cb58502866ab?q=80&w=1200";
+  }, [artworks]);
 
-  // Get the most recent/upcoming event for the featured exhibition section
-  const sortedEvents = [...events].sort((a, b) => {
-    const dateA = parseEventDate(a.date);
-    const dateB = parseEventDate(b.date);
-    return dateB.getTime() - dateA.getTime();
-  });
-  const featuredEvent = sortedEvents.length > 0 ? sortedEvents[0] : null;
+  // Get the most relevant event for the featured exhibition section:
+  // - Upcoming events first (closest to today)
+  // - If none upcoming, the most recent past event
+  const featuredEvent = useMemo(() => {
+    if (events.length === 0) return null;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const upcoming = events
+      .filter(e => parseEventDate(e.date) >= today)
+      .sort((a, b) => parseEventDate(a.date).getTime() - parseEventDate(b.date).getTime());
+    if (upcoming.length > 0) return upcoming[0];
+    const past = events
+      .filter(e => parseEventDate(e.date) < today)
+      .sort((a, b) => parseEventDate(b.date).getTime() - parseEventDate(a.date).getTime());
+    return past.length > 0 ? past[0] : null;
+  }, [events]);
 
   // Get featured artworks (selected in admin) or fallback to defaults
-  const featuredArtworks = featuredArtworkIds
-    .map(id => artworks.find(a => a.id === id))
-    .filter((a): a is Artwork => a !== undefined);
+  const featuredArtworks = useMemo(() =>
+    featuredArtworkIds
+      .map(id => artworks.find(a => a.id === id))
+      .filter((a): a is Artwork => a !== undefined),
+    [featuredArtworkIds, artworks]
+  );
 
   // Fallback images if no featured artworks selected
   const defaultFeaturedImages = [
@@ -135,6 +149,7 @@ const Home: React.FC<HomeProps> = ({ onNavigate, lang, artworks, featuredArtwork
                     src={featuredEvent.imageUrl}
                     alt={featuredEvent.title}
                     className="w-full h-full object-cover"
+                    loading="lazy"
                   />
                 </div>
                 {/* Decorative elements - hidden on mobile */}
@@ -197,6 +212,7 @@ const Home: React.FC<HomeProps> = ({ onNavigate, lang, artworks, featuredArtwork
                             src={coachImage}
                             alt="Claudio Fiorentini Works"
                             className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-1000"
+                            loading="lazy"
                         />
                     </div>
                 </div>
@@ -225,6 +241,7 @@ const Home: React.FC<HomeProps> = ({ onNavigate, lang, artworks, featuredArtwork
                       src={artwork.imageUrl}
                       alt={artwork.title}
                       className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110 grayscale group-hover:grayscale-0"
+                      loading="lazy"
                     />
                     {/* Zoom indicator */}
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
@@ -254,6 +271,7 @@ const Home: React.FC<HomeProps> = ({ onNavigate, lang, artworks, featuredArtwork
                       src={url}
                       alt={`Art piece ${i + 1}`}
                       className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110 grayscale group-hover:grayscale-0"
+                      loading="lazy"
                     />
                     {/* Zoom indicator */}
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
@@ -334,6 +352,7 @@ const Home: React.FC<HomeProps> = ({ onNavigate, lang, artworks, featuredArtwork
                   src="/images/Innervision-home.jpg"
                   alt="Visualiza el arte en tu espacio"
                   className="w-full h-full object-cover"
+                  loading="lazy"
                 />
                 {/* Glowing effect */}
                 <div className="absolute inset-0 bg-gradient-to-t from-zinc-900/60 via-transparent to-transparent"></div>
