@@ -10,6 +10,7 @@ import {
   deleteArtwork,
   getEvents,
   createEvent,
+  updateEvent,
   deleteEvent,
   getOtherEvents,
   createOtherEvent,
@@ -42,6 +43,7 @@ interface UseDataReturn {
   removeArtwork: (id: string) => Promise<void>;
 
   addEvent: (event: Omit<EventItem, 'id'>) => Promise<void>;
+  editEvent: (id: string, updates: Partial<EventItem>) => Promise<void>;
   removeEvent: (id: string) => Promise<void>;
 
   addOtherEvent: (event: Omit<OtherEvent, 'id'>) => Promise<void>;
@@ -215,6 +217,13 @@ export function useData(): UseDataReturn {
     }
   };
 
+  const editEvent = async (id: string, updates: Partial<EventItem>) => {
+    await updateEvent(id, updates);
+    setEvents((prev) =>
+      prev.map((e) => (e.id === id ? { ...e, ...updates } : e))
+    );
+  };
+
   const removeEvent = async (id: string) => {
     await deleteEvent(id);
     setEvents((prev) => prev.filter((e) => e.id !== id));
@@ -254,6 +263,7 @@ export function useData(): UseDataReturn {
     editArtwork,
     removeArtwork,
     addEvent,
+    editEvent,
     removeEvent,
     addOtherEvent,
     removeOtherEvent,

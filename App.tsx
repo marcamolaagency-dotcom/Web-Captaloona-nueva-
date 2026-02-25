@@ -30,8 +30,10 @@ const App: React.FC = () => {
     editArtist,
     removeArtist,
     addArtwork,
+    editArtwork,
     removeArtwork,
     addEvent,
+    editEvent,
     removeEvent,
     addOtherEvent,
     removeOtherEvent,
@@ -67,8 +69,10 @@ const App: React.FC = () => {
           artists={artists}
           featuredArtworkIds={featuredArtworkIds}
           onAddArtwork={addArtwork}
+          onEditArtwork={editArtwork}
           onRemoveArtwork={removeArtwork}
           onAddEvent={addEvent}
+          onEditEvent={editEvent}
           onRemoveEvent={removeEvent}
           onAddOtherEvent={addOtherEvent}
           onRemoveOtherEvent={removeOtherEvent}
