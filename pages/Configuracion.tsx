@@ -208,7 +208,9 @@ const Configuracion: React.FC<ConfiguracionProps> = ({
                     price: Number(form.price.value),
                     category: form.category.value,
                     status: 'disponible',
-                    imageUrl: artworkImageUrl || 'https://images.unsplash.com/photo-1541963463532-d68292c34b19'
+                    imageUrl: artworkImageUrl || 'https://images.unsplash.com/photo-1541963463532-d68292c34b19',
+                    style: form.style.value || undefined,
+                    isPermanent: form.isPermanent.checked,
                 };
                 await onAddArtwork(newArt);
                 form.reset();
@@ -231,6 +233,12 @@ const Configuracion: React.FC<ConfiguracionProps> = ({
               </div>
               <input name="medium" placeholder="Técnica" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" />
               <input name="size" placeholder="Medidas (ej: 100x100 cm)" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" />
+              <input name="style" placeholder="Estilo (ej: Abstracto, Figurativo...)" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" />
+
+              <label className="flex items-center gap-3 py-2 cursor-pointer">
+                <input type="checkbox" name="isPermanent" className="w-4 h-4 accent-emerald-600" />
+                <span className="text-sm text-zinc-600">Obra de colección permanente</span>
+              </label>
 
               {/* Image Upload Component */}
               <ImageUpload
@@ -279,7 +287,9 @@ const Configuracion: React.FC<ConfiguracionProps> = ({
                     date: form.date.value,
                     location: form.location.value,
                     description: form.description.value,
-                    imageUrl: eventImageUrl || 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30'
+                    imageUrl: eventImageUrl || 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30',
+                    catalogUrl: form.catalogUrl.value || undefined,
+                    videoUrl: form.videoUrl.value || undefined,
                 };
                 await onAddEvent(newEv);
                 form.reset();
@@ -290,6 +300,8 @@ const Configuracion: React.FC<ConfiguracionProps> = ({
               <input name="date" placeholder="Fecha (ej: 12 DIC 2024)" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" required />
               <input name="location" placeholder="Sede" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" />
               <textarea name="description" placeholder="Resumen corto" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm h-32 resize-none" />
+              <input name="catalogUrl" type="url" placeholder="Link al catálogo (opcional)" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" />
+              <input name="videoUrl" type="url" placeholder="Link al video (opcional)" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" />
 
               {/* Image Upload Component */}
               <ImageUpload

@@ -90,9 +90,15 @@ CREATE TABLE artworks (
     image_url TEXT NOT NULL,
     category artwork_category NOT NULL DEFAULT 'Pintura',
     status artwork_status NOT NULL DEFAULT 'disponible',
+    style TEXT,
+    is_permanent BOOLEAN NOT NULL DEFAULT FALSE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
+
+-- ALTER TABLE for existing installations:
+-- ALTER TABLE artworks ADD COLUMN style TEXT;
+-- ALTER TABLE artworks ADD COLUMN is_permanent BOOLEAN NOT NULL DEFAULT FALSE;
 
 -- Create indexes
 CREATE INDEX idx_artworks_artist ON artworks(artist_id);
@@ -112,9 +118,15 @@ CREATE TABLE events (
     image_url TEXT NOT NULL,
     event_type event_type NOT NULL DEFAULT 'exposicion',
     category TEXT,
+    catalog_url TEXT,
+    video_url TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
+
+-- ALTER TABLE for existing installations:
+-- ALTER TABLE events ADD COLUMN catalog_url TEXT;
+-- ALTER TABLE events ADD COLUMN video_url TEXT;
 
 -- Create indexes
 CREATE INDEX idx_events_type ON events(event_type);

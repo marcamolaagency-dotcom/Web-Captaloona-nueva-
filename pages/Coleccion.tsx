@@ -12,19 +12,18 @@ interface ColeccionProps {
 
 const Coleccion: React.FC<ColeccionProps> = ({ artworks, artists = [], lang }) => {
   const [selectedArtistProfile, setSelectedArtistProfile] = useState<Artist | null>(null);
-  const [filterCategory, setFilterCategory] = useState('all');
+  const [filterMode, setFilterMode] = useState<'permanentes' | 'artista'>('permanentes');
   const [filterArtist, setFilterArtist] = useState('all');
   const [showArtistSelector, setShowArtistSelector] = useState(false);
   const [lightboxImage, setLightboxImage] = useState<{url: string; title: string; artist: string} | null>(null);
 
   const t = TRANSLATIONS[lang].collection;
 
-  // Categories with translation keys
-  const categoryKeys = ['all', 'Pintura', 'Escultura', 'Poesía', 'Narrativa', 'artist'];
-  const getCategoryLabel = (key: string) => {
-    if (key === 'all') return t.all;
-    if (key === 'artist') return t.artist;
-    return key;
+  // Filter modes
+  const filterKeys: Array<'permanentes' | 'artista'> = ['permanentes', 'artista'];
+  const getFilterLabel = (key: 'permanentes' | 'artista') => {
+    if (key === 'permanentes') return t.permanentWorks;
+    return t.artist;
   };
 
   // Build complete artist list from both props and artworks
@@ -60,9 +59,13 @@ const Coleccion: React.FC<ColeccionProps> = ({ artworks, artists = [], lang }) =
   }, [artworks, allArtists]);
 
   const filteredArt = artworks.filter(art => {
-    const matchCategory = filterCategory === 'all' || art.category === filterCategory;
-    const matchArtist = filterArtist === 'all' || art.artistId === filterArtist;
-    return matchCategory && matchArtist;
+    if (filterMode === 'permanentes') {
+      const matchPerm = art.isPermanent === true;
+      const matchArtist = filterArtist === 'all' || art.artistId === filterArtist;
+      return matchPerm && matchArtist;
+    }
+    // mode === 'artista'
+    return filterArtist === 'all' || art.artistId === filterArtist;
   });
 
   // Find artist by ID or by name (fallback)
@@ -156,30 +159,27 @@ const Coleccion: React.FC<ColeccionProps> = ({ artworks, artists = [], lang }) =
 
         {/* Filters Section */}
         <div className="mb-16 space-y-6">
-          {/* Category Filter */}
           <div className="border-b border-zinc-100 pb-6">
-            <h3 className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-4 text-center">{t.category}</h3>
             <div className="flex justify-center gap-3 flex-wrap">
-              {categoryKeys.map((c) => (
+              {filterKeys.map((key) => (
                 <button
-                  key={c}
+                  key={key}
                   onClick={() => {
-                    if (c === 'artist') {
+                    setFilterMode(key);
+                    if (key === 'artista') {
                       setShowArtistSelector(true);
-                      setFilterCategory('all');
                     } else {
                       setShowArtistSelector(false);
-                      setFilterCategory(c);
                       setFilterArtist('all');
                     }
                   }}
                   className={`px-6 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all ${
-                    (c === 'artist' && showArtistSelector) || (c !== 'artist' && filterCategory === c && !showArtistSelector)
+                    filterMode === key
                       ? 'bg-zinc-900 text-white'
                       : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'
                   }`}
                 >
-                  {getCategoryLabel(c)}
+                  {getFilterLabel(key)}
                 </button>
               ))}
             </div>
@@ -259,8 +259,9 @@ const Coleccion: React.FC<ColeccionProps> = ({ artworks, artists = [], lang }) =
               <p className="text-zinc-400 text-lg">{t.noWorksFound}</p>
               <button
                 onClick={() => {
-                  setFilterCategory('all');
+                  setFilterMode('permanentes');
                   setFilterArtist('all');
+                  setShowArtistSelector(false);
                 }}
                 className="mt-4 text-emerald-600 text-sm font-bold uppercase tracking-widest hover:text-emerald-700"
               >
@@ -309,9 +310,11 @@ const ArtGrid: React.FC<ArtGridProps> = ({ artworks, onArtistClick, findArtist, 
             <span className={`px-4 py-1 text-[10px] font-bold uppercase tracking-widest shadow-sm ${art.status === 'disponible' ? 'bg-white text-emerald-600' : 'bg-zinc-900 text-white opacity-90'}`}>
               {art.status === 'disponible' ? `${art.price}€` : t.sold}
             </span>
-            <span className="bg-white/80 px-3 py-1 text-[8px] uppercase tracking-tighter text-zinc-500 backdrop-blur-md">
-              {art.category}
-            </span>
+            {(art.style || art.category) && (
+              <span className="bg-white/80 px-3 py-1 text-[8px] uppercase tracking-tighter text-zinc-500 backdrop-blur-md">
+                {art.style || art.category}
+              </span>
+            )}
           </div>
           {/* Zoom indicator on hover */}
           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">

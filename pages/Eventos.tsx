@@ -81,9 +81,30 @@ const Eventos: React.FC<EventosProps> = ({ events }) => {
                 <p className="text-zinc-500 leading-relaxed text-lg">
                   {ev.description}
                 </p>
-                <button className="px-10 py-4 border border-zinc-900 text-[10px] uppercase font-bold tracking-[0.2em] hover:bg-zinc-900 hover:text-white transition-all">
-                  Más Información
-                </button>
+                {(ev.catalogUrl || ev.videoUrl) && (
+                  <div className="flex flex-wrap gap-3 pt-2">
+                    {ev.catalogUrl && (
+                      <a
+                        href={ev.catalogUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 px-8 py-4 border border-zinc-900 text-[10px] uppercase font-bold tracking-[0.2em] hover:bg-zinc-900 hover:text-white transition-all"
+                      >
+                        Ver Catálogo
+                      </a>
+                    )}
+                    {ev.videoUrl && (
+                      <a
+                        href={ev.videoUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 px-8 py-4 bg-emerald-600 text-white text-[10px] uppercase font-bold tracking-[0.2em] hover:bg-emerald-700 transition-all"
+                      >
+                        Ver Video
+                      </a>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           ))}
