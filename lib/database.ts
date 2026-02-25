@@ -297,8 +297,15 @@ export async function createArtwork(artwork: Omit<LocalArtwork, 'id'>): Promise<
 }
 
 export async function updateArtwork(id: string, updates: Partial<LocalArtwork>): Promise<boolean> {
+  // Always update localStorage first
+  const currentArtworks = getFromLocalStorage<LocalArtwork[]>(STORAGE_KEYS.artworks, INITIAL_ARTWORKS);
+  const updatedArtworks = currentArtworks.map(a =>
+    a.id === id ? { ...a, ...updates } : a
+  );
+  saveToLocalStorage(STORAGE_KEYS.artworks, updatedArtworks);
+
   if (!isSupabaseConfigured()) {
-    return false;
+    return true;
   }
 
   const { error } = await supabase
@@ -312,11 +319,46 @@ export async function updateArtwork(id: string, updates: Partial<LocalArtwork>):
       image_url: updates.imageUrl,
       category: updates.category,
       status: updates.status,
+      is_permanent: updates.isPermanent,
+      style: updates.style || null,
     })
     .eq('id', id);
 
   if (error) {
     console.error('Error updating artwork:', error);
+    return false;
+  }
+
+  return true;
+}
+
+export async function updateEvent(id: string, updates: Partial<EventItem>): Promise<boolean> {
+  // Always update localStorage first
+  const currentEvents = getFromLocalStorage<EventItem[]>(STORAGE_KEYS.events, INITIAL_EVENTS);
+  const updatedEvents = currentEvents.map(e =>
+    e.id === id ? { ...e, ...updates } : e
+  );
+  saveToLocalStorage(STORAGE_KEYS.events, updatedEvents);
+
+  if (!isSupabaseConfigured()) {
+    return true;
+  }
+
+  const { error } = await supabase
+    .from('events')
+    .update({
+      title: updates.title,
+      date: updates.date,
+      location: updates.location,
+      description: updates.description,
+      image_url: updates.imageUrl,
+      catalog_url: updates.catalogUrl || null,
+      video_url: updates.videoUrl || null,
+    })
+    .eq('id', id);
+
+  if (error) {
+    console.error('Error updating event:', error);
     return false;
   }
 

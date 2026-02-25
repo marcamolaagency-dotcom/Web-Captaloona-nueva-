@@ -12,8 +12,10 @@ interface ConfiguracionProps {
   artists: Artist[];
   featuredArtworkIds: string[];
   onAddArtwork: (artwork: Omit<Artwork, 'id'>) => Promise<void>;
+  onEditArtwork: (id: string, updates: Partial<Artwork>) => Promise<void>;
   onRemoveArtwork: (id: string) => Promise<void>;
   onAddEvent: (event: Omit<EventItem, 'id'>) => Promise<void>;
+  onEditEvent: (id: string, updates: Partial<EventItem>) => Promise<void>;
   onRemoveEvent: (id: string) => Promise<void>;
   onAddOtherEvent: (event: Omit<OtherEvent, 'id'>) => Promise<void>;
   onRemoveOtherEvent: (id: string) => Promise<void>;
@@ -25,11 +27,20 @@ interface ConfiguracionProps {
 
 const Configuracion: React.FC<ConfiguracionProps> = ({
   artworks, events, otherEvents, artists, featuredArtworkIds,
-  onAddArtwork, onRemoveArtwork, onAddEvent, onRemoveEvent,
+  onAddArtwork, onEditArtwork, onRemoveArtwork,
+  onAddEvent, onEditEvent, onRemoveEvent,
   onAddOtherEvent, onRemoveOtherEvent, onAddArtist, onEditArtist, onRemoveArtist,
   onUpdateFeaturedArtworkIds
 }) => {
   const [isSaving, setIsSaving] = useState(false);
+
+  // Artwork editing state
+  const [editingArtwork, setEditingArtwork] = useState<Artwork | null>(null);
+  const [editArtworkImageUrl, setEditArtworkImageUrl] = useState('');
+
+  // Event editing state
+  const [editingEvent, setEditingEvent] = useState<EventItem | null>(null);
+  const [editEventImageUrl, setEditEventImageUrl] = useState('');
 
   // Artist editing state
   const [editingArtist, setEditingArtist] = useState<Artist | null>(null);
@@ -194,78 +205,148 @@ const Configuracion: React.FC<ConfiguracionProps> = ({
       {activeTab === 'obras' && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-16">
           <div className="lg:col-span-1 space-y-8 bg-zinc-50 p-8 rounded-sm">
-            <h2 className="text-xl serif italic mb-6">Añadir Nueva Obra</h2>
-            <form className="space-y-4" onSubmit={async (e) => {
-                e.preventDefault();
-                setIsSaving(true);
-                const form = e.target as any;
-                const newArt: Omit<Artwork, 'id'> = {
-                    title: form.title.value,
-                    artistId: form.artistId.value,
-                    artistName: artists.find(a => a.id === form.artistId.value)?.name || '',
-                    medium: form.medium.value,
-                    size: form.size.value,
-                    price: Number(form.price.value),
-                    category: form.category.value,
-                    status: 'disponible',
-                    imageUrl: artworkImageUrl || 'https://images.unsplash.com/photo-1541963463532-d68292c34b19',
-                    style: form.style.value || undefined,
-                    isPermanent: form.isPermanent.checked,
-                };
-                await onAddArtwork(newArt);
-                form.reset();
-                resetArtworkForm();
-                setIsSaving(false);
-            }}>
-              <input name="title" placeholder="Título de la obra" className="w-full p-3 border-b bg-transparent border-zinc-200 focus:outline-none focus:border-emerald-600 text-sm" required />
-              <select name="artistId" className="w-full p-3 border-b bg-transparent border-zinc-200 focus:outline-none text-sm" required>
-                <option value="">Seleccionar Artista</option>
-                {artists.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
-              </select>
-              <div className="grid grid-cols-2 gap-4">
-                <input name="price" type="number" placeholder="Precio (€)" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" />
-                <select name="category" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm">
+            <h2 className="text-xl serif italic mb-6">
+              {editingArtwork ? 'Editar Obra' : 'Añadir Nueva Obra'}
+            </h2>
+
+            {editingArtwork ? (
+              /* ── EDIT ARTWORK FORM ── */
+              <form className="space-y-4" onSubmit={async (e) => {
+                  e.preventDefault();
+                  setIsSaving(true);
+                  const form = e.target as any;
+                  const updates: Partial<Artwork> = {
+                      title: form.title.value,
+                      artistId: form.artistId.value,
+                      artistName: artists.find(a => a.id === form.artistId.value)?.name || editingArtwork.artistName,
+                      medium: form.medium.value,
+                      size: form.size.value,
+                      price: Number(form.price.value),
+                      category: form.category.value,
+                      imageUrl: editArtworkImageUrl || editingArtwork.imageUrl,
+                      style: form.style.value || undefined,
+                      isPermanent: form.isPermanent.checked,
+                  };
+                  await onEditArtwork(editingArtwork.id, updates);
+                  setEditingArtwork(null);
+                  setEditArtworkImageUrl('');
+                  setIsSaving(false);
+              }}>
+                <input name="title" defaultValue={editingArtwork.title} placeholder="Título de la obra" className="w-full p-3 border-b bg-transparent border-zinc-200 focus:outline-none focus:border-emerald-600 text-sm" required />
+                <select name="artistId" defaultValue={editingArtwork.artistId} className="w-full p-3 border-b bg-transparent border-zinc-200 focus:outline-none text-sm" required>
+                  <option value="">Seleccionar Artista</option>
+                  {artists.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
+                </select>
+                <div className="grid grid-cols-2 gap-4">
+                  <input name="price" type="number" defaultValue={editingArtwork.price} placeholder="Precio (€)" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" />
+                  <select name="category" defaultValue={editingArtwork.category} className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm">
                     <option>Pintura</option>
                     <option>Escultura</option>
                     <option>Poesía</option>
                     <option>Narrativa</option>
+                  </select>
+                </div>
+                <input name="medium" defaultValue={editingArtwork.medium} placeholder="Técnica" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" />
+                <input name="size" defaultValue={editingArtwork.size} placeholder="Medidas (ej: 100x100 cm)" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" />
+                <input name="style" defaultValue={editingArtwork.style || ''} placeholder="Estilo (ej: Abstracto, Figurativo...)" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" />
+                <label className="flex items-center gap-3 py-2 cursor-pointer">
+                  <input type="checkbox" name="isPermanent" defaultChecked={editingArtwork.isPermanent} className="w-4 h-4 accent-emerald-600" />
+                  <span className="text-sm text-zinc-600">Obra de colección permanente</span>
+                </label>
+                <ImageUpload
+                  onImageUploaded={setEditArtworkImageUrl}
+                  currentImageUrl={editArtworkImageUrl || editingArtwork.imageUrl}
+                  folder="artworks"
+                  label="Imagen de la obra"
+                />
+                <div className="flex gap-2">
+                  <button type="submit" disabled={isSaving} className="flex-1 bg-emerald-600 text-white py-4 text-[9px] font-bold uppercase tracking-[0.3em] hover:bg-emerald-700 transition-all disabled:opacity-50">
+                    {isSaving ? 'Guardando...' : 'Guardar Cambios'}
+                  </button>
+                  <button type="button" onClick={() => { setEditingArtwork(null); setEditArtworkImageUrl(''); }} className="px-6 bg-zinc-200 text-zinc-600 py-4 text-[9px] font-bold uppercase tracking-[0.3em] hover:bg-zinc-300 transition-all">
+                    Cancelar
+                  </button>
+                </div>
+              </form>
+            ) : (
+              /* ── ADD ARTWORK FORM ── */
+              <form className="space-y-4" onSubmit={async (e) => {
+                  e.preventDefault();
+                  setIsSaving(true);
+                  const form = e.target as any;
+                  const newArt: Omit<Artwork, 'id'> = {
+                      title: form.title.value,
+                      artistId: form.artistId.value,
+                      artistName: artists.find(a => a.id === form.artistId.value)?.name || '',
+                      medium: form.medium.value,
+                      size: form.size.value,
+                      price: Number(form.price.value),
+                      category: form.category.value,
+                      status: 'disponible',
+                      imageUrl: artworkImageUrl || 'https://images.unsplash.com/photo-1541963463532-d68292c34b19',
+                      style: form.style.value || undefined,
+                      isPermanent: form.isPermanent.checked,
+                  };
+                  await onAddArtwork(newArt);
+                  form.reset();
+                  resetArtworkForm();
+                  setIsSaving(false);
+              }}>
+                <input name="title" placeholder="Título de la obra" className="w-full p-3 border-b bg-transparent border-zinc-200 focus:outline-none focus:border-emerald-600 text-sm" required />
+                <select name="artistId" className="w-full p-3 border-b bg-transparent border-zinc-200 focus:outline-none text-sm" required>
+                  <option value="">Seleccionar Artista</option>
+                  {artists.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
                 </select>
-              </div>
-              <input name="medium" placeholder="Técnica" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" />
-              <input name="size" placeholder="Medidas (ej: 100x100 cm)" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" />
-              <input name="style" placeholder="Estilo (ej: Abstracto, Figurativo...)" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" />
-
-              <label className="flex items-center gap-3 py-2 cursor-pointer">
-                <input type="checkbox" name="isPermanent" className="w-4 h-4 accent-emerald-600" />
-                <span className="text-sm text-zinc-600">Obra de colección permanente</span>
-              </label>
-
-              {/* Image Upload Component */}
-              <ImageUpload
-                onImageUploaded={setArtworkImageUrl}
-                currentImageUrl={artworkImageUrl}
-                folder="artworks"
-                label="Imagen de la obra"
-              />
-
-              <button disabled={isSaving} className="w-full bg-zinc-900 text-white py-4 text-[9px] font-bold uppercase tracking-[0.3em] hover:bg-emerald-600 transition-all disabled:opacity-50">
-                {isSaving ? 'Guardando...' : 'Añadir a Colección'}
-              </button>
-            </form>
+                <div className="grid grid-cols-2 gap-4">
+                  <input name="price" type="number" placeholder="Precio (€)" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" />
+                  <select name="category" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm">
+                    <option>Pintura</option>
+                    <option>Escultura</option>
+                    <option>Poesía</option>
+                    <option>Narrativa</option>
+                  </select>
+                </div>
+                <input name="medium" placeholder="Técnica" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" />
+                <input name="size" placeholder="Medidas (ej: 100x100 cm)" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" />
+                <input name="style" placeholder="Estilo (ej: Abstracto, Figurativo...)" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" />
+                <label className="flex items-center gap-3 py-2 cursor-pointer">
+                  <input type="checkbox" name="isPermanent" className="w-4 h-4 accent-emerald-600" />
+                  <span className="text-sm text-zinc-600">Obra de colección permanente</span>
+                </label>
+                <ImageUpload
+                  onImageUploaded={setArtworkImageUrl}
+                  currentImageUrl={artworkImageUrl}
+                  folder="artworks"
+                  label="Imagen de la obra"
+                />
+                <button disabled={isSaving} className="w-full bg-zinc-900 text-white py-4 text-[9px] font-bold uppercase tracking-[0.3em] hover:bg-emerald-600 transition-all disabled:opacity-50">
+                  {isSaving ? 'Guardando...' : 'Añadir a Colección'}
+                </button>
+              </form>
+            )}
           </div>
           <div className="lg:col-span-2 space-y-4">
             <h2 className="text-xl serif italic mb-6">Listado de Obras ({artworks.length})</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {artworks.map(art => (
-                <div key={art.id} className="flex gap-4 p-4 border border-zinc-100 items-center bg-white shadow-sm hover:shadow-md transition-shadow">
-                  <img src={art.imageUrl} className="w-16 h-16 object-cover grayscale" />
-                  <div className="flex-grow">
-                    <p className="font-bold text-xs uppercase tracking-widest">{art.title}</p>
+                <div key={art.id} className={`flex gap-4 p-4 border items-center bg-white shadow-sm hover:shadow-md transition-shadow ${editingArtwork?.id === art.id ? 'border-emerald-500 bg-emerald-50' : 'border-zinc-100'}`}>
+                  <img src={art.imageUrl} className="w-16 h-16 object-cover grayscale flex-shrink-0" />
+                  <div className="flex-grow min-w-0">
+                    <p className="font-bold text-xs uppercase tracking-widest truncate">{art.title}</p>
                     <p className="text-[10px] text-zinc-400">{art.artistName}</p>
+                    {art.isPermanent && <span className="text-[9px] text-emerald-600 font-bold uppercase tracking-widest">Permanente</span>}
                   </div>
-                  <button onClick={() => onRemoveArtwork(art.id)} className="text-zinc-300 hover:text-red-500 p-2">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                  </button>
+                  <div className="flex gap-2 flex-shrink-0">
+                    <button
+                      onClick={() => { setEditingArtwork(art); setEditArtworkImageUrl(art.imageUrl); }}
+                      className="text-zinc-400 hover:text-emerald-600 text-xs font-medium transition-colors"
+                    >
+                      Editar
+                    </button>
+                    <button onClick={() => onRemoveArtwork(art.id)} className="text-zinc-300 hover:text-red-500 p-1">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -277,57 +358,115 @@ const Configuracion: React.FC<ConfiguracionProps> = ({
       {activeTab === 'exposiciones' && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-16">
           <div className="lg:col-span-1 space-y-8 bg-zinc-50 p-8 rounded-sm">
-            <h2 className="text-xl serif italic mb-6">Nueva Exposición</h2>
-            <form className="space-y-4" onSubmit={async (e) => {
-                e.preventDefault();
-                setIsSaving(true);
-                const form = e.target as any;
-                const newEv: Omit<EventItem, 'id'> = {
-                    title: form.title.value,
-                    date: form.date.value,
-                    location: form.location.value,
-                    description: form.description.value,
-                    imageUrl: eventImageUrl || 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30',
-                    catalogUrl: form.catalogUrl.value || undefined,
-                    videoUrl: form.videoUrl.value || undefined,
-                };
-                await onAddEvent(newEv);
-                form.reset();
-                resetEventForm();
-                setIsSaving(false);
-            }}>
-              <input name="title" placeholder="Nombre de la expo" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" required />
-              <input name="date" placeholder="Fecha (ej: 12 DIC 2024)" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" required />
-              <input name="location" placeholder="Sede" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" />
-              <textarea name="description" placeholder="Resumen corto" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm h-32 resize-none" />
-              <input name="catalogUrl" type="url" placeholder="Link al catálogo (opcional)" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" />
-              <input name="videoUrl" type="url" placeholder="Link al video (opcional)" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" />
+            <h2 className="text-xl serif italic mb-6">
+              {editingEvent ? 'Editar Exposición' : 'Nueva Exposición'}
+            </h2>
 
-              {/* Image Upload Component */}
-              <ImageUpload
-                onImageUploaded={setEventImageUrl}
-                currentImageUrl={eventImageUrl}
-                folder="events"
-                label="Imagen de la exposición"
-              />
-
-              <button disabled={isSaving} className="w-full bg-zinc-900 text-white py-4 text-[9px] font-bold uppercase tracking-[0.3em] hover:bg-emerald-600 transition-all disabled:opacity-50">
-                {isSaving ? 'Guardando...' : 'Publicar Exposición'}
-              </button>
-            </form>
+            {editingEvent ? (
+              /* ── EDIT EVENT FORM ── */
+              <form className="space-y-4" onSubmit={async (e) => {
+                  e.preventDefault();
+                  setIsSaving(true);
+                  const form = e.target as any;
+                  const updates: Partial<EventItem> = {
+                      title: form.title.value,
+                      date: form.date.value,
+                      location: form.location.value,
+                      description: form.description.value,
+                      imageUrl: editEventImageUrl || editingEvent.imageUrl,
+                      catalogUrl: form.catalogUrl.value || undefined,
+                      videoUrl: form.videoUrl.value || undefined,
+                  };
+                  await onEditEvent(editingEvent.id, updates);
+                  setEditingEvent(null);
+                  setEditEventImageUrl('');
+                  setIsSaving(false);
+              }}>
+                <input name="title" defaultValue={editingEvent.title} placeholder="Nombre de la expo" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" required />
+                <input name="date" defaultValue={editingEvent.date} placeholder="Fecha (ej: 12 DIC 2024)" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" required />
+                <input name="location" defaultValue={editingEvent.location} placeholder="Sede" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" />
+                <textarea name="description" defaultValue={editingEvent.description} placeholder="Resumen corto" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm h-32 resize-none" />
+                <input name="catalogUrl" type="url" defaultValue={editingEvent.catalogUrl || ''} placeholder="Link al catálogo (opcional)" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" />
+                <input name="videoUrl" type="url" defaultValue={editingEvent.videoUrl || ''} placeholder="Link al video (opcional)" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" />
+                <ImageUpload
+                  onImageUploaded={setEditEventImageUrl}
+                  currentImageUrl={editEventImageUrl || editingEvent.imageUrl}
+                  folder="events"
+                  label="Imagen de la exposición"
+                />
+                <div className="flex gap-2">
+                  <button type="submit" disabled={isSaving} className="flex-1 bg-emerald-600 text-white py-4 text-[9px] font-bold uppercase tracking-[0.3em] hover:bg-emerald-700 transition-all disabled:opacity-50">
+                    {isSaving ? 'Guardando...' : 'Guardar Cambios'}
+                  </button>
+                  <button type="button" onClick={() => { setEditingEvent(null); setEditEventImageUrl(''); }} className="px-6 bg-zinc-200 text-zinc-600 py-4 text-[9px] font-bold uppercase tracking-[0.3em] hover:bg-zinc-300 transition-all">
+                    Cancelar
+                  </button>
+                </div>
+              </form>
+            ) : (
+              /* ── ADD EVENT FORM ── */
+              <form className="space-y-4" onSubmit={async (e) => {
+                  e.preventDefault();
+                  setIsSaving(true);
+                  const form = e.target as any;
+                  const newEv: Omit<EventItem, 'id'> = {
+                      title: form.title.value,
+                      date: form.date.value,
+                      location: form.location.value,
+                      description: form.description.value,
+                      imageUrl: eventImageUrl || 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30',
+                      catalogUrl: form.catalogUrl.value || undefined,
+                      videoUrl: form.videoUrl.value || undefined,
+                  };
+                  await onAddEvent(newEv);
+                  form.reset();
+                  resetEventForm();
+                  setIsSaving(false);
+              }}>
+                <input name="title" placeholder="Nombre de la expo" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" required />
+                <input name="date" placeholder="Fecha (ej: 12 DIC 2024)" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" required />
+                <input name="location" placeholder="Sede" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" />
+                <textarea name="description" placeholder="Resumen corto" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm h-32 resize-none" />
+                <input name="catalogUrl" type="url" placeholder="Link al catálogo (opcional)" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" />
+                <input name="videoUrl" type="url" placeholder="Link al video (opcional)" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" />
+                <ImageUpload
+                  onImageUploaded={setEventImageUrl}
+                  currentImageUrl={eventImageUrl}
+                  folder="events"
+                  label="Imagen de la exposición"
+                />
+                <button disabled={isSaving} className="w-full bg-zinc-900 text-white py-4 text-[9px] font-bold uppercase tracking-[0.3em] hover:bg-emerald-600 transition-all disabled:opacity-50">
+                  {isSaving ? 'Guardando...' : 'Publicar Exposición'}
+                </button>
+              </form>
+            )}
           </div>
           <div className="lg:col-span-2 space-y-4">
              {events.map(ev => (
-                <div key={ev.id} className="flex gap-6 p-6 border border-zinc-100 bg-white items-start">
-                   <img src={ev.imageUrl} className="w-24 h-24 object-cover grayscale" />
-                   <div className="flex-grow">
+                <div key={ev.id} className={`flex gap-6 p-6 border bg-white items-start ${editingEvent?.id === ev.id ? 'border-emerald-500 bg-emerald-50' : 'border-zinc-100'}`}>
+                   <img src={ev.imageUrl} className="w-24 h-24 object-cover grayscale flex-shrink-0" />
+                   <div className="flex-grow min-w-0">
                       <p className="text-[10px] text-emerald-600 font-bold tracking-widest uppercase mb-1">{ev.date}</p>
                       <h3 className="text-xl serif italic">{ev.title}</h3>
                       <p className="text-xs text-zinc-400 mt-2">{ev.location}</p>
+                      {(ev.catalogUrl || ev.videoUrl) && (
+                        <div className="flex gap-2 mt-2">
+                          {ev.catalogUrl && <span className="text-[9px] text-zinc-400 border border-zinc-200 px-2 py-0.5 rounded-sm">Catálogo</span>}
+                          {ev.videoUrl && <span className="text-[9px] text-emerald-600 border border-emerald-200 px-2 py-0.5 rounded-sm">Video</span>}
+                        </div>
+                      )}
                    </div>
-                   <button onClick={() => onRemoveEvent(ev.id)} className="text-zinc-300 hover:text-red-500">
-                     Eliminar
-                   </button>
+                   <div className="flex gap-3 flex-shrink-0">
+                     <button
+                       onClick={() => { setEditingEvent(ev); setEditEventImageUrl(ev.imageUrl); }}
+                       className="text-zinc-400 hover:text-emerald-600 text-sm font-medium transition-colors"
+                     >
+                       Editar
+                     </button>
+                     <button onClick={() => onRemoveEvent(ev.id)} className="text-zinc-300 hover:text-red-500 text-sm">
+                       Eliminar
+                     </button>
+                   </div>
                 </div>
              ))}
           </div>
