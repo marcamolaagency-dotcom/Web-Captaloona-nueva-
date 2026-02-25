@@ -15,7 +15,7 @@ export const TRANSLATIONS: Record<Language, any> = {
     },
     home: {
       heroSub: 'LOONA CONTEMPORARY • ART CONCEPT',
-      heroTitle: 'Donde el arte anticipa la vida.',
+      heroTitle: 'El arte es un cultivo de ideas que anticipa el pensamiento.',
       heroDesc: 'Una plataforma curatorial dirigida por Claudio Fiorentini que conecta la introspección artística con el coleccionismo contemporáneo.',
       bannerProfiler: 'Descubre tu perfil artístico con nuestro Art Profiler',
       bannerBtn: 'Iniciar Experiencia',
@@ -39,7 +39,7 @@ export const TRANSLATIONS: Record<Language, any> = {
       title: 'Claudio Fiorentini',
       roleSubtitle: 'El filósofo que enseña a los artistas a escuchar su abismo',
       bio1: 'Claudio Fiorentini no es un galerista tradicional. Es un <strong>coach de artistas</strong> que les ayuda a encontrar y seguir su voz interior más auténtica, incluso cuando esa voz los lleva por caminos que el mercado del arte no comprende todavía.',
-      bio2: 'Antes de abrir Capataloona Art en Madrid, Claudio dedicó décadas a estudiar la relación entre el arte y el pensamiento humano. Escritor prolífico, ha desarrollado una visión única: <em>el arte verdadero no decora, transforma conciencias</em>. No sigue tendencias — las anticipa. No busca aprobación — explora lo "no expresado" que bulle dentro de la humanidad.',
+      bio2: 'Un buen trozo de mundo en su historia y una buena dosis de experiencias culturales, unidos a una irrefrenable curiosidad que nunca ha puesto límites a sus estudios hacen de Claudio Fiorentini un auténtico mediador cultural, un promotor de las artes capaz de unir diferentes puntos de vista, de dialogar con diferentes opiniones, de comprender los polifacéticos hábitos y costumbres que constituyen el motor de la cultura contemporánea.<br><br>Su obra literaria abarca narrativa y poesía. Diez novelas, una colección de cuentos, siete poemarios, uno de ellos es una colección de sonetos políticos publicado con pseudónimo, son sus actuales publicaciones, además de haber sido incluido en numerosas antologías.<br><br>Su obra pictórica, mejor sería decir para-pictórica, como él mismo ama definirla, es una continua búsqueda de formas de expresión abstracta, a través del uso de materiales pobres de diferente consistencia táctil. El tacto es, de hecho, la llave para comprender el sentido de su búsqueda de equilibrios, a partir de la manipulación del fondo, que solo cuando son apercibidos trascienden en pintura con el auxilio de los pinceles.',
       methodology: 'Metodología',
       methodologyTitle: 'Más que curador: Facilitador de transformaciones',
       methodologyIntro: 'Lo que distingue a Claudio es su capacidad para identificar y nutrir el talento emergente auténtico. A través de <strong>proyectos de investigación artística</strong> diseñados específicamente para cada creador, ayuda a los artistas a:',
@@ -64,7 +64,7 @@ export const TRANSLATIONS: Record<Language, any> = {
       disciplines: 'Disciplinas',
       narrative: 'Narrativa',
       poetry: 'Poesía',
-      philosophyQuote: '"El arte verdadero no decora paredes, transforma conciencias."'
+      philosophyQuote: '"El arte no decora, transforma."'
     },
     space: {
       title: 'Captaloona Art',
@@ -84,9 +84,10 @@ export const TRANSLATIONS: Record<Language, any> = {
     },
     collection: {
       title: 'Colección Captaloona',
-      description: 'Una selección multidisciplinar donde el arte matérico, la palabra y la forma convergen. Explora por categoría o descubre la visión única de nuestros artistas.',
+      description: 'Una selección multidisciplinar donde el arte matérico, la palabra y la forma convergen. Descubre la colección permanente o explora la visión única de nuestros artistas.',
       category: 'Categoría',
       artist: 'Artista',
+      permanentWorks: 'Obras Permanentes',
       all: 'Todas',
       allArtists: 'Todos',
       selectArtist: 'Selecciona un Artista',
@@ -118,7 +119,7 @@ export const TRANSLATIONS: Record<Language, any> = {
     },
     home: {
       heroSub: 'LOONA CONTEMPORARY • ART CONCEPT',
-      heroTitle: 'Where art anticipates life.',
+      heroTitle: 'Art is a cultivation of ideas that anticipates thought.',
       heroDesc: 'A curatorial platform led by Claudio Fiorentini connecting artistic introspection with contemporary collecting.',
       bannerProfiler: 'Discover your artistic profile with our Art Profiler',
       bannerBtn: 'Start Experience',
@@ -142,7 +143,7 @@ export const TRANSLATIONS: Record<Language, any> = {
       title: 'Claudio Fiorentini',
       roleSubtitle: 'The philosopher who teaches artists to listen to their abyss',
       bio1: 'Claudio Fiorentini is not a traditional gallerist. He is an <strong>artist coach</strong> who helps them find and follow their most authentic inner voice, even when that voice leads them down paths the art market doesn\'t yet understand.',
-      bio2: 'Before opening Capataloona Art in Madrid, Claudio spent decades studying the relationship between art and human thought. A prolific writer, he has developed a unique vision: <em>true art doesn\'t decorate, it transforms consciousness</em>. It doesn\'t follow trends — it anticipates them. It doesn\'t seek approval — it explores the "unexpressed" that bubbles within humanity.',
+      bio2: 'A good slice of the world in his history and a generous dose of cultural experiences, combined with an uncontrollable curiosity that has never put limits on his studies, make Claudio Fiorentini an authentic cultural mediator, a promoter of the arts capable of uniting different points of view, dialoguing with different opinions, and understanding the multifaceted habits and customs that constitute the engine of contemporary culture.<br><br>His literary work encompasses narrative and poetry. Ten novels, a collection of short stories, seven poetry collections — one of them a collection of political sonnets published under a pseudonym — are his current publications, in addition to having been included in numerous anthologies.<br><br>His pictorial work — better described as para-pictorial, as he himself likes to define it — is a continuous search for forms of abstract expression through the use of poor materials of different tactile consistency. Touch is, in fact, the key to understanding the meaning of his search for balance, starting from the manipulation of the background, which only when perceived transcends into painting with the help of brushes.',
       methodology: 'Methodology',
       methodologyTitle: 'More than a curator: Facilitator of transformations',
       methodologyIntro: 'What distinguishes Claudio is his ability to identify and nurture authentic emerging talent. Through <strong>artistic research projects</strong> designed specifically for each creator, he helps artists to:',
@@ -167,7 +168,7 @@ export const TRANSLATIONS: Record<Language, any> = {
       disciplines: 'Disciplines',
       narrative: 'Narrative',
       poetry: 'Poetry',
-      philosophyQuote: '"True art doesn\'t decorate walls, it transforms consciousness."'
+      philosophyQuote: '"Art doesn\'t decorate, it transforms."'
     },
     space: {
       title: 'Captaloona Art',
@@ -187,9 +188,10 @@ export const TRANSLATIONS: Record<Language, any> = {
     },
     collection: {
       title: 'Captaloona Collection',
-      description: 'A multidisciplinary selection where material art, word and form converge. Explore by category or discover the unique vision of our artists.',
+      description: 'A multidisciplinary selection where material art, word and form converge. Discover the permanent collection or explore the unique vision of our artists.',
       category: 'Category',
       artist: 'Artist',
+      permanentWorks: 'Permanent Works',
       all: 'All',
       allArtists: 'All',
       selectArtist: 'Select an Artist',
@@ -221,7 +223,7 @@ export const TRANSLATIONS: Record<Language, any> = {
     },
     home: {
       heroSub: 'LOONA CONTEMPORARY • ART CONCEPT',
-      heroTitle: 'Là où l\'art anticipe la vie.',
+      heroTitle: 'L\'art est une culture d\'idées qui anticipe la pensée.',
       heroDesc: 'Une plateforme curatoriale dirigée par Claudio Fiorentini qui relie l\'introspection artistique au collectionnisme contemporain.',
       bannerProfiler: 'Découvrez votre profil artistique avec notre Art Profiler',
       bannerBtn: 'Démarrer l\'Expérience',
@@ -245,7 +247,7 @@ export const TRANSLATIONS: Record<Language, any> = {
       title: 'Claudio Fiorentini',
       roleSubtitle: 'Le philosophe qui apprend aux artistes à écouter leur abîme',
       bio1: 'Claudio Fiorentini n\'est pas un galeriste traditionnel. C\'est un <strong>coach d\'artistes</strong> qui les aide à trouver et à suivre leur voix intérieure la plus authentique, même quand cette voix les mène sur des chemins que le marché de l\'art ne comprend pas encore.',
-      bio2: 'Avant d\'ouvrir Capataloona Art à Madrid, Claudio a consacré des décennies à étudier la relation entre l\'art et la pensée humaine. Écrivain prolifique, il a développé une vision unique : <em>l\'art véritable ne décore pas, il transforme les consciences</em>. Il ne suit pas les tendances — il les anticipe. Il ne cherche pas l\'approbation — il explore le "non-exprimé" qui bouillonne au sein de l\'humanité.',
+      bio2: 'Une bonne tranche de monde dans son histoire et une généreuse dose d\'expériences culturelles, alliées à une curiosité irrépressible qui n\'a jamais mis de limites à ses études, font de Claudio Fiorentini un véritable médiateur culturel, un promoteur des arts capable d\'unir différents points de vue, de dialoguer avec différentes opinions, de comprendre les habitudes et coutumes multiformes qui constituent le moteur de la culture contemporaine.<br><br>Son œuvre littéraire englobe la narration et la poésie. Dix romans, un recueil de nouvelles, sept recueils de poèmes — l\'un d\'eux est un recueil de sonnets politiques publié sous pseudonyme — sont ses publications actuelles, en plus d\'avoir été inclus dans de nombreuses anthologies.<br><br>Son œuvre picturale — mieux décrite comme para-picturale, comme il aime lui-même la définir — est une recherche continue de formes d\'expression abstraite, à travers l\'utilisation de matériaux pauvres de consistance tactile différente. Le toucher est, en fait, la clé pour comprendre le sens de sa recherche d\'équilibres, à partir de la manipulation du fond, qui seulement lorsqu\'ils sont perçus transcendent en peinture avec l\'aide des pinceaux.',
       methodology: 'Méthodologie',
       methodologyTitle: 'Plus qu\'un curateur : Facilitateur de transformations',
       methodologyIntro: 'Ce qui distingue Claudio, c\'est sa capacité à identifier et à nourrir le talent émergent authentique. À travers des <strong>projets de recherche artistique</strong> conçus spécifiquement pour chaque créateur, il aide les artistes à :',
@@ -270,7 +272,7 @@ export const TRANSLATIONS: Record<Language, any> = {
       disciplines: 'Disciplines',
       narrative: 'Narrative',
       poetry: 'Poésie',
-      philosophyQuote: '"L\'art véritable ne décore pas les murs, il transforme les consciences."'
+      philosophyQuote: '"L\'art ne décore pas, il transforme."'
     },
     space: {
       title: 'Captaloona Art',
@@ -290,9 +292,10 @@ export const TRANSLATIONS: Record<Language, any> = {
     },
     collection: {
       title: 'Collection Captaloona',
-      description: 'Une sélection multidisciplinaire où l\'art matériel, le mot et la forme convergent. Explorez par catégorie ou découvrez la vision unique de nos artistes.',
+      description: 'Une sélection multidisciplinaire où l\'art matériel, le mot et la forme convergent. Découvrez la collection permanente ou explorez la vision unique de nos artistes.',
       category: 'Catégorie',
       artist: 'Artiste',
+      permanentWorks: 'Œuvres Permanentes',
       all: 'Toutes',
       allArtists: 'Tous',
       selectArtist: 'Sélectionner un Artiste',
@@ -324,7 +327,7 @@ export const TRANSLATIONS: Record<Language, any> = {
     },
     home: {
       heroSub: 'LOONA CONTEMPORARY • ART CONCEPT',
-      heroTitle: 'Dove l\'arte anticipa la vita.',
+      heroTitle: 'L\'arte è una coltivazione di idee che anticipa il pensiero.',
       heroDesc: 'Una piattaforma curatoriale guidata da Claudio Fiorentini che connette l\'introspezione artistica con il collezionismo contemporaneo.',
       bannerProfiler: 'Scopri il tuo profilo artistico con il nostro Art Profiler',
       bannerBtn: 'Inizia Esperienza',
@@ -348,7 +351,7 @@ export const TRANSLATIONS: Record<Language, any> = {
       title: 'Claudio Fiorentini',
       roleSubtitle: 'Il filosofo che insegna agli artisti ad ascoltare il loro abisso',
       bio1: 'Claudio Fiorentini non è un gallerista tradizionale. È un <strong>coach di artisti</strong> che li aiuta a trovare e seguire la loro voce interiore più autentica, anche quando quella voce li porta su strade che il mercato dell\'arte non comprende ancora.',
-      bio2: 'Prima di aprire Capataloona Art a Madrid, Claudio ha dedicato decenni allo studio del rapporto tra arte e pensiero umano. Scrittore prolifico, ha sviluppato una visione unica: <em>l\'arte vera non decora, trasforma le coscienze</em>. Non segue le tendenze — le anticipa. Non cerca approvazione — esplora il "non espresso" che ribolle dentro l\'umanità.',
+      bio2: 'Un buon pezzo di mondo nella sua storia e una buona dose di esperienze culturali, uniti a una curiosità irrefrenabile che non ha mai posto limiti ai suoi studi, fanno di Claudio Fiorentini un autentico mediatore culturale, un promotore delle arti capace di unire diversi punti di vista, di dialogare con diverse opinioni, di comprendere le multiformi abitudini e costumi che costituiscono il motore della cultura contemporanea.<br><br>La sua opera letteraria abbraccia narrativa e poesia. Dieci romanzi, una raccolta di racconti, sette raccolte di poesie — una di esse è una raccolta di sonetti politici pubblicata con pseudonimo — sono le sue attuali pubblicazioni, oltre ad essere stato incluso in numerose antologie.<br><br>La sua opera pittorica — meglio definita para-pittorica, come lui stesso ama definirla — è una continua ricerca di forme di espressione astratta, attraverso l\'utilizzo di materiali poveri di diversa consistenza tattile. Il tatto è, di fatto, la chiave per comprendere il senso della sua ricerca di equilibri, a partire dalla manipolazione del fondo, che solo quando vengono percepiti trascendono in pittura con l\'ausilio dei pennelli.',
       methodology: 'Metodologia',
       methodologyTitle: 'Più che curatore: Facilitatore di trasformazioni',
       methodologyIntro: 'Ciò che distingue Claudio è la sua capacità di identificare e nutrire il talento emergente autentico. Attraverso <strong>progetti di ricerca artistica</strong> progettati specificamente per ogni creatore, aiuta gli artisti a:',
@@ -373,7 +376,7 @@ export const TRANSLATIONS: Record<Language, any> = {
       disciplines: 'Discipline',
       narrative: 'Narrativa',
       poetry: 'Poesia',
-      philosophyQuote: '"L\'arte vera non decora le pareti, trasforma le coscienze."'
+      philosophyQuote: '"L\'arte non decora, trasforma."'
     },
     space: {
       title: 'Captaloona Art',
@@ -393,9 +396,10 @@ export const TRANSLATIONS: Record<Language, any> = {
     },
     collection: {
       title: 'Collezione Captaloona',
-      description: 'Una selezione multidisciplinare dove l\'arte materica, la parola e la forma convergono. Esplora per categoria o scopri la visione unica dei nostri artisti.',
+      description: 'Una selezione multidisciplinare dove l\'arte materica, la parola e la forma convergono. Scopri la collezione permanente o esplora la visione unica dei nostri artisti.',
       category: 'Categoria',
       artist: 'Artista',
+      permanentWorks: 'Opere Permanenti',
       all: 'Tutte',
       allArtists: 'Tutti',
       selectArtist: 'Seleziona un Artista',

@@ -225,6 +225,8 @@ export async function getArtworks(): Promise<LocalArtwork[]> {
       imageUrl: artwork.image_url,
       category: artwork.category,
       status: artwork.status,
+      isPermanent: artwork.is_permanent ?? false,
+      style: artwork.style || undefined,
     }));
     saveToLocalStorage(STORAGE_KEYS.artworks, artworks);
     return artworks;
@@ -258,6 +260,8 @@ export async function createArtwork(artwork: Omit<LocalArtwork, 'id'>): Promise<
       image_url: artwork.imageUrl,
       category: artwork.category,
       status: artwork.status,
+      is_permanent: artwork.isPermanent ?? false,
+      style: artwork.style || null,
     })
     .select(`
       *,
@@ -281,6 +285,8 @@ export async function createArtwork(artwork: Omit<LocalArtwork, 'id'>): Promise<
     imageUrl: data.image_url,
     category: data.category,
     status: data.status,
+    isPermanent: (data as any).is_permanent ?? false,
+    style: (data as any).style || undefined,
   };
 
   // Update localStorage with the Supabase ID
@@ -377,6 +383,8 @@ export async function getEvents(): Promise<EventItem[]> {
       location: event.location,
       description: event.description,
       imageUrl: event.image_url,
+      catalogUrl: (event as any).catalog_url || undefined,
+      videoUrl: (event as any).video_url || undefined,
     }));
     saveToLocalStorage(STORAGE_KEYS.events, events);
     return events;
@@ -408,6 +416,8 @@ export async function createEvent(event: Omit<EventItem, 'id'>): Promise<EventIt
       description: event.description,
       image_url: event.imageUrl,
       event_type: 'exposicion',
+      catalog_url: event.catalogUrl || null,
+      video_url: event.videoUrl || null,
     })
     .select()
     .single();
@@ -424,6 +434,8 @@ export async function createEvent(event: Omit<EventItem, 'id'>): Promise<EventIt
     location: data.location,
     description: data.description,
     imageUrl: data.image_url,
+    catalogUrl: (data as any).catalog_url || undefined,
+    videoUrl: (data as any).video_url || undefined,
   };
 }
 

@@ -21,6 +21,8 @@ export interface Artwork {
   imageUrl: string;
   category: 'Poesía' | 'Narrativa' | 'Pintura' | 'Escultura';
   status: 'disponible' | 'vendido';
+  isPermanent?: boolean;
+  style?: string;
 }
 
 export interface NavItem {
@@ -35,6 +37,8 @@ export interface EventItem {
   location: string;
   imageUrl: string;
   description: string;
+  catalogUrl?: string;
+  videoUrl?: string;
 }
 
 export interface OtherEvent {

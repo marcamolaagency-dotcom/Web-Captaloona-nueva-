@@ -14,7 +14,7 @@ export const ARTISTS: Artist[] = [
   {
     id: 'claudio-fiorentini',
     name: 'Claudio Fiorentini',
-    bio: 'Un auténtico mediador cultural, fundador de Captaloona Art. Su obra transita entre lo matérico y lo espiritual, buscando siempre la esencia del ser.',
+    bio: 'Un buen trozo de mundo en su historia y una buena dosis de experiencias culturales, unidos a una irrefrenable curiosidad que nunca ha puesto límites a sus estudios hacen de Claudio Fiorentini un auténtico mediador cultural, un promotor de las artes capaz de unir diferentes puntos de vista, de dialogar con diferentes opiniones, de comprender los polifacéticos hábitos y costumbres que constituyen el motor de la cultura contemporánea.\n\nSu obra literaria abarca narrativa y poesía. Diez novelas, una colección de cuentos, siete poemarios, uno de ellos es una colección de sonetos políticos publicado con pseudónimo, son sus actuales publicaciones, además de haber sido incluido en numerosas antologías.\n\nSu obra pictórica, mejor sería decir para-pictórica, como él mismo ama definirla, es una continua búsqueda de formas de expresión abstracta, a través del uso de materiales pobres de diferente consistencia táctil. El tacto es, de hecho, la llave para comprender el sentido de su búsqueda de equilibrios, a partir de la manipulación del fondo, que solo cuando son apercibidos trascienden en pintura con el auxilio de los pinceles.',
     imageUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=800&auto=format&fit=crop',
     location: 'Madrid, España'
   },
