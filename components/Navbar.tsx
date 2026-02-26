@@ -42,11 +42,12 @@ const Navbar: React.FC<NavbarProps> = ({ currentPath, onNavigate, lang, onLangua
 
   const navItems = [
     { label: t.home, path: '/' },
-    { label: t.artist, path: '/artista' },
-    { label: t.collection, path: '/coleccion' },
+    { label: t.artists, path: '/artistas' },
     { label: t.events, path: '/eventos' },
     { label: t.otherEvents, path: '/otros-eventos' },
+    { label: t.artist, path: '/artista' },
     { label: t.space, path: '/espacio' },
+    { label: t.collection, path: '/coleccion' },
     { label: t.contact, path: '/contacto' },
   ];
 

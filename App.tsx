@@ -8,6 +8,7 @@ import Eventos from './pages/Eventos.tsx';
 import OtrosEventos from './pages/OtrosEventos.tsx';
 import Contacto from './pages/Contacto.tsx';
 import Artista from './pages/Artista.tsx';
+import Artistas from './pages/Artistas.tsx';
 import Configuracion from './pages/Configuracion.tsx';
 import Espacio from './pages/Espacio.tsx';
 import SchemaMarkup from './components/SchemaMarkup.tsx';
@@ -61,6 +62,7 @@ const App: React.FC = () => {
       case '#/otros-eventos': return <OtrosEventos events={otherEvents} />;
       case '#/contacto': return <Contacto />;
       case '#/artista': return <Artista lang={lang} />;
+      case '#/artistas': return <Artistas artists={artists} artworks={artworks} lang={lang} />;
       case '#/config': return (
         <Configuracion
           artworks={artworks}
