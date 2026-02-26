@@ -12,33 +12,16 @@ interface ColeccionProps {
 
 const Coleccion: React.FC<ColeccionProps> = ({ artworks, artists = [], lang }) => {
   const [selectedArtistProfile, setSelectedArtistProfile] = useState<Artist | null>(null);
-  const [filterMode, setFilterMode] = useState<'permanentes' | 'artista'>('permanentes');
-  const [filterArtist, setFilterArtist] = useState('all');
-  const [showArtistSelector, setShowArtistSelector] = useState(false);
   const [lightboxImage, setLightboxImage] = useState<{url: string; title: string; artist: string} | null>(null);
 
   const t = TRANSLATIONS[lang].collection;
 
-  // Filter modes
-  const filterKeys: Array<'permanentes' | 'artista'> = ['permanentes', 'artista'];
-  const getFilterLabel = (key: 'permanentes' | 'artista') => {
-    if (key === 'permanentes') return t.permanentWorks;
-    return t.artist;
-  };
-
   // Build complete artist list from both props and artworks
   const allArtists = useMemo(() => {
     const artistMap = new Map<string, Artist>();
-
-    // First add all artists from props
-    artists.forEach(artist => {
-      artistMap.set(artist.id, artist);
-    });
-
-    // Then add/update from artworks (in case artwork has artist info not in artists list)
+    artists.forEach(artist => artistMap.set(artist.id, artist));
     artworks.forEach(art => {
       if (!artistMap.has(art.artistId)) {
-        // Create artist entry from artwork data
         artistMap.set(art.artistId, {
           id: art.artistId,
           name: art.artistName,
@@ -48,37 +31,15 @@ const Coleccion: React.FC<ColeccionProps> = ({ artworks, artists = [], lang }) =
         });
       }
     });
-
     return Array.from(artistMap.values());
   }, [artworks, artists]);
 
-  // Get artists that have works in the collection
-  const artistsWithWorks = useMemo(() => {
-    const artistIds = [...new Set(artworks.map(art => art.artistId))];
-    return allArtists.filter(artist => artistIds.includes(artist.id));
-  }, [artworks, allArtists]);
+  // Only permanent works
+  const permanentWorks = artworks.filter(art => art.isPermanent === true);
 
-  const filteredArt = artworks.filter(art => {
-    if (filterMode === 'permanentes') {
-      const matchPerm = art.isPermanent === true;
-      const matchArtist = filterArtist === 'all' || art.artistId === filterArtist;
-      return matchPerm && matchArtist;
-    }
-    // mode === 'artista'
-    return filterArtist === 'all' || art.artistId === filterArtist;
-  });
-
-  // Find artist by ID or by name (fallback)
   const findArtist = (artistId: string, artistName: string): Artist | null => {
-    // First try to find by ID
     let artist = allArtists.find(a => a.id === artistId);
-
-    // If not found, try by name
-    if (!artist) {
-      artist = allArtists.find(a => a.name.toLowerCase() === artistName.toLowerCase());
-    }
-
-    // If still not found, create a basic artist object
+    if (!artist) artist = allArtists.find(a => a.name.toLowerCase() === artistName.toLowerCase());
     if (!artist && artistName) {
       artist = {
         id: artistId,
@@ -88,7 +49,6 @@ const Coleccion: React.FC<ColeccionProps> = ({ artworks, artists = [], lang }) =
         location: ''
       };
     }
-
     return artist || null;
   };
 
@@ -100,25 +60,27 @@ const Coleccion: React.FC<ColeccionProps> = ({ artworks, artists = [], lang }) =
     );
 
     return (
-      <div className="pt-32 pb-24 animate-fadeIn">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center mb-24 bg-zinc-50 p-12 rounded-sm border border-zinc-100">
+      <div className="pt-24 md:pt-32 pb-16 md:pb-24 animate-fadeIn">
+        <div className="max-w-7xl mx-auto px-4 md:px-6">
+
+          <button
+            onClick={() => setSelectedArtistProfile(null)}
+            className="mb-6 text-xs font-bold text-emerald-600 uppercase tracking-widest flex items-center gap-2 hover:text-emerald-700 transition-colors"
+          >
+            ← {t.backToCatalog}
+          </button>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-16 items-center mb-12 md:mb-20 bg-zinc-50 p-6 md:p-12 rounded-sm border border-zinc-100">
             <div className="relative">
-              <div className="absolute -top-6 -left-6 w-full h-full border-2 border-emerald-100"></div>
-              <img src={selectedArtistProfile.imageUrl} alt={selectedArtistProfile.name} className="relative z-10 w-full aspect-square object-cover shadow-2xl" />
+              <div className="hidden md:block absolute -top-6 -left-6 w-full h-full border-2 border-emerald-100"></div>
+              <img src={selectedArtistProfile.imageUrl} alt={selectedArtistProfile.name} className="relative z-10 w-full aspect-square object-cover shadow-xl md:shadow-2xl" />
             </div>
-            <div className="space-y-8">
-              <button
-                onClick={() => setSelectedArtistProfile(null)}
-                className="text-xs font-bold text-emerald-600 uppercase tracking-widest flex items-center gap-2 hover:text-emerald-700 transition-colors"
-              >
-                ← {t.backToCatalog}
-              </button>
-              <h1 className="text-6xl serif">{selectedArtistProfile.name}</h1>
+            <div className="space-y-4 md:space-y-8">
+              <h1 className="text-3xl sm:text-4xl md:text-6xl serif">{selectedArtistProfile.name}</h1>
               {selectedArtistProfile.bio && (
-                <p className="text-zinc-500 leading-relaxed text-lg">{selectedArtistProfile.bio}</p>
+                <p className="text-zinc-500 leading-relaxed text-base md:text-lg">{selectedArtistProfile.bio}</p>
               )}
-              <div className="flex gap-10">
+              <div className="flex gap-10 pt-4 border-t border-zinc-100">
                 {selectedArtistProfile.location && (
                   <div>
                     <h4 className="text-[10px] uppercase tracking-widest font-bold text-zinc-400 mb-2">{t.location}</h4>
@@ -133,7 +95,7 @@ const Coleccion: React.FC<ColeccionProps> = ({ artworks, artists = [], lang }) =
             </div>
           </div>
 
-          <h2 className="text-3xl serif mb-12 border-b pb-6">{t.catalogOf} {selectedArtistProfile.name}</h2>
+          <h2 className="text-2xl md:text-3xl serif mb-8 md:mb-12 border-b pb-5 md:pb-6">{t.catalogOf} {selectedArtistProfile.name}</h2>
           <ArtGrid
             artworks={artistWorks}
             onArtistClick={setSelectedArtistProfile}
@@ -142,137 +104,55 @@ const Coleccion: React.FC<ColeccionProps> = ({ artworks, artists = [], lang }) =
             onImageClick={(url, title, artist) => setLightboxImage({url, title, artist})}
           />
         </div>
+
+        <ImageLightbox
+          isOpen={!!lightboxImage}
+          imageUrl={lightboxImage?.url || ''}
+          alt={lightboxImage?.title || ''}
+          title={lightboxImage?.title}
+          artist={lightboxImage?.artist}
+          onClose={() => setLightboxImage(null)}
+        />
       </div>
     );
   }
 
-  // View: Main Collection
+  // View: Main Collection (permanent works only)
   return (
-    <div className="pt-32 pb-24">
-      <div className="max-w-7xl mx-auto px-6">
-        <header className="mb-16 text-center max-w-3xl mx-auto">
-          <h1 className="text-5xl serif mb-6">{t.title}</h1>
-          <p className="text-zinc-500 leading-relaxed">
+    <div className="pt-24 md:pt-32 pb-16 md:pb-24 animate-fadeIn">
+      <div className="max-w-7xl mx-auto px-4 md:px-6">
+
+        <header className="mb-12 md:mb-16 text-center max-w-3xl mx-auto">
+          <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-emerald-600 mb-4 block">LOONA CONTEMPORARY</span>
+          <h1 className="text-4xl md:text-5xl serif mb-4 md:mb-6">{t.title}</h1>
+          <p className="text-sm md:text-base text-zinc-500 leading-relaxed">
             {t.description}
           </p>
         </header>
 
-        {/* Filters Section */}
-        <div className="mb-16 space-y-6">
-          <div className="border-b border-zinc-100 pb-6">
-            <div className="flex justify-center gap-3 flex-wrap">
-              {filterKeys.map((key) => (
-                <button
-                  key={key}
-                  onClick={() => {
-                    setFilterMode(key);
-                    if (key === 'artista') {
-                      setShowArtistSelector(true);
-                    } else {
-                      setShowArtistSelector(false);
-                      setFilterArtist('all');
-                    }
-                  }}
-                  className={`px-6 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all ${
-                    filterMode === key
-                      ? 'bg-zinc-900 text-white'
-                      : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'
-                  }`}
-                >
-                  {getFilterLabel(key)}
-                </button>
-              ))}
-            </div>
-          </div>
-
+        {/* Results count */}
+        <div className="mb-8 md:mb-12 text-center">
+          <p className="text-xs text-zinc-400 uppercase tracking-widest">
+            {permanentWorks.length} {permanentWorks.length === 1 ? t.workFound : t.worksFound}
+          </p>
         </div>
 
-        {/* Artist Selector View */}
-        {showArtistSelector && (
-          <div className="mb-16 animate-fadeIn">
-            <h3 className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-6 text-center">{t.selectArtist}</h3>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-              {artistsWithWorks.map((artist) => (
-                <button
-                  key={artist.id}
-                  onClick={() => {
-                    setFilterArtist(artist.id);
-                    setShowArtistSelector(false);
-                  }}
-                  className="group text-left bg-zinc-50 hover:bg-emerald-50 p-6 rounded-sm transition-all border border-zinc-100 hover:border-emerald-200"
-                >
-                  <div className="aspect-square mb-4 overflow-hidden rounded-full bg-zinc-200">
-                    <img
-                      src={artist.imageUrl}
-                      alt={artist.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
-                  </div>
-                  <h4 className="text-lg serif text-center group-hover:text-emerald-600 transition-colors">{artist.name}</h4>
-                  {artist.location && (
-                    <p className="text-[10px] text-zinc-400 text-center mt-1 uppercase tracking-widest">{artist.location}</p>
-                  )}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Active artist filter indicator */}
-        {filterArtist !== 'all' && !showArtistSelector && (
-          <div className="mb-8 text-center animate-fadeIn">
-            <div className="inline-flex items-center gap-3 bg-emerald-50 px-6 py-3 rounded-full border border-emerald-100">
-              <span className="text-sm text-emerald-700">
-                {t.showingWorksBy} <strong>{artistsWithWorks.find(a => a.id === filterArtist)?.name || filterArtist}</strong>
-              </span>
-              <button
-                onClick={() => setFilterArtist('all')}
-                className="text-emerald-600 hover:text-emerald-800 text-xs font-bold uppercase tracking-widest"
-              >
-                × {t.clear}
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Results count */}
-        {!showArtistSelector && (
-          <div className="mb-8 text-center">
-            <p className="text-sm text-zinc-400">
-              {filteredArt.length} {filteredArt.length === 1 ? t.workFound : t.worksFound}
-            </p>
-          </div>
-        )}
-
         {/* Art Grid */}
-        {!showArtistSelector && (
-          filteredArt.length > 0 ? (
-            <ArtGrid
-              artworks={filteredArt}
-              onArtistClick={setSelectedArtistProfile}
-              findArtist={findArtist}
-              t={t}
-              onImageClick={(url, title, artist) => setLightboxImage({url, title, artist})}
-            />
-          ) : (
-            <div className="text-center py-20">
-              <p className="text-zinc-400 text-lg">{t.noWorksFound}</p>
-              <button
-                onClick={() => {
-                  setFilterMode('permanentes');
-                  setFilterArtist('all');
-                  setShowArtistSelector(false);
-                }}
-                className="mt-4 text-emerald-600 text-sm font-bold uppercase tracking-widest hover:text-emerald-700"
-              >
-                {t.clearFilters}
-              </button>
-            </div>
-          )
+        {permanentWorks.length > 0 ? (
+          <ArtGrid
+            artworks={permanentWorks}
+            onArtistClick={setSelectedArtistProfile}
+            findArtist={findArtist}
+            t={t}
+            onImageClick={(url, title, artist) => setLightboxImage({url, title, artist})}
+          />
+        ) : (
+          <div className="text-center py-16 md:py-24">
+            <p className="text-zinc-400">{t.noWorksFound}</p>
+          </div>
         )}
       </div>
 
-      {/* Image Lightbox */}
       <ImageLightbox
         isOpen={!!lightboxImage}
         imageUrl={lightboxImage?.url || ''}
@@ -294,11 +174,11 @@ interface ArtGridProps {
 }
 
 const ArtGrid: React.FC<ArtGridProps> = ({ artworks, onArtistClick, findArtist, t, onImageClick }) => (
-  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-12 gap-y-20">
+  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 md:gap-x-12 gap-y-10 md:gap-y-20">
     {artworks.map((art) => (
       <div key={art.id} className="group">
         <div
-          className="relative aspect-[3/4] mb-8 overflow-hidden bg-zinc-100 cursor-zoom-in"
+          className="relative aspect-[3/4] mb-5 md:mb-8 overflow-hidden bg-zinc-100 cursor-zoom-in"
           onClick={() => onImageClick(art.imageUrl, art.title, art.artistName)}
         >
           <img
@@ -306,8 +186,8 @@ const ArtGrid: React.FC<ArtGridProps> = ({ artworks, onArtistClick, findArtist, 
             alt={art.title}
             className={`w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105 ${art.status === 'vendido' ? 'opacity-60 grayscale-[0.5]' : ''}`}
           />
-          <div className="absolute top-4 right-4 flex flex-col items-end gap-2">
-            <span className={`px-4 py-1 text-[10px] font-bold uppercase tracking-widest shadow-sm ${art.status === 'disponible' ? 'bg-white text-emerald-600' : 'bg-zinc-900 text-white opacity-90'}`}>
+          <div className="absolute top-3 right-3 md:top-4 md:right-4 flex flex-col items-end gap-2">
+            <span className={`px-3 py-1 text-[10px] font-bold uppercase tracking-widest shadow-sm ${art.status === 'disponible' ? 'bg-white text-emerald-600' : 'bg-zinc-900 text-white opacity-90'}`}>
               {art.status === 'disponible' ? `${art.price}€` : t.sold}
             </span>
             {(art.style || art.category) && (
@@ -316,7 +196,6 @@ const ArtGrid: React.FC<ArtGridProps> = ({ artworks, onArtistClick, findArtist, 
               </span>
             )}
           </div>
-          {/* Zoom indicator on hover */}
           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
             <span className="bg-white/90 px-4 py-2 rounded-full text-xs font-medium text-zinc-700 shadow-lg">
               Click para ampliar
@@ -324,7 +203,7 @@ const ArtGrid: React.FC<ArtGridProps> = ({ artworks, onArtistClick, findArtist, 
           </div>
         </div>
         <div className="space-y-1">
-          <h3 className="text-2xl serif group-hover:text-emerald-600 transition-colors">{art.title}</h3>
+          <h3 className="text-xl md:text-2xl serif group-hover:text-emerald-600 transition-colors">{art.title}</h3>
           <button
             onClick={(e) => {
               e.stopPropagation();
