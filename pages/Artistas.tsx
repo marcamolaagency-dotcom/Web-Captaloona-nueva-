@@ -34,7 +34,6 @@ const Artistas: React.FC<ArtistasProps> = ({ artists, artworks, lang }) => {
     return Array.from(artistMap.values());
   }, [artists, artworks]);
 
-  // Artist works count helper
   const worksCount = (artistId: string) =>
     artworks.filter(a => a.artistId === artistId || a.artistName.toLowerCase() === allArtists.find(x => x.id === artistId)?.name.toLowerCase()).length;
 
@@ -46,31 +45,35 @@ const Artistas: React.FC<ArtistasProps> = ({ artists, artworks, lang }) => {
     );
 
     return (
-      <div className="pt-32 pb-24 animate-fadeIn">
-        <div className="max-w-7xl mx-auto px-6">
+      <div className="pt-24 md:pt-32 pb-16 md:pb-24 animate-fadeIn">
+        <div className="max-w-7xl mx-auto px-4 md:px-6">
+
+          {/* Back button - visible above the card on mobile */}
+          <button
+            onClick={() => setSelectedArtist(null)}
+            className="mb-6 text-xs font-bold text-emerald-600 uppercase tracking-widest flex items-center gap-2 hover:text-emerald-700 transition-colors"
+          >
+            ← {t.backToCatalog}
+          </button>
+
           {/* Artist Header */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center mb-24 bg-zinc-50 p-12 rounded-sm border border-zinc-100">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-16 items-center mb-12 md:mb-20 bg-zinc-50 p-6 md:p-12 rounded-sm border border-zinc-100">
             <div className="relative">
-              <div className="absolute -top-6 -left-6 w-full h-full border-2 border-emerald-100"></div>
+              {/* Decorative frame — hidden on small screens to avoid overflow */}
+              <div className="hidden md:block absolute -top-6 -left-6 w-full h-full border-2 border-emerald-100"></div>
               <img
                 src={selectedArtist.imageUrl}
                 alt={selectedArtist.name}
-                className="relative z-10 w-full aspect-square object-cover shadow-2xl"
+                className="relative z-10 w-full aspect-square object-cover shadow-xl md:shadow-2xl"
               />
             </div>
-            <div className="space-y-8">
-              <button
-                onClick={() => setSelectedArtist(null)}
-                className="text-xs font-bold text-emerald-600 uppercase tracking-widest flex items-center gap-2 hover:text-emerald-700 transition-colors"
-              >
-                ← {t.backToCatalog}
-              </button>
-              <h1 className="text-6xl serif">{selectedArtist.name}</h1>
+            <div className="space-y-4 md:space-y-8">
+              <h1 className="text-3xl sm:text-4xl md:text-6xl serif">{selectedArtist.name}</h1>
               {selectedArtist.location && (
                 <p className="text-xs font-bold uppercase tracking-widest text-zinc-400">{selectedArtist.location}</p>
               )}
               {selectedArtist.bio && (
-                <p className="text-zinc-500 leading-relaxed text-lg">{selectedArtist.bio}</p>
+                <p className="text-zinc-500 leading-relaxed text-base md:text-lg">{selectedArtist.bio}</p>
               )}
               <div className="flex gap-10 pt-4 border-t border-zinc-100">
                 <div>
@@ -84,12 +87,12 @@ const Artistas: React.FC<ArtistasProps> = ({ artists, artworks, lang }) => {
           {/* Artist Works */}
           {artistWorks.length > 0 && (
             <>
-              <h2 className="text-3xl serif mb-12 border-b pb-6">{t.catalogOf} {selectedArtist.name}</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-12 gap-y-20">
+              <h2 className="text-2xl md:text-3xl serif mb-8 md:mb-12 border-b pb-5 md:pb-6">{t.catalogOf} {selectedArtist.name}</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 md:gap-x-12 gap-y-10 md:gap-y-20">
                 {artistWorks.map((art) => (
                   <div key={art.id} className="group">
                     <div
-                      className="relative aspect-[3/4] mb-8 overflow-hidden bg-zinc-100 cursor-zoom-in"
+                      className="relative aspect-[3/4] mb-5 md:mb-8 overflow-hidden bg-zinc-100 cursor-zoom-in"
                       onClick={() => setLightboxImage({url: art.imageUrl, title: art.title, artist: art.artistName})}
                     >
                       <img
@@ -97,8 +100,8 @@ const Artistas: React.FC<ArtistasProps> = ({ artists, artworks, lang }) => {
                         alt={art.title}
                         className={`w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105 ${art.status === 'vendido' ? 'opacity-60 grayscale-[0.5]' : ''}`}
                       />
-                      <div className="absolute top-4 right-4 flex flex-col items-end gap-2">
-                        <span className={`px-4 py-1 text-[10px] font-bold uppercase tracking-widest shadow-sm ${art.status === 'disponible' ? 'bg-white text-emerald-600' : 'bg-zinc-900 text-white opacity-90'}`}>
+                      <div className="absolute top-3 right-3 md:top-4 md:right-4 flex flex-col items-end gap-2">
+                        <span className={`px-3 py-1 text-[10px] font-bold uppercase tracking-widest shadow-sm ${art.status === 'disponible' ? 'bg-white text-emerald-600' : 'bg-zinc-900 text-white opacity-90'}`}>
                           {art.status === 'disponible' ? `${art.price}€` : t.sold}
                         </span>
                         {(art.style || art.category) && (
@@ -114,7 +117,7 @@ const Artistas: React.FC<ArtistasProps> = ({ artists, artworks, lang }) => {
                       </div>
                     </div>
                     <div className="space-y-1">
-                      <h3 className="text-2xl serif group-hover:text-emerald-600 transition-colors">{art.title}</h3>
+                      <h3 className="text-xl md:text-2xl serif group-hover:text-emerald-600 transition-colors">{art.title}</h3>
                       <p className="text-xs text-zinc-400 uppercase tracking-widest pt-3 border-t border-zinc-50 mt-4">
                         {art.medium} • {art.size}
                       </p>
@@ -140,25 +143,26 @@ const Artistas: React.FC<ArtistasProps> = ({ artists, artworks, lang }) => {
 
   // View: Artists Grid
   return (
-    <div className="pt-32 pb-24 animate-fadeIn">
-      <div className="max-w-7xl mx-auto px-6">
-        <header className="mb-20 text-center max-w-3xl mx-auto">
+    <div className="pt-24 md:pt-32 pb-16 md:pb-24 animate-fadeIn">
+      <div className="max-w-7xl mx-auto px-4 md:px-6">
+
+        <header className="mb-12 md:mb-20 text-center max-w-3xl mx-auto">
           <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-emerald-600 mb-4 block">LOONA CONTEMPORARY</span>
-          <h1 className="text-5xl serif mb-6">
+          <h1 className="text-4xl md:text-5xl serif mb-4 md:mb-6">
             {lang === 'ES' ? 'Artistas' : lang === 'EN' ? 'Artists' : lang === 'FR' ? 'Artistes' : 'Artisti'}
           </h1>
-          <p className="text-zinc-500 leading-relaxed">
+          <p className="text-sm md:text-base text-zinc-500 leading-relaxed px-2 md:px-0">
             {lang === 'ES'
               ? 'Los creadores que representamos comparten una visión profunda del arte como herramienta de transformación. Cada artista trabaja desde su más auténtica voz interior.'
               : lang === 'EN'
               ? 'The creators we represent share a deep vision of art as a tool for transformation. Each artist works from their most authentic inner voice.'
               : lang === 'FR'
-              ? 'Les créateurs que nous représentons partagent une vision profonde de l\'art comme outil de transformation. Chaque artiste travaille depuis sa voix intérieure la plus authentique.'
-              : 'I creatori che rappresentiamo condividono una visione profonda dell\'arte come strumento di trasformazione. Ogni artista lavora dalla sua voce interiore più autentica.'}
+              ? "Les créateurs que nous représentons partagent une vision profonde de l'art comme outil de transformation. Chaque artiste travaille depuis sa voix intérieure la plus authentique."
+              : "I creatori che rappresentiamo condividono una visione profonda dell'arte come strumento di trasformazione. Ogni artista lavora dalla sua voce interiore più autentica."}
           </p>
         </header>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-10">
           {allArtists.map((artist) => {
             const count = worksCount(artist.id);
             return (
@@ -176,22 +180,22 @@ const Artistas: React.FC<ArtistasProps> = ({ artists, artworks, lang }) => {
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                   {count > 0 && (
-                    <div className="absolute bottom-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <div className="absolute bottom-3 right-3 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                       <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-700">{count} {t.works}</span>
                     </div>
                   )}
                 </div>
 
                 {/* Artist Info */}
-                <div className="p-8">
-                  <h2 className="text-2xl serif mb-2 group-hover:text-emerald-600 transition-colors">{artist.name}</h2>
+                <div className="p-5 md:p-8">
+                  <h2 className="text-xl md:text-2xl serif mb-1 md:mb-2 group-hover:text-emerald-600 transition-colors">{artist.name}</h2>
                   {artist.location && (
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-4">{artist.location}</p>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-3 md:mb-4">{artist.location}</p>
                   )}
                   {artist.bio && (
                     <p className="text-sm text-zinc-500 leading-relaxed line-clamp-3">{artist.bio}</p>
                   )}
-                  <div className="mt-6 pt-4 border-t border-zinc-100 flex items-center justify-between">
+                  <div className="mt-4 md:mt-6 pt-4 border-t border-zinc-100 flex items-center justify-between">
                     <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-600">
                       {lang === 'ES' ? 'Ver obras' : lang === 'EN' ? 'View works' : lang === 'FR' ? 'Voir les œuvres' : 'Vedi opere'} →
                     </span>
@@ -206,9 +210,9 @@ const Artistas: React.FC<ArtistasProps> = ({ artists, artworks, lang }) => {
         </div>
 
         {allArtists.length === 0 && (
-          <div className="text-center py-24">
-            <p className="text-zinc-400 text-lg">
-              {lang === 'ES' ? 'No hay artistas disponibles aún.' : lang === 'EN' ? 'No artists available yet.' : lang === 'FR' ? 'Pas encore d\'artistes disponibles.' : 'Nessun artista disponibile ancora.'}
+          <div className="text-center py-16 md:py-24">
+            <p className="text-zinc-400">
+              {lang === 'ES' ? 'No hay artistas disponibles aún.' : lang === 'EN' ? 'No artists available yet.' : lang === 'FR' ? "Pas encore d'artistes disponibles." : 'Nessun artista disponibile ancora.'}
             </p>
           </div>
         )}
