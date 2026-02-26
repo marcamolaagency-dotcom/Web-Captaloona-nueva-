@@ -67,7 +67,7 @@ export async function getArtists(): Promise<LocalArtist[]> {
     return storedArtists;
   }
 
-  // If Supabase has data, also save to localStorage as backup
+  // If Supabase has data, merge with localStorage items not yet synced
   if (data.length > 0) {
     const artists = data.map((artist) => ({
       id: artist.id,
@@ -76,8 +76,13 @@ export async function getArtists(): Promise<LocalArtist[]> {
       imageUrl: artist.image_url,
       location: artist.location || undefined,
     }));
-    saveToLocalStorage(STORAGE_KEYS.artists, artists);
-    return artists;
+
+    const supabaseIds = new Set(artists.map(a => a.id));
+    const pendingLocal = storedArtists.filter(a => !supabaseIds.has(a.id));
+    const merged = [...artists, ...pendingLocal];
+
+    saveToLocalStorage(STORAGE_KEYS.artists, merged);
+    return merged;
   }
 
   return ARTISTS;
@@ -212,7 +217,7 @@ export async function getArtworks(): Promise<LocalArtwork[]> {
     return storedArtworks;
   }
 
-  // If Supabase has data, also save to localStorage as backup
+  // If Supabase has data, merge with any localStorage items not yet synced
   if (data.length > 0) {
     const artworks = data.map((artwork: any) => ({
       id: artwork.id,
@@ -228,8 +233,14 @@ export async function getArtworks(): Promise<LocalArtwork[]> {
       isPermanent: artwork.is_permanent ?? false,
       style: artwork.style || undefined,
     }));
-    saveToLocalStorage(STORAGE_KEYS.artworks, artworks);
-    return artworks;
+
+    // Preserve localStorage items not present in Supabase (pending sync / offline adds)
+    const supabaseIds = new Set(artworks.map(a => a.id));
+    const pendingLocal = storedArtworks.filter(a => !supabaseIds.has(a.id));
+    const merged = [...artworks, ...pendingLocal];
+
+    saveToLocalStorage(STORAGE_KEYS.artworks, merged);
+    return merged;
   }
 
   return INITIAL_ARTWORKS;
@@ -428,8 +439,13 @@ export async function getEvents(): Promise<EventItem[]> {
       catalogUrl: (event as any).catalog_url || undefined,
       videoUrl: (event as any).video_url || undefined,
     }));
-    saveToLocalStorage(STORAGE_KEYS.events, events);
-    return events;
+
+    const supabaseIds = new Set(events.map(e => e.id));
+    const pendingLocal = storedEvents.filter(e => !supabaseIds.has(e.id));
+    const merged = [...events, ...pendingLocal];
+
+    saveToLocalStorage(STORAGE_KEYS.events, merged);
+    return merged;
   }
 
   return INITIAL_EVENTS;
@@ -564,8 +580,13 @@ export async function getOtherEvents(): Promise<OtherEvent[]> {
       description: event.description,
       imageUrl: event.image_url,
     }));
-    saveToLocalStorage(STORAGE_KEYS.otherEvents, events);
-    return events;
+
+    const supabaseIds = new Set(events.map(e => e.id));
+    const pendingLocal = storedOtherEvents.filter(e => !supabaseIds.has(e.id));
+    const merged = [...events, ...pendingLocal];
+
+    saveToLocalStorage(STORAGE_KEYS.otherEvents, merged);
+    return merged;
   }
 
   return INITIAL_OTHER_EVENTS_DB;

@@ -228,14 +228,19 @@ const ImageLightbox: React.FC<ImageLightboxProps> = ({
       </div>
 
       {/* Mobile hint */}
-      <div className="md:hidden absolute top-20 left-1/2 -translate-x-1/2 z-50 text-white/50 text-[11px] tracking-wide text-center px-4">
-        Pellizca para zoom - Doble tap para ampliar
+      <div className="md:hidden absolute bottom-[76px] left-1/2 -translate-x-1/2 z-50 text-white/40 text-[10px] tracking-wide text-center px-4 whitespace-nowrap">
+        Pellizca para zoom · Doble tap para ampliar
       </div>
 
       {/* Image container */}
       <div
         ref={containerRef}
-        className="w-full h-full flex items-center justify-center overflow-hidden touch-none px-4 py-20 md:py-24"
+        className="absolute inset-0 flex items-center justify-center touch-none px-4"
+        style={{
+          paddingTop: '72px',
+          paddingBottom: '80px',
+          cursor: scale > 1 ? (isDragging ? 'grabbing' : 'grab') : 'zoom-in',
+        }}
         onWheel={handleWheel}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
@@ -245,15 +250,17 @@ const ImageLightbox: React.FC<ImageLightboxProps> = ({
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
         onDoubleClick={handleDoubleClick}
-        style={{ cursor: scale > 1 ? (isDragging ? 'grabbing' : 'grab') : 'zoom-in' }}
       >
         <img
           ref={imageRef}
           src={imageUrl}
           alt={alt}
-          className="max-w-[90vw] md:max-w-[85vw] max-h-[60vh] md:max-h-[70vh] object-contain select-none transition-transform duration-100"
+          className="max-w-[92vw] md:max-w-[82vw] select-none transition-transform duration-150"
           style={{
+            maxHeight: 'calc(100vh - 152px)',
             transform: `scale(${scale}) translate(${position.x / scale}px, ${position.y / scale}px)`,
+            transformOrigin: 'center center',
+            willChange: 'transform',
           }}
           draggable={false}
         />
