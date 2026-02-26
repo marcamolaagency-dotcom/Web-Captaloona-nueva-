@@ -38,12 +38,13 @@ const Home: React.FC<HomeProps> = ({ onNavigate, lang, artworks, featuredArtwork
   const t = TRANSLATIONS[lang]?.home || TRANSLATIONS['ES'].home;
   const [lightboxImage, setLightboxImage] = useState<{url: string; title: string; artist: string} | null>(null);
 
-  // Get Claudio's artworks for the Coach section
+  // Get Claudio's artworks for the Coach section (only external URLs, not local /images/ paths)
   const coachImage = useMemo(() => {
     const claudioArtworks = artworks.filter(a =>
-      a.artistId === 'claudio-fiorentini' ||
+      (a.artistId === 'claudio-fiorentini' ||
       a.artistName?.toLowerCase().includes('claudio') ||
-      a.artistName?.toLowerCase().includes('fiorentini')
+      a.artistName?.toLowerCase().includes('fiorentini')) &&
+      !a.imageUrl.startsWith('/images/')
     );
     return claudioArtworks.length > 0
       ? claudioArtworks[0].imageUrl
