@@ -65,7 +65,14 @@ const Configuracion: React.FC<ConfiguracionProps> = ({
     setIsLoggingIn(true);
 
     try {
-      if (supabaseEnabled && email) {
+      if (supabaseEnabled) {
+        // Supabase configured: always require email to create a real session
+        // Using offline fallback when Supabase is active causes inserts to fail (RLS blocks anon)
+        if (!email) {
+          setLoginError('Introduce tu email para acceder con persistencia en base de datos.');
+          setIsLoggingIn(false);
+          return;
+        }
         const success = await login(email, password);
         if (!success) {
           setLoginError('Credenciales incorrectas. Verifica tu email y contraseña.');
