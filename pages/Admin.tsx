@@ -13,6 +13,41 @@ interface AdminProps {
 
 const Admin: React.FC<AdminProps> = ({ artworks, events, artists, onUpdateArtworks, onUpdateEvents, onUpdateArtists }) => {
   const [activeTab, setActiveTab] = useState<'obras' | 'artistas' | 'eventos'>('obras');
+
+  const downloadBackup = () => {
+    const esc = (s: string) => s.replace(/'/g, "''");
+    const date = new Date().toISOString().split('T')[0];
+
+    const artistsSQL = artists.map(a =>
+      `('${esc(a.id)}', '${esc(a.name)}', '${esc(a.bio)}', '${esc(a.imageUrl)}', '${esc(a.location || '')}')`
+    ).join(',\n');
+
+    const artworksSQL = artworks.map(a =>
+      `('${esc(a.title)}', '${esc(a.artistId)}', '${esc(a.medium || '')}', '${esc(a.size || '')}', ${a.price || 0}, '${esc(a.imageUrl)}', '${esc(a.category)}', '${esc(a.status)}')`
+    ).join(',\n');
+
+    const sql = `-- BACKUP Captaloona Art - ${date}
+-- Ejecuta en Supabase SQL Editor
+
+-- ARTISTAS
+INSERT INTO artists (id, name, bio, image_url, location) VALUES
+${artistsSQL}
+ON CONFLICT (id) DO UPDATE SET name=EXCLUDED.name, bio=EXCLUDED.bio, image_url=EXCLUDED.image_url, location=EXCLUDED.location;
+
+-- OBRAS
+INSERT INTO artworks (title, artist_id, medium, size, price, image_url, category, status) VALUES
+${artworksSQL}
+ON CONFLICT DO NOTHING;
+`;
+
+    const blob = new Blob([sql], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `captaloona-backup-${date}.sql`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
   
   // Form States
   const [newArt, setNewArt] = useState<Partial<Artwork>>({ category: 'Pintura', status: 'disponible', artistId: artists[0]?.id || '' });
@@ -74,16 +109,26 @@ const Admin: React.FC<AdminProps> = ({ artworks, events, artists, onUpdateArtwor
           <h1 className="text-4xl serif mb-2">Panel de Control</h1>
           <p className="text-zinc-500">Administra el catálogo completo de Captaloona Art.</p>
         </div>
-        <div className="flex bg-zinc-100 p-1 rounded-lg">
-          {['obras', 'artistas', 'eventos'].map((tab) => (
-            <button 
-              key={tab}
-              onClick={() => setActiveTab(tab as any)}
-              className={`px-6 py-2 rounded-md text-[10px] font-bold uppercase tracking-widest transition-all ${activeTab === tab ? 'bg-white shadow-sm text-emerald-600' : 'text-zinc-500 hover:text-zinc-900'}`}
-            >
-              {tab}
-            </button>
-          ))}
+        <div className="flex items-center gap-3">
+          <button
+            onClick={downloadBackup}
+            className="px-4 py-2 border border-zinc-300 text-[10px] font-bold uppercase tracking-widest text-zinc-600 hover:border-emerald-600 hover:text-emerald-600 transition-colors rounded-md flex items-center gap-2"
+            title="Descarga un backup SQL de todos los artistas y obras"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+            Backup SQL
+          </button>
+          <div className="flex bg-zinc-100 p-1 rounded-lg">
+            {['obras', 'artistas', 'eventos'].map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab as any)}
+                className={`px-6 py-2 rounded-md text-[10px] font-bold uppercase tracking-widest transition-all ${activeTab === tab ? 'bg-white shadow-sm text-emerald-600' : 'text-zinc-500 hover:text-zinc-900'}`}
+              >
+                {tab}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
