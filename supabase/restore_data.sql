@@ -29,7 +29,7 @@ Su obra pictórica, mejor sería decir para-pictórica, como él mismo ama defin
 ON CONFLICT (id) DO NOTHING;
 
 -- OBRAS
-INSERT INTO artworks (title, artist_id, medium, size, price, image_url, category, status, is_permanent) VALUES
+INSERT INTO artworks (title, artist_id, medium, size, price, image_url, category, status) VALUES
 (
   'Jazz Remastered',
   'claudio-fiorentini',
@@ -38,8 +38,7 @@ INSERT INTO artworks (title, artist_id, medium, size, price, image_url, category
   1200,
   'https://images.unsplash.com/photo-1541963463532-d68292c34b19?q=80&w=800&auto=format&fit=crop',
   'Pintura',
-  'disponible',
-  false
+  'disponible'
 ),
 (
   'Fragmentos de Caos',
@@ -49,6 +48,5 @@ INSERT INTO artworks (title, artist_id, medium, size, price, image_url, category
   2500,
   'https://images.unsplash.com/photo-1549490349-8643362247b5?q=80&w=800&auto=format&fit=crop',
   'Pintura',
-  'vendido',
-  false
+  'vendido'
 );
