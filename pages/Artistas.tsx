@@ -31,7 +31,10 @@ const Artistas: React.FC<ArtistasProps> = ({ artists, artworks, lang }) => {
         });
       }
     });
-    return Array.from(artistMap.values());
+    const list = Array.from(artistMap.values());
+    // Claudio always last — give prominence to represented artists
+    const isClaudio = (a: Artist) => a.id === 'claudio-fiorentini' || a.name.toLowerCase().includes('claudio');
+    return [...list.filter(a => !isClaudio(a)), ...list.filter(isClaudio)];
   }, [artists, artworks]);
 
   const worksCount = (artistId: string) =>
