@@ -97,7 +97,7 @@ const Home: React.FC<HomeProps> = ({ onNavigate, lang, artworks, featuredArtwork
         </div>
 
         <div className="relative z-10 text-center px-4 md:px-6 max-w-5xl mx-auto pt-16 md:pt-24">
-          <h1 className="text-4xl sm:text-5xl md:text-7xl lg:text-9xl font-normal text-zinc-900 mb-6 md:mb-12 leading-[1.1] serif animate-fadeIn" style={{ animationDelay: '0.2s' }}>
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-normal text-zinc-900 mb-6 md:mb-12 leading-[1.15] serif animate-fadeIn" style={{ animationDelay: '0.2s' }}>
             {t.heroTitle}
           </h1>
           <p className="text-base md:text-xl text-zinc-500 mb-8 md:mb-16 max-w-2xl mx-auto leading-relaxed italic font-light animate-fadeIn" style={{ animationDelay: '0.4s' }}>

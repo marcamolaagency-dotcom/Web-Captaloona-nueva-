@@ -5,11 +5,12 @@ export const TRANSLATIONS: Record<Language, any> = {
   ES: {
     nav: {
       home: 'Home',
+      artists: 'Artistas',
       collection: 'Colección',
       artist: 'Claudio Fiorentini',
       events: 'Exposiciones',
-      otherEvents: 'Otros Eventos',
-      space: 'Captaloona Art',
+      otherEvents: 'Eventos',
+      space: 'Captaloona',
       contact: 'Contacto',
       config: 'Config'
     },
@@ -109,11 +110,12 @@ export const TRANSLATIONS: Record<Language, any> = {
   EN: {
     nav: {
       home: 'Home',
+      artists: 'Artists',
       collection: 'Collection',
       artist: 'Claudio Fiorentini',
       events: 'Exhibitions',
-      otherEvents: 'Other Events',
-      space: 'Captaloona Art',
+      otherEvents: 'Events',
+      space: 'Captaloona',
       contact: 'Contact',
       config: 'Config'
     },
@@ -213,11 +215,12 @@ export const TRANSLATIONS: Record<Language, any> = {
   FR: {
     nav: {
       home: 'Accueil',
+      artists: 'Artistes',
       collection: 'Collection',
       artist: 'Claudio Fiorentini',
       events: 'Expositions',
-      otherEvents: 'Autres Événements',
-      space: 'Captaloona Art',
+      otherEvents: 'Événements',
+      space: 'Captaloona',
       contact: 'Contact',
       config: 'Config'
     },
@@ -317,11 +320,12 @@ export const TRANSLATIONS: Record<Language, any> = {
   IT: {
     nav: {
       home: 'Home',
+      artists: 'Artisti',
       collection: 'Collezione',
       artist: 'Claudio Fiorentini',
       events: 'Mostre',
-      otherEvents: 'Altri Eventi',
-      space: 'Captaloona Art',
+      otherEvents: 'Eventi',
+      space: 'Captaloona',
       contact: 'Contatto',
       config: 'Config'
     },

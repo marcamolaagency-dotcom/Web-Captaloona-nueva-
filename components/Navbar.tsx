@@ -42,11 +42,12 @@ const Navbar: React.FC<NavbarProps> = ({ currentPath, onNavigate, lang, onLangua
 
   const navItems = [
     { label: t.home, path: '/' },
-    { label: t.artist, path: '/artista' },
-    { label: t.collection, path: '/coleccion' },
+    { label: t.artists, path: '/artistas' },
     { label: t.events, path: '/eventos' },
     { label: t.otherEvents, path: '/otros-eventos' },
+    { label: t.artist, path: '/artista' },
     { label: t.space, path: '/espacio' },
+    { label: t.collection, path: '/coleccion' },
     { label: t.contact, path: '/contacto' },
   ];
 
@@ -129,62 +130,89 @@ const Navbar: React.FC<NavbarProps> = ({ currentPath, onNavigate, lang, onLangua
       />
 
       {/* Mobile Menu Panel */}
-      <div className={`fixed top-0 right-0 h-full w-[85%] max-w-sm bg-white z-40 lg:hidden transform transition-transform duration-300 ease-out shadow-2xl ${isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}>
-        <div className="flex flex-col h-full pt-20 pb-8 px-6">
+      <div className={`fixed top-0 right-0 h-full w-[85%] max-w-xs bg-white z-40 lg:hidden transform transition-transform duration-300 ease-out shadow-2xl ${isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+        <div className="flex flex-col h-full">
+
+          {/* Panel Header */}
+          <div className="flex items-center justify-between px-6 py-5 border-b border-zinc-100">
+            <div>
+              <span className="text-base font-bold tracking-[0.2em] text-zinc-900 serif uppercase leading-none">LOONA</span>
+              <span className="block text-[8px] tracking-[0.3em] text-zinc-400 font-medium uppercase mt-0.5">CONTEMPORARY</span>
+            </div>
+            <button
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="w-8 h-8 flex items-center justify-center text-zinc-400 hover:text-zinc-900 transition-colors"
+              aria-label="Cerrar menú"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+
           {/* Navigation Links */}
-          <nav className="flex-1 overflow-y-auto">
-            <ul className="space-y-1">
-              {navItems.map((item) => (
-                <li key={item.path}>
-                  <button
-                    onClick={() => handleNavigation(item.path)}
-                    className={`w-full text-left py-4 px-4 text-base font-medium tracking-wide transition-colors rounded-lg ${
-                      currentPath === item.path || (currentPath === '' && item.path === '/')
-                        ? 'bg-emerald-50 text-emerald-600'
-                        : 'text-zinc-700 hover:bg-zinc-50'
-                    }`}
-                  >
-                    {item.label}
-                  </button>
-                </li>
+          <nav className="flex-1 overflow-y-auto px-3 py-4">
+            {/* Group 1: Main pages */}
+            <ul className="space-y-0.5">
+              {navItems.map((item, index) => (
+                <React.Fragment key={item.path}>
+                  {/* Subtle divider between logical groups */}
+                  {(index === 2 || index === 4 || index === 6) && (
+                    <li className="py-1">
+                      <div className="h-px bg-zinc-100 mx-3" />
+                    </li>
+                  )}
+                  <li>
+                    <button
+                      onClick={() => handleNavigation(item.path)}
+                      className={`w-full text-left py-3 px-3 text-sm font-medium tracking-wide transition-colors rounded-md ${
+                        currentPath === item.path || (currentPath === '' && item.path === '/')
+                          ? 'bg-emerald-50 text-emerald-600'
+                          : 'text-zinc-700 hover:bg-zinc-50'
+                      }`}
+                    >
+                      {item.label}
+                    </button>
+                  </li>
+                </React.Fragment>
               ))}
-              {/* Config link for mobile */}
-              <li>
-                <button
-                  onClick={() => handleNavigation('/config')}
-                  className={`w-full text-left py-4 px-4 text-base font-medium tracking-wide transition-colors rounded-lg flex items-center gap-3 ${
-                    currentPath === '/config'
-                      ? 'bg-emerald-50 text-emerald-600'
-                      : 'text-zinc-700 hover:bg-zinc-50'
-                  }`}
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                  Administración
-                </button>
-              </li>
             </ul>
           </nav>
 
-          {/* Language Switcher - Mobile */}
-          <div className="border-t border-zinc-100 pt-6 mt-4">
-            <p className="text-[10px] text-zinc-400 uppercase tracking-widest font-bold mb-4 px-4">Idioma</p>
-            <div className="flex items-center gap-2 px-4">
-              {(['ES', 'IT', 'EN', 'FR'] as Language[]).map((l) => (
-                <button
-                  key={l}
-                  onClick={() => {
-                    onLanguageChange(l);
-                  }}
-                  className={`flex-1 py-3 text-sm font-bold transition-all rounded-lg ${
-                    lang === l
-                      ? 'bg-zinc-900 text-white'
-                      : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'
-                  }`}
-                >
-                  {l}
-                </button>
-              ))}
+          {/* Footer: Language + Config */}
+          <div className="border-t border-zinc-100 px-4 pb-6 pt-4 space-y-4">
+            {/* Language Switcher */}
+            <div>
+              <p className="text-[9px] text-zinc-400 uppercase tracking-widest font-bold mb-2 px-1">Idioma</p>
+              <div className="flex items-center gap-1.5">
+                {(['ES', 'IT', 'EN', 'FR'] as Language[]).map((l) => (
+                  <button
+                    key={l}
+                    onClick={() => onLanguageChange(l)}
+                    className={`flex-1 py-2 text-xs font-bold transition-all rounded-md ${
+                      lang === l
+                        ? 'bg-zinc-900 text-white'
+                        : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'
+                    }`}
+                  >
+                    {l}
+                  </button>
+                ))}
+              </div>
             </div>
+
+            {/* Config */}
+            <button
+              onClick={() => handleNavigation('/config')}
+              className={`w-full flex items-center gap-2 py-2.5 px-3 text-xs font-medium rounded-md transition-colors ${
+                currentPath === '/config'
+                  ? 'bg-emerald-50 text-emerald-600'
+                  : 'text-zinc-400 hover:text-zinc-600 hover:bg-zinc-50'
+              }`}
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+              Administración
+            </button>
           </div>
         </div>
       </div>
