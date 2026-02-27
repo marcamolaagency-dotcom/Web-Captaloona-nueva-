@@ -11,6 +11,8 @@ interface ConfiguracionProps {
   otherEvents: OtherEvent[];
   artists: Artist[];
   featuredArtworkIds: string[];
+  saveError: string | null;
+  onClearSaveError: () => void;
   onAddArtwork: (artwork: Omit<Artwork, 'id'>) => Promise<void>;
   onEditArtwork: (id: string, updates: Partial<Artwork>) => Promise<void>;
   onRemoveArtwork: (id: string) => Promise<void>;
@@ -27,6 +29,7 @@ interface ConfiguracionProps {
 
 const Configuracion: React.FC<ConfiguracionProps> = ({
   artworks, events, otherEvents, artists, featuredArtworkIds,
+  saveError, onClearSaveError,
   onAddArtwork, onEditArtwork, onRemoveArtwork,
   onAddEvent, onEditEvent, onRemoveEvent,
   onAddOtherEvent, onRemoveOtherEvent, onAddArtist, onEditArtist, onRemoveArtist,
@@ -270,6 +273,22 @@ ${otherEventsSQL}
           </button>
         </div>
       </div>
+
+      {saveError && (
+        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-sm flex items-start justify-between gap-4">
+          <div>
+            <p className="text-sm font-bold text-red-700 mb-1">Error al guardar en Supabase</p>
+            <p className="text-xs text-red-600">{saveError}</p>
+            <p className="text-xs text-red-500 mt-2">Si el error persiste, ejecuta en el SQL Editor de Supabase:<br/>
+              <code className="bg-red-100 px-1">ALTER TABLE artworks ADD COLUMN IF NOT EXISTS style TEXT;</code><br/>
+              <code className="bg-red-100 px-1">ALTER TABLE artworks ADD COLUMN IF NOT EXISTS is_permanent BOOLEAN NOT NULL DEFAULT FALSE;</code><br/>
+              <code className="bg-red-100 px-1">ALTER TABLE events ADD COLUMN IF NOT EXISTS catalog_url TEXT;</code><br/>
+              <code className="bg-red-100 px-1">ALTER TABLE events ADD COLUMN IF NOT EXISTS video_url TEXT;</code>
+            </p>
+          </div>
+          <button onClick={onClearSaveError} className="text-red-400 hover:text-red-600 text-lg font-bold flex-shrink-0">✕</button>
+        </div>
+      )}
 
       <div className="flex justify-between items-end mb-16 border-b border-zinc-100 pb-10">
         <div>

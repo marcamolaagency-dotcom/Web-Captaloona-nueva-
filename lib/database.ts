@@ -233,29 +233,39 @@ export async function createArtwork(artwork: Omit<LocalArtwork, 'id'>): Promise<
     return newArtwork;
   }
 
-  const { data, error } = await supabase
+  const baseInsert = {
+    title: artwork.title,
+    artist_id: artwork.artistId,
+    medium: artwork.medium,
+    size: artwork.size,
+    price: artwork.price,
+    image_url: artwork.imageUrl,
+    category: artwork.category,
+    status: artwork.status,
+  };
+
+  const selectQuery = `*, artists (name)`;
+
+  // Try full insert first (with style and is_permanent)
+  let { data, error } = await supabase
     .from('artworks')
-    .insert({
-      title: artwork.title,
-      artist_id: artwork.artistId,
-      medium: artwork.medium,
-      size: artwork.size,
-      price: artwork.price,
-      image_url: artwork.imageUrl,
-      category: artwork.category,
-      status: artwork.status,
-      is_permanent: artwork.isPermanent ?? false,
-      style: artwork.style || null,
-    })
-    .select(`
-      *,
-      artists (name)
-    `)
+    .insert({ ...baseInsert, is_permanent: artwork.isPermanent ?? false, style: artwork.style || null })
+    .select(selectQuery)
     .single();
 
+  // If failed (e.g. columns don't exist yet), retry with only base columns
   if (error) {
-    console.error('Error creating artwork:', error);
-    return newArtwork; // Already saved to localStorage
+    console.warn('Artwork insert failed with extended columns, retrying with base columns:', error.message);
+    ({ data, error } = await supabase
+      .from('artworks')
+      .insert(baseInsert)
+      .select(selectQuery)
+      .single());
+  }
+
+  if (error) {
+    console.error('Error creating artwork (Supabase):', error);
+    return null; // Signal failure so UI can show an error
   }
 
   const savedArtwork = {
@@ -426,27 +436,38 @@ export async function createEvent(event: Omit<EventItem, 'id'>): Promise<EventIt
     return newEvent;
   }
 
-  const { data, error } = await supabase
+  const baseInsert = {
+    title: event.title,
+    date: event.date,
+    location: event.location,
+    description: event.description,
+    image_url: event.imageUrl,
+    event_type: 'exposicion' as const,
+  };
+
+  // Try full insert first (with catalog_url and video_url)
+  let { data, error } = await supabase
     .from('events')
-    .insert({
-      title: event.title,
-      date: event.date,
-      location: event.location,
-      description: event.description,
-      image_url: event.imageUrl,
-      event_type: 'exposicion',
-      catalog_url: event.catalogUrl || null,
-      video_url: event.videoUrl || null,
-    })
+    .insert({ ...baseInsert, catalog_url: event.catalogUrl || null, video_url: event.videoUrl || null })
     .select()
     .single();
 
+  // If failed (e.g. columns don't exist yet), retry with only base columns
   if (error) {
-    console.error('Error creating event:', error);
-    return newEvent; // Already saved to localStorage
+    console.warn('Event insert failed with extended columns, retrying with base columns:', error.message);
+    ({ data, error } = await supabase
+      .from('events')
+      .insert(baseInsert)
+      .select()
+      .single());
   }
 
-  return {
+  if (error) {
+    console.error('Error creating event (Supabase):', error);
+    return null; // Signal failure so UI can show an error
+  }
+
+  const savedEvent = {
     id: data.id,
     title: data.title,
     date: data.date,
@@ -456,6 +477,12 @@ export async function createEvent(event: Omit<EventItem, 'id'>): Promise<EventIt
     catalogUrl: (data as any).catalog_url || undefined,
     videoUrl: (data as any).video_url || undefined,
   };
+
+  // Update localStorage with the Supabase ID
+  const updatedEvents = currentEvents.filter(e => e.id !== newEvent.id);
+  saveToLocalStorage(STORAGE_KEYS.events, [savedEvent, ...updatedEvents]);
+
+  return savedEvent;
 }
 
 export async function deleteEvent(id: string): Promise<boolean> {

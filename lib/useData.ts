@@ -31,6 +31,8 @@ interface UseDataReturn {
   // Loading states
   loading: boolean;
   error: string | null;
+  saveError: string | null;
+  clearSaveError: () => void;
 
   // Actions
   addArtist: (artist: Omit<Artist, 'id'>) => Promise<void>;
@@ -67,6 +69,8 @@ export function useData(): UseDataReturn {
   const [featuredArtworkIds, setFeaturedArtworkIdsState] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const clearSaveError = useCallback(() => setSaveError(null), []);
 
   // Wrapper to save to Supabase and localStorage when updating featured IDs
   const setFeaturedArtworkIds = useCallback(async (ids: string[]) => {
@@ -117,16 +121,12 @@ export function useData(): UseDataReturn {
 
   // Artist actions
   const addArtist = async (artist: Omit<Artist, 'id'>) => {
+    setSaveError(null);
     const newArtist = await createArtist(artist);
     if (newArtist) {
       setArtists((prev) => [...prev, newArtist]);
     } else {
-      // Fallback to local state
-      const localArtist: Artist = {
-        ...artist,
-        id: artist.name.toLowerCase().replace(/\s+/g, '-'),
-      };
-      setArtists((prev) => [...prev, localArtist]);
+      setSaveError('No se pudo guardar el artista en Supabase. Verifica que el artista no exista ya o que tengas conexión activa.');
     }
   };
 
@@ -147,16 +147,12 @@ export function useData(): UseDataReturn {
 
   // Artwork actions
   const addArtwork = async (artwork: Omit<Artwork, 'id'>) => {
+    setSaveError(null);
     const newArtwork = await createArtwork(artwork);
     if (newArtwork) {
       setArtworks((prev) => [newArtwork, ...prev]);
     } else {
-      // Fallback to local state
-      const localArtwork: Artwork = {
-        ...artwork,
-        id: Date.now().toString(),
-      };
-      setArtworks((prev) => [localArtwork, ...prev]);
+      setSaveError('No se pudo guardar la obra en Supabase. Revisa la consola del navegador para más detalles. Es posible que necesites ejecutar el ALTER TABLE en Supabase.');
     }
   };
 
@@ -174,15 +170,12 @@ export function useData(): UseDataReturn {
 
   // Event actions
   const addEvent = async (event: Omit<EventItem, 'id'>) => {
+    setSaveError(null);
     const newEvent = await createEvent(event);
     if (newEvent) {
       setEvents((prev) => [newEvent, ...prev]);
     } else {
-      const localEvent: EventItem = {
-        ...event,
-        id: Date.now().toString(),
-      };
-      setEvents((prev) => [localEvent, ...prev]);
+      setSaveError('No se pudo guardar la exposición en Supabase. Revisa la consola del navegador para más detalles.');
     }
   };
 
@@ -200,15 +193,12 @@ export function useData(): UseDataReturn {
 
   // Other event actions
   const addOtherEvent = async (event: Omit<OtherEvent, 'id'>) => {
+    setSaveError(null);
     const newEvent = await createOtherEvent(event);
     if (newEvent) {
       setOtherEvents((prev) => [newEvent, ...prev]);
     } else {
-      const localEvent: OtherEvent = {
-        ...event,
-        id: Date.now().toString(),
-      };
-      setOtherEvents((prev) => [localEvent, ...prev]);
+      setSaveError('No se pudo guardar el evento en Supabase. Revisa la consola del navegador para más detalles.');
     }
   };
 
@@ -225,6 +215,8 @@ export function useData(): UseDataReturn {
     featuredArtworkIds,
     loading,
     error,
+    saveError,
+    clearSaveError,
     addArtist,
     editArtist,
     removeArtist,

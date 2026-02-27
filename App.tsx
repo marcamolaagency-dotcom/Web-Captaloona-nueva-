@@ -27,6 +27,8 @@ const App: React.FC = () => {
     otherEvents,
     featuredArtworkIds,
     loading,
+    saveError,
+    clearSaveError,
     addArtist,
     editArtist,
     removeArtist,
@@ -70,6 +72,8 @@ const App: React.FC = () => {
           otherEvents={otherEvents}
           artists={artists}
           featuredArtworkIds={featuredArtworkIds}
+          saveError={saveError}
+          onClearSaveError={clearSaveError}
           onAddArtwork={addArtwork}
           onEditArtwork={editArtwork}
           onRemoveArtwork={removeArtwork}
