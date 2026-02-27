@@ -33,6 +33,7 @@ const Configuracion: React.FC<ConfiguracionProps> = ({
   onUpdateFeaturedArtworkIds
 }) => {
   const [isSaving, setIsSaving] = useState(false);
+  const [backupMsg, setBackupMsg] = useState<string | null>(null);
 
   // Artwork editing state
   const [editingArtwork, setEditingArtwork] = useState<Artwork | null>(null);
@@ -92,6 +93,73 @@ const Configuracion: React.FC<ConfiguracionProps> = ({
 
   const handleLogout = async () => {
     await logout();
+  };
+
+  const guardarCambios = () => {
+    const esc = (s: string) => String(s ?? '').replace(/'/g, "''");
+    const date = new Date().toISOString().split('T')[0];
+
+    const artistsSQL = artists.length > 0
+      ? `INSERT INTO artists (id, name, bio, image_url, location) VALUES\n` +
+        artists.map(a =>
+          `('${esc(a.id)}', '${esc(a.name)}', '${esc(a.bio)}', '${esc(a.imageUrl)}', '${esc(a.location || '')}')`
+        ).join(',\n') +
+        `\nON CONFLICT (id) DO UPDATE SET name=EXCLUDED.name, bio=EXCLUDED.bio, image_url=EXCLUDED.image_url, location=EXCLUDED.location;`
+      : '-- Sin artistas';
+
+    const artworksSQL = artworks.length > 0
+      ? `INSERT INTO artworks (title, artist_id, medium, size, price, image_url, category, status, style, is_permanent) VALUES\n` +
+        artworks.map(a =>
+          `('${esc(a.title)}', '${esc(a.artistId)}', '${esc(a.medium || '')}', '${esc(a.size || '')}', ${a.price || 0}, '${esc(a.imageUrl)}', '${esc(a.category)}', '${esc(a.status)}', '${esc(a.style || '')}', ${a.isPermanent ? 'true' : 'false'})`
+        ).join(',\n') +
+        `\nON CONFLICT DO NOTHING;`
+      : '-- Sin obras';
+
+    const eventsSQL = events.length > 0
+      ? `INSERT INTO events (title, date, location, description, image_url, event_type, catalog_url, video_url) VALUES\n` +
+        events.map(ev =>
+          `('${esc(ev.title)}', '${esc(ev.date)}', '${esc(ev.location)}', '${esc(ev.description)}', '${esc(ev.imageUrl)}', 'exposicion', '${esc(ev.catalogUrl || '')}', '${esc(ev.videoUrl || '')}')`
+        ).join(',\n') +
+        `\nON CONFLICT DO NOTHING;`
+      : '-- Sin exposiciones';
+
+    const otherEventsSQL = otherEvents.length > 0
+      ? `INSERT INTO events (title, date, description, image_url, event_type, category) VALUES\n` +
+        otherEvents.map(ev =>
+          `('${esc(ev.title)}', '${esc(ev.date)}', '${esc(ev.description)}', '${esc(ev.imageUrl)}', 'otro', '${esc(ev.category)}')`
+        ).join(',\n') +
+        `\nON CONFLICT DO NOTHING;`
+      : '-- Sin otros eventos';
+
+    const sql = `-- ============================================================
+-- BACKUP CAPTALOONA ART - ${date}
+-- Generado desde el panel de administración
+-- Para restaurar: ejecuta en Supabase SQL Editor
+-- ============================================================
+
+-- ARTISTAS (${artists.length})
+${artistsSQL}
+
+-- OBRAS (${artworks.length})
+${artworksSQL}
+
+-- EXPOSICIONES (${events.length})
+${eventsSQL}
+
+-- OTROS EVENTOS (${otherEvents.length})
+${otherEventsSQL}
+`;
+
+    const blob = new Blob([sql], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `captaloona-backup-${date}.sql`;
+    a.click();
+    URL.revokeObjectURL(url);
+
+    setBackupMsg(`Backup guardado: captaloona-backup-${date}.sql`);
+    setTimeout(() => setBackupMsg(null), 4000);
   };
 
   // Reset form helper
@@ -182,12 +250,25 @@ const Configuracion: React.FC<ConfiguracionProps> = ({
             </span>
           )}
         </div>
-        <button
-          onClick={handleLogout}
-          className="text-[10px] text-zinc-400 hover:text-red-500 uppercase tracking-widest transition-colors"
-        >
-          Cerrar Sesión
-        </button>
+        <div className="flex items-center gap-4">
+          {backupMsg && (
+            <span className="text-[10px] text-emerald-600 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-sm animate-fadeIn">
+              {backupMsg}
+            </span>
+          )}
+          <button
+            onClick={guardarCambios}
+            className="text-[10px] bg-emerald-600 text-white px-5 py-2 uppercase tracking-widest hover:bg-emerald-700 transition-colors font-bold rounded-sm"
+          >
+            Guardar cambios
+          </button>
+          <button
+            onClick={handleLogout}
+            className="text-[10px] text-zinc-400 hover:text-red-500 uppercase tracking-widest transition-colors"
+          >
+            Cerrar Sesión
+          </button>
+        </div>
       </div>
 
       <div className="flex justify-between items-end mb-16 border-b border-zinc-100 pb-10">
