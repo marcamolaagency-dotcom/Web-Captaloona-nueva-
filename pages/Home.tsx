@@ -38,18 +38,8 @@ const Home: React.FC<HomeProps> = ({ onNavigate, lang, artworks, featuredArtwork
   const t = TRANSLATIONS[lang]?.home || TRANSLATIONS['ES'].home;
   const [lightboxImage, setLightboxImage] = useState<{url: string; title: string; artist: string} | null>(null);
 
-  // Get Claudio's artworks for the Coach section (only external URLs, not local /images/ paths)
-  const coachImage = useMemo(() => {
-    const claudioArtworks = artworks.filter(a =>
-      (a.artistId === 'claudio-fiorentini' ||
-      a.artistName?.toLowerCase().includes('claudio') ||
-      a.artistName?.toLowerCase().includes('fiorentini')) &&
-      !a.imageUrl.startsWith('/images/')
-    );
-    return claudioArtworks.length > 0
-      ? claudioArtworks[0].imageUrl
-      : "https://images.unsplash.com/photo-1541701494587-cb58502866ab?q=80&w=1200";
-  }, [artworks]);
+  // Imagen fija para el panel Arts Coaching & Curaduría
+  const coachImage = "/images/baldosas.lr.jpg";
 
   // Get the most relevant event for the featured exhibition section:
   // - Upcoming events first (closest to today)
