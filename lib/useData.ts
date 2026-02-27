@@ -18,7 +18,6 @@ import {
   getFeaturedArtworkIds,
   saveFeaturedArtworkIds,
 } from './database';
-import { INITIAL_ARTWORKS, INITIAL_EVENTS, ARTISTS } from '../constants';
 import type { Artwork, EventItem, OtherEvent, Artist } from '../types';
 
 interface UseDataReturn {
@@ -60,30 +59,11 @@ interface UseDataReturn {
   refresh: () => Promise<void>;
 }
 
-const INITIAL_OTHER_EVENTS: OtherEvent[] = [
-  {
-    id: 'o1',
-    date: '15 DIC 2024',
-    title: 'Taller de Materia y Textura',
-    category: 'Taller',
-    imageUrl: 'https://images.unsplash.com/photo-1513364776144-60967b0f800f?q=80&w=800',
-    description: 'Explora el uso de materiales no convencionales en la pintura contemporánea de la mano de nuestros artistas residentes.'
-  },
-  {
-    id: 'o2',
-    date: '20 DIC 2024',
-    title: 'Presentación: La Poesía del Caos',
-    category: 'Literatura',
-    imageUrl: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?q=80&w=800',
-    description: 'Una tarde dedicada a la narrativa introspectiva y su relación con el arte visual moderno.'
-  }
-];
-
 export function useData(): UseDataReturn {
-  const [artists, setArtists] = useState<Artist[]>(ARTISTS);
-  const [artworks, setArtworks] = useState<Artwork[]>(INITIAL_ARTWORKS);
-  const [events, setEvents] = useState<EventItem[]>(INITIAL_EVENTS);
-  const [otherEvents, setOtherEvents] = useState<OtherEvent[]>(INITIAL_OTHER_EVENTS);
+  const [artists, setArtists] = useState<Artist[]>([]);
+  const [artworks, setArtworks] = useState<Artwork[]>([]);
+  const [events, setEvents] = useState<EventItem[]>([]);
+  const [otherEvents, setOtherEvents] = useState<OtherEvent[]>([]);
   const [featuredArtworkIds, setFeaturedArtworkIdsState] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -108,31 +88,20 @@ export function useData(): UseDataReturn {
         getFeaturedArtworkIds(),
       ]);
 
-      // Use fetched data if available, otherwise use initial constants
-      const finalArtists = artistsData.length > 0 ? artistsData : ARTISTS;
-      const finalArtworks = artworksData.length > 0 ? artworksData : INITIAL_ARTWORKS;
-      const finalEvents = eventsData.length > 0 ? eventsData : INITIAL_EVENTS;
-      const finalOtherEvents = otherEventsData.length > 0 ? otherEventsData : INITIAL_OTHER_EVENTS;
-
-      // Only clean up orphaned featured artwork IDs when we have real artwork data from the DB.
-      // If artworksData is empty we fell back to INITIAL_ARTWORKS (hardcoded IDs '1','2'), so
-      // filtering against those would incorrectly remove valid Supabase UUIDs and permanently
-      // erase the featured-artworks configuration from Supabase.
-      const hasRealArtworks = artworksData.length > 0;
-      const validFeaturedIds = hasRealArtworks
-        ? featuredIds.filter(id => finalArtworks.some(artwork => artwork.id === id))
+      // Clean up orphaned featured artwork IDs
+      const validFeaturedIds = artworksData.length > 0
+        ? featuredIds.filter(id => artworksData.some(artwork => artwork.id === id))
         : featuredIds;
 
-      // Persist the cleaned list only when we are sure we used real artwork data
-      if (hasRealArtworks && validFeaturedIds.length !== featuredIds.length) {
+      if (artworksData.length > 0 && validFeaturedIds.length !== featuredIds.length) {
         console.log('Cleaned up orphaned featured artwork IDs');
         await saveFeaturedArtworkIds(validFeaturedIds);
       }
 
-      setArtists(finalArtists);
-      setArtworks(finalArtworks);
-      setEvents(finalEvents);
-      setOtherEvents(finalOtherEvents);
+      setArtists(artistsData);
+      setArtworks(artworksData);
+      setEvents(eventsData);
+      setOtherEvents(otherEventsData);
       setFeaturedArtworkIdsState(validFeaturedIds);
     } catch (err) {
       console.error('Error loading data:', err);
