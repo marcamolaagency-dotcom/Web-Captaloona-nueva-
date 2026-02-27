@@ -45,7 +45,6 @@ function saveToLocalStorage<T>(key: string, data: T): void {
 // ============================================
 
 export async function getArtists(): Promise<LocalArtist[]> {
-  // Always check localStorage first as it might have user-added data
   const storedArtists = getFromLocalStorage<LocalArtist[]>(STORAGE_KEYS.artists, []);
 
   if (!isSupabaseConfigured()) {
@@ -59,33 +58,21 @@ export async function getArtists(): Promise<LocalArtist[]> {
 
   if (error) {
     console.error('Error fetching artists:', error);
+    // Only use localStorage as fallback when Supabase is unreachable
     return storedArtists;
   }
 
-  // If Supabase returns empty but we have localStorage data, use localStorage
-  if (data.length === 0 && storedArtists.length > 0) {
-    return storedArtists;
-  }
+  // Supabase is the source of truth — save its result and return it
+  const artists = data.map((artist) => ({
+    id: artist.id,
+    name: artist.name,
+    bio: artist.bio,
+    imageUrl: artist.image_url,
+    location: artist.location || undefined,
+  }));
 
-  // If Supabase has data, merge with localStorage items not yet synced
-  if (data.length > 0) {
-    const artists = data.map((artist) => ({
-      id: artist.id,
-      name: artist.name,
-      bio: artist.bio,
-      imageUrl: artist.image_url,
-      location: artist.location || undefined,
-    }));
-
-    const supabaseIds = new Set(artists.map(a => a.id));
-    const pendingLocal = storedArtists.filter(a => !supabaseIds.has(a.id));
-    const merged = [...artists, ...pendingLocal];
-
-    saveToLocalStorage(STORAGE_KEYS.artists, merged);
-    return merged;
-  }
-
-  return [];
+  saveToLocalStorage(STORAGE_KEYS.artists, artists);
+  return artists;
 }
 
 export async function createArtist(artist: Omit<LocalArtist, 'id'>): Promise<LocalArtist | null> {
@@ -145,10 +132,12 @@ export async function deleteArtist(id: string): Promise<boolean> {
     .delete()
     .eq('id', id);
 
+  // Always sync localStorage with the deletion result
+  const currentArtists = getFromLocalStorage<LocalArtist[]>(STORAGE_KEYS.artists, []);
+  saveToLocalStorage(STORAGE_KEYS.artists, currentArtists.filter(a => a.id !== id));
+
   if (error) {
     console.error('Error deleting artist:', error);
-    const currentArtists = getFromLocalStorage<LocalArtist[]>(STORAGE_KEYS.artists, []);
-    saveToLocalStorage(STORAGE_KEYS.artists, currentArtists.filter(a => a.id !== id));
     return false;
   }
 
@@ -190,7 +179,6 @@ export async function updateArtist(id: string, updates: Partial<LocalArtist>): P
 // ============================================
 
 export async function getArtworks(): Promise<LocalArtwork[]> {
-  // Always check localStorage first as it might have user-added data
   const storedArtworks = getFromLocalStorage<LocalArtwork[]>(STORAGE_KEYS.artworks, []);
 
   if (!isSupabaseConfigured()) {
@@ -207,41 +195,28 @@ export async function getArtworks(): Promise<LocalArtwork[]> {
 
   if (error) {
     console.error('Error fetching artworks:', error);
+    // Only use localStorage as fallback when Supabase is unreachable
     return storedArtworks;
   }
 
-  // If Supabase returns empty but we have localStorage data, use localStorage
-  if (data.length === 0 && storedArtworks.length > 0) {
-    return storedArtworks;
-  }
+  // Supabase is the source of truth — save its result and return it
+  const artworks = data.map((artwork: any) => ({
+    id: artwork.id,
+    title: artwork.title,
+    artistId: artwork.artist_id,
+    artistName: artwork.artists?.name || '',
+    medium: artwork.medium,
+    size: artwork.size,
+    price: artwork.price,
+    imageUrl: artwork.image_url,
+    category: artwork.category,
+    status: artwork.status,
+    isPermanent: artwork.is_permanent ?? false,
+    style: artwork.style || undefined,
+  }));
 
-  // If Supabase has data, merge with any localStorage items not yet synced
-  if (data.length > 0) {
-    const artworks = data.map((artwork: any) => ({
-      id: artwork.id,
-      title: artwork.title,
-      artistId: artwork.artist_id,
-      artistName: artwork.artists?.name || '',
-      medium: artwork.medium,
-      size: artwork.size,
-      price: artwork.price,
-      imageUrl: artwork.image_url,
-      category: artwork.category,
-      status: artwork.status,
-      isPermanent: artwork.is_permanent ?? false,
-      style: artwork.style || undefined,
-    }));
-
-    // Preserve localStorage items not present in Supabase (pending sync / offline adds)
-    const supabaseIds = new Set(artworks.map(a => a.id));
-    const pendingLocal = storedArtworks.filter(a => !supabaseIds.has(a.id));
-    const merged = [...artworks, ...pendingLocal];
-
-    saveToLocalStorage(STORAGE_KEYS.artworks, merged);
-    return merged;
-  }
-
-  return [];
+  saveToLocalStorage(STORAGE_KEYS.artworks, artworks);
+  return artworks;
 }
 
 export async function createArtwork(artwork: Omit<LocalArtwork, 'id'>): Promise<LocalArtwork | null> {
@@ -376,7 +351,6 @@ export async function updateEvent(id: string, updates: Partial<EventItem>): Prom
 
 export async function deleteArtwork(id: string): Promise<boolean> {
   if (!isSupabaseConfigured()) {
-    // Delete from localStorage
     const currentArtworks = getFromLocalStorage<LocalArtwork[]>(STORAGE_KEYS.artworks, []);
     saveToLocalStorage(STORAGE_KEYS.artworks, currentArtworks.filter(a => a.id !== id));
     return true;
@@ -387,11 +361,12 @@ export async function deleteArtwork(id: string): Promise<boolean> {
     .delete()
     .eq('id', id);
 
+  // Always sync localStorage with the deletion result
+  const currentArtworks = getFromLocalStorage<LocalArtwork[]>(STORAGE_KEYS.artworks, []);
+  saveToLocalStorage(STORAGE_KEYS.artworks, currentArtworks.filter(a => a.id !== id));
+
   if (error) {
     console.error('Error deleting artwork:', error);
-    // Still delete from localStorage as fallback
-    const currentArtworks = getFromLocalStorage<LocalArtwork[]>(STORAGE_KEYS.artworks, []);
-    saveToLocalStorage(STORAGE_KEYS.artworks, currentArtworks.filter(a => a.id !== id));
     return false;
   }
 
@@ -403,7 +378,6 @@ export async function deleteArtwork(id: string): Promise<boolean> {
 // ============================================
 
 export async function getEvents(): Promise<EventItem[]> {
-  // Always check localStorage first
   const storedEvents = getFromLocalStorage<EventItem[]>(STORAGE_KEYS.events, []);
 
   if (!isSupabaseConfigured()) {
@@ -418,35 +392,24 @@ export async function getEvents(): Promise<EventItem[]> {
 
   if (error) {
     console.error('Error fetching events:', error);
+    // Only use localStorage as fallback when Supabase is unreachable
     return storedEvents;
   }
 
-  // If Supabase returns empty but we have localStorage data, use localStorage
-  if (data.length === 0 && storedEvents.length > 0) {
-    return storedEvents;
-  }
+  // Supabase is the source of truth — save its result and return it
+  const events = data.map((event) => ({
+    id: event.id,
+    title: event.title,
+    date: event.date,
+    location: event.location,
+    description: event.description,
+    imageUrl: event.image_url,
+    catalogUrl: (event as any).catalog_url || undefined,
+    videoUrl: (event as any).video_url || undefined,
+  }));
 
-  if (data.length > 0) {
-    const events = data.map((event) => ({
-      id: event.id,
-      title: event.title,
-      date: event.date,
-      location: event.location,
-      description: event.description,
-      imageUrl: event.image_url,
-      catalogUrl: (event as any).catalog_url || undefined,
-      videoUrl: (event as any).video_url || undefined,
-    }));
-
-    const supabaseIds = new Set(events.map(e => e.id));
-    const pendingLocal = storedEvents.filter(e => !supabaseIds.has(e.id));
-    const merged = [...events, ...pendingLocal];
-
-    saveToLocalStorage(STORAGE_KEYS.events, merged);
-    return merged;
-  }
-
-  return [];
+  saveToLocalStorage(STORAGE_KEYS.events, events);
+  return events;
 }
 
 export async function createEvent(event: Omit<EventItem, 'id'>): Promise<EventItem | null> {
@@ -497,10 +460,8 @@ export async function createEvent(event: Omit<EventItem, 'id'>): Promise<EventIt
 
 export async function deleteEvent(id: string): Promise<boolean> {
   if (!isSupabaseConfigured()) {
-    // Delete from localStorage
     const currentEvents = getFromLocalStorage<EventItem[]>(STORAGE_KEYS.events, []);
     saveToLocalStorage(STORAGE_KEYS.events, currentEvents.filter(e => e.id !== id));
-    // Also delete from other events
     const currentOtherEvents = getFromLocalStorage<OtherEvent[]>(STORAGE_KEYS.otherEvents, []);
     saveToLocalStorage(STORAGE_KEYS.otherEvents, currentOtherEvents.filter(e => e.id !== id));
     return true;
@@ -511,11 +472,14 @@ export async function deleteEvent(id: string): Promise<boolean> {
     .delete()
     .eq('id', id);
 
+  // Always sync localStorage with the deletion result
+  const currentEvents = getFromLocalStorage<EventItem[]>(STORAGE_KEYS.events, []);
+  saveToLocalStorage(STORAGE_KEYS.events, currentEvents.filter(e => e.id !== id));
+  const currentOtherEvents = getFromLocalStorage<OtherEvent[]>(STORAGE_KEYS.otherEvents, []);
+  saveToLocalStorage(STORAGE_KEYS.otherEvents, currentOtherEvents.filter(e => e.id !== id));
+
   if (error) {
     console.error('Error deleting event:', error);
-    // Still delete from localStorage as fallback
-    const currentEvents = getFromLocalStorage<EventItem[]>(STORAGE_KEYS.events, []);
-    saveToLocalStorage(STORAGE_KEYS.events, currentEvents.filter(e => e.id !== id));
     return false;
   }
 
@@ -528,7 +492,6 @@ export async function deleteEvent(id: string): Promise<boolean> {
 
 
 export async function getOtherEvents(): Promise<OtherEvent[]> {
-  // Always check localStorage first
   const storedOtherEvents = getFromLocalStorage<OtherEvent[]>(STORAGE_KEYS.otherEvents, []);
 
   if (!isSupabaseConfigured()) {
@@ -543,33 +506,22 @@ export async function getOtherEvents(): Promise<OtherEvent[]> {
 
   if (error) {
     console.error('Error fetching other events:', error);
+    // Only use localStorage as fallback when Supabase is unreachable
     return storedOtherEvents;
   }
 
-  // If Supabase returns empty but we have localStorage data, use localStorage
-  if (data.length === 0 && storedOtherEvents.length > 0) {
-    return storedOtherEvents;
-  }
+  // Supabase is the source of truth — save its result and return it
+  const events = data.map((event) => ({
+    id: event.id,
+    title: event.title,
+    date: event.date,
+    category: event.category || '',
+    description: event.description,
+    imageUrl: event.image_url,
+  }));
 
-  if (data.length > 0) {
-    const events = data.map((event) => ({
-      id: event.id,
-      title: event.title,
-      date: event.date,
-      category: event.category || '',
-      description: event.description,
-      imageUrl: event.image_url,
-    }));
-
-    const supabaseIds = new Set(events.map(e => e.id));
-    const pendingLocal = storedOtherEvents.filter(e => !supabaseIds.has(e.id));
-    const merged = [...events, ...pendingLocal];
-
-    saveToLocalStorage(STORAGE_KEYS.otherEvents, merged);
-    return merged;
-  }
-
-  return [];
+  saveToLocalStorage(STORAGE_KEYS.otherEvents, events);
+  return events;
 }
 
 export async function createOtherEvent(event: Omit<OtherEvent, 'id'>): Promise<OtherEvent | null> {
