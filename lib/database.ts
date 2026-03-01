@@ -302,24 +302,34 @@ export async function updateArtwork(id: string, updates: Partial<LocalArtwork>):
     return true;
   }
 
-  const { error } = await supabase
+  const baseUpdate = {
+    title: updates.title,
+    artist_id: updates.artistId,
+    medium: updates.medium,
+    size: updates.size,
+    price: updates.price,
+    image_url: updates.imageUrl,
+    category: updates.category,
+    status: updates.status,
+  };
+
+  // Try full update first (with style and is_permanent)
+  let { error } = await supabase
     .from('artworks')
-    .update({
-      title: updates.title,
-      artist_id: updates.artistId,
-      medium: updates.medium,
-      size: updates.size,
-      price: updates.price,
-      image_url: updates.imageUrl,
-      category: updates.category,
-      status: updates.status,
-      is_permanent: updates.isPermanent,
-      style: updates.style || null,
-    })
+    .update({ ...baseUpdate, is_permanent: updates.isPermanent, style: updates.style || null })
     .eq('id', id);
 
+  // If failed (e.g. columns don't exist yet), retry with only base columns
   if (error) {
-    console.error('Error updating artwork:', error);
+    console.warn('Artwork update failed with extended columns, retrying with base columns:', error.message);
+    ({ error } = await supabase
+      .from('artworks')
+      .update(baseUpdate)
+      .eq('id', id));
+  }
+
+  if (error) {
+    console.error('Error updating artwork (Supabase):', error);
     return false;
   }
 
@@ -338,21 +348,31 @@ export async function updateEvent(id: string, updates: Partial<EventItem>): Prom
     return true;
   }
 
-  const { error } = await supabase
+  const baseUpdate = {
+    title: updates.title,
+    date: updates.date,
+    location: updates.location,
+    description: updates.description,
+    image_url: updates.imageUrl,
+  };
+
+  // Try full update first (with catalog_url and video_url)
+  let { error } = await supabase
     .from('events')
-    .update({
-      title: updates.title,
-      date: updates.date,
-      location: updates.location,
-      description: updates.description,
-      image_url: updates.imageUrl,
-      catalog_url: updates.catalogUrl || null,
-      video_url: updates.videoUrl || null,
-    })
+    .update({ ...baseUpdate, catalog_url: updates.catalogUrl || null, video_url: updates.videoUrl || null })
     .eq('id', id);
 
+  // If failed (e.g. columns don't exist yet), retry with only base columns
   if (error) {
-    console.error('Error updating event:', error);
+    console.warn('Event update failed with extended columns, retrying with base columns:', error.message);
+    ({ error } = await supabase
+      .from('events')
+      .update(baseUpdate)
+      .eq('id', id));
+  }
+
+  if (error) {
+    console.error('Error updating event (Supabase):', error);
     return false;
   }
 

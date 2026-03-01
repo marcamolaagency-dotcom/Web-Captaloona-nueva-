@@ -131,10 +131,13 @@ export function useData(): UseDataReturn {
   };
 
   const editArtist = async (id: string, updates: Partial<Artist>) => {
-    await updateArtist(id, updates);
-    setArtists((prev) =>
-      prev.map((a) => (a.id === id ? { ...a, ...updates } : a))
-    );
+    setSaveError(null);
+    const ok = await updateArtist(id, updates);
+    if (ok) {
+      setArtists((prev) => prev.map((a) => (a.id === id ? { ...a, ...updates } : a)));
+    } else {
+      setSaveError('No se pudieron guardar los cambios del artista en Supabase.');
+    }
   };
 
   const removeArtist = async (id: string) => {
@@ -157,10 +160,13 @@ export function useData(): UseDataReturn {
   };
 
   const editArtwork = async (id: string, updates: Partial<Artwork>) => {
-    await updateArtwork(id, updates);
-    setArtworks((prev) =>
-      prev.map((a) => (a.id === id ? { ...a, ...updates } : a))
-    );
+    setSaveError(null);
+    const ok = await updateArtwork(id, updates);
+    if (ok) {
+      setArtworks((prev) => prev.map((a) => (a.id === id ? { ...a, ...updates } : a)));
+    } else {
+      setSaveError('No se pudieron guardar los cambios de la obra en Supabase. Revisa la consola del navegador.');
+    }
   };
 
   const removeArtwork = async (id: string) => {
@@ -180,10 +186,13 @@ export function useData(): UseDataReturn {
   };
 
   const editEvent = async (id: string, updates: Partial<EventItem>) => {
-    await updateEvent(id, updates);
-    setEvents((prev) =>
-      prev.map((e) => (e.id === id ? { ...e, ...updates } : e))
-    );
+    setSaveError(null);
+    const ok = await updateEvent(id, updates);
+    if (ok) {
+      setEvents((prev) => prev.map((e) => (e.id === id ? { ...e, ...updates } : e)));
+    } else {
+      setSaveError('No se pudieron guardar los cambios de la exposición en Supabase. Revisa la consola del navegador.');
+    }
   };
 
   const removeEvent = async (id: string) => {
