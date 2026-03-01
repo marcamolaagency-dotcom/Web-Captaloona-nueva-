@@ -13,6 +13,8 @@ interface ColeccionProps {
 const Coleccion: React.FC<ColeccionProps> = ({ artworks, artists = [], lang }) => {
   const [selectedArtistProfile, setSelectedArtistProfile] = useState<Artist | null>(null);
   const [lightboxImage, setLightboxImage] = useState<{url: string; title: string; artist: string} | null>(null);
+  const [filterMode, setFilterMode] = useState<'permanentes' | 'artista'>('permanentes');
+  const [filterArtist, setFilterArtist] = useState<string>('all');
 
   const t = TRANSLATIONS[lang].collection;
 
@@ -34,8 +36,13 @@ const Coleccion: React.FC<ColeccionProps> = ({ artworks, artists = [], lang }) =
     return Array.from(artistMap.values());
   }, [artworks, artists]);
 
-  // Only permanent works
-  const permanentWorks = artworks.filter(art => art.isPermanent === true);
+  const filteredArt = useMemo(() => artworks.filter(art => {
+    if (filterMode === 'permanentes') {
+      return art.isPermanent === true;
+    }
+    // mode === 'artista': show all works, optionally filtered by artist
+    return filterArtist === 'all' || art.artistId === filterArtist;
+  }), [artworks, filterMode, filterArtist]);
 
   const findArtist = (artistId: string, artistName: string): Artist | null => {
     let artist = allArtists.find(a => a.id === artistId);
@@ -117,12 +124,12 @@ const Coleccion: React.FC<ColeccionProps> = ({ artworks, artists = [], lang }) =
     );
   }
 
-  // View: Main Collection (permanent works only)
+  // View: Main Collection
   return (
     <div className="pt-24 md:pt-32 pb-16 md:pb-24 animate-fadeIn">
       <div className="max-w-7xl mx-auto px-4 md:px-6">
 
-        <header className="mb-12 md:mb-16 text-center max-w-3xl mx-auto">
+        <header className="mb-10 md:mb-14 text-center max-w-3xl mx-auto">
           <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-emerald-600 mb-4 block">LOONA CONTEMPORARY</span>
           <h1 className="text-4xl md:text-5xl serif mb-4 md:mb-6">{t.title}</h1>
           <p className="text-sm md:text-base text-zinc-500 leading-relaxed">
@@ -130,17 +137,55 @@ const Coleccion: React.FC<ColeccionProps> = ({ artworks, artists = [], lang }) =
           </p>
         </header>
 
+        {/* Filter tabs */}
+        <div className="flex justify-center mb-8 md:mb-10">
+          <div className="flex border border-zinc-200 rounded-sm overflow-hidden">
+            <button
+              onClick={() => setFilterMode('permanentes')}
+              className={`px-6 py-3 text-[11px] uppercase font-bold tracking-widest transition-colors ${
+                filterMode === 'permanentes' ? 'bg-zinc-900 text-white' : 'text-zinc-500 hover:text-zinc-900'
+              }`}
+            >
+              {t.permanentWorks}
+            </button>
+            <button
+              onClick={() => setFilterMode('artista')}
+              className={`px-6 py-3 text-[11px] uppercase font-bold tracking-widest transition-colors border-l border-zinc-200 ${
+                filterMode === 'artista' ? 'bg-zinc-900 text-white' : 'text-zinc-500 hover:text-zinc-900'
+              }`}
+            >
+              {t.artist}
+            </button>
+          </div>
+        </div>
+
+        {/* Artist dropdown — only shown in 'artista' mode */}
+        {filterMode === 'artista' && (
+          <div className="flex justify-center mb-8">
+            <select
+              value={filterArtist}
+              onChange={e => setFilterArtist(e.target.value)}
+              className="border border-zinc-200 px-4 py-2 text-sm text-zinc-700 bg-white rounded-sm focus:outline-none focus:border-zinc-400 min-w-[220px]"
+            >
+              <option value="all">{t.allArtists}</option>
+              {allArtists.map(artist => (
+                <option key={artist.id} value={artist.id}>{artist.name}</option>
+              ))}
+            </select>
+          </div>
+        )}
+
         {/* Results count */}
         <div className="mb-8 md:mb-12 text-center">
           <p className="text-xs text-zinc-400 uppercase tracking-widest">
-            {permanentWorks.length} {permanentWorks.length === 1 ? t.workFound : t.worksFound}
+            {filteredArt.length} {filteredArt.length === 1 ? t.workFound : t.worksFound}
           </p>
         </div>
 
         {/* Art Grid */}
-        {permanentWorks.length > 0 ? (
+        {filteredArt.length > 0 ? (
           <ArtGrid
-            artworks={permanentWorks}
+            artworks={filteredArt}
             onArtistClick={setSelectedArtistProfile}
             findArtist={findArtist}
             t={t}
