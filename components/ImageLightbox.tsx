@@ -23,10 +23,8 @@ const ImageLightbox: React.FC<ImageLightboxProps> = ({
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [lastTouchDistance, setLastTouchDistance] = useState<number | null>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
   const imageRef = useRef<HTMLImageElement>(null);
 
-  // Reset zoom when modal opens/closes or image changes
   useEffect(() => {
     if (isOpen) {
       setScale(1);
@@ -34,48 +32,34 @@ const ImageLightbox: React.FC<ImageLightboxProps> = ({
     }
   }, [isOpen, imageUrl]);
 
-  // Handle escape key
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        onClose();
-      }
+      if (e.key === 'Escape') onClose();
     };
-
     if (isOpen) {
       document.addEventListener('keydown', handleKeyDown);
       document.body.style.overflow = 'hidden';
     }
-
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
       document.body.style.overflow = '';
     };
   }, [isOpen, onClose]);
 
-  // Zoom with mouse wheel
   const handleWheel = useCallback((e: React.WheelEvent) => {
     e.preventDefault();
     const delta = e.deltaY > 0 ? -0.2 : 0.2;
-    setScale(prev => Math.min(Math.max(prev + delta, 1), 5));
-
-    // Reset position if zooming out to 1
-    if (scale + delta <= 1) {
-      setPosition({ x: 0, y: 0 });
-    }
+    const newScale = Math.min(Math.max(scale + delta, 1), 5);
+    setScale(newScale);
+    if (newScale <= 1) setPosition({ x: 0, y: 0 });
   }, [scale]);
 
-  // Zoom buttons
-  const zoomIn = () => {
-    setScale(prev => Math.min(prev + 0.5, 5));
-  };
+  const zoomIn = () => setScale(prev => Math.min(prev + 0.5, 5));
 
   const zoomOut = () => {
     const newScale = Math.max(scale - 0.5, 1);
     setScale(newScale);
-    if (newScale === 1) {
-      setPosition({ x: 0, y: 0 });
-    }
+    if (newScale <= 1) setPosition({ x: 0, y: 0 });
   };
 
   const resetZoom = () => {
@@ -83,9 +67,9 @@ const ImageLightbox: React.FC<ImageLightboxProps> = ({
     setPosition({ x: 0, y: 0 });
   };
 
-  // Drag functionality for panning when zoomed
   const handleMouseDown = (e: React.MouseEvent) => {
     if (scale > 1) {
+      e.preventDefault();
       setIsDragging(true);
       setDragStart({ x: e.clientX - position.x, y: e.clientY - position.y });
     }
@@ -93,18 +77,12 @@ const ImageLightbox: React.FC<ImageLightboxProps> = ({
 
   const handleMouseMove = (e: React.MouseEvent) => {
     if (isDragging && scale > 1) {
-      setPosition({
-        x: e.clientX - dragStart.x,
-        y: e.clientY - dragStart.y
-      });
+      setPosition({ x: e.clientX - dragStart.x, y: e.clientY - dragStart.y });
     }
   };
 
-  const handleMouseUp = () => {
-    setIsDragging(false);
-  };
+  const handleMouseUp = () => setIsDragging(false);
 
-  // Calculate distance between two touch points
   const getTouchDistance = (touches: React.TouchList): number => {
     if (touches.length < 2) return 0;
     const dx = touches[0].clientX - touches[1].clientX;
@@ -112,39 +90,26 @@ const ImageLightbox: React.FC<ImageLightboxProps> = ({
     return Math.sqrt(dx * dx + dy * dy);
   };
 
-  // Touch support for mobile
   const handleTouchStart = (e: React.TouchEvent) => {
     if (e.touches.length === 2) {
-      // Pinch zoom start
       setLastTouchDistance(getTouchDistance(e.touches));
     } else if (e.touches.length === 1 && scale > 1) {
-      // Pan start
       setIsDragging(true);
-      setDragStart({
-        x: e.touches[0].clientX - position.x,
-        y: e.touches[0].clientY - position.y
-      });
+      setDragStart({ x: e.touches[0].clientX - position.x, y: e.touches[0].clientY - position.y });
     }
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
     if (e.touches.length === 2 && lastTouchDistance !== null) {
-      // Pinch zoom
       e.preventDefault();
       const currentDistance = getTouchDistance(e.touches);
       const delta = (currentDistance - lastTouchDistance) * 0.01;
-      setScale(prev => Math.min(Math.max(prev + delta, 1), 5));
+      const newScale = Math.min(Math.max(scale + delta, 1), 5);
+      setScale(newScale);
       setLastTouchDistance(currentDistance);
-
-      if (scale <= 1) {
-        setPosition({ x: 0, y: 0 });
-      }
+      if (newScale <= 1) setPosition({ x: 0, y: 0 });
     } else if (isDragging && e.touches.length === 1 && scale > 1) {
-      // Pan
-      setPosition({
-        x: e.touches[0].clientX - dragStart.x,
-        y: e.touches[0].clientY - dragStart.y
-      });
+      setPosition({ x: e.touches[0].clientX - dragStart.x, y: e.touches[0].clientY - dragStart.y });
     }
   };
 
@@ -153,28 +118,41 @@ const ImageLightbox: React.FC<ImageLightboxProps> = ({
     setLastTouchDistance(null);
   };
 
-  // Double click/tap to zoom
-  const handleDoubleClick = () => {
-    if (scale === 1) {
-      setScale(2.5);
-    } else {
-      resetZoom();
-    }
+  const handleDoubleClick = (e: React.MouseEvent) => {
+    // Don't toggle close — only zoom
+    e.stopPropagation();
+    if (scale === 1) setScale(2.5);
+    else resetZoom();
   };
 
   if (!isOpen) return null;
 
   return (
+    // z-[200] ensures the lightbox is always above the navbar (z-50) and any other fixed UI
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 animate-fadeInOpacity"
+      className="fixed inset-0 z-[200] bg-black/95 animate-fadeInOpacity flex items-center justify-center"
+      style={{
+        paddingTop: '72px',
+        paddingBottom: '80px',
+        cursor: scale > 1 ? (isDragging ? 'grabbing' : 'grab') : 'zoom-in',
+      }}
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
+      onWheel={handleWheel}
+      onMouseDown={handleMouseDown}
+      onMouseMove={handleMouseMove}
+      onMouseUp={handleMouseUp}
+      onMouseLeave={handleMouseUp}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+      onDoubleClick={handleDoubleClick}
     >
       {/* Close button */}
       <button
         onClick={onClose}
-        className="absolute top-4 right-4 md:top-6 md:right-6 z-50 w-12 h-12 md:w-14 md:h-14 flex items-center justify-center text-white hover:text-white transition-colors bg-black/50 hover:bg-black/70 rounded-full shadow-lg"
+        className="absolute top-4 right-4 md:top-6 md:right-6 z-10 w-12 h-12 md:w-14 md:h-14 flex items-center justify-center text-white bg-black/50 hover:bg-black/70 rounded-full shadow-lg transition-colors"
         aria-label="Cerrar"
       >
         <svg className="w-7 h-7 md:w-8 md:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -183,9 +161,9 @@ const ImageLightbox: React.FC<ImageLightboxProps> = ({
       </button>
 
       {/* Zoom controls */}
-      <div className="absolute bottom-6 md:bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 md:gap-3 bg-black/60 backdrop-blur-sm px-4 md:px-5 py-3 rounded-full shadow-lg">
+      <div className="absolute bottom-6 md:bottom-8 left-1/2 -translate-x-1/2 z-10 flex items-center gap-2 md:gap-3 bg-black/60 backdrop-blur-sm px-4 md:px-5 py-3 rounded-full shadow-lg">
         <button
-          onClick={zoomOut}
+          onClick={(e) => { e.stopPropagation(); zoomOut(); }}
           disabled={scale <= 1}
           className="w-11 h-11 md:w-10 md:h-10 flex items-center justify-center text-white/80 hover:text-white disabled:text-white/30 disabled:cursor-not-allowed transition-colors"
           aria-label="Reducir zoom"
@@ -194,16 +172,14 @@ const ImageLightbox: React.FC<ImageLightboxProps> = ({
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 12H4" />
           </svg>
         </button>
-
         <button
-          onClick={resetZoom}
+          onClick={(e) => { e.stopPropagation(); resetZoom(); }}
           className="px-3 py-1 text-white/80 hover:text-white text-sm font-medium transition-colors min-w-[60px]"
         >
           {Math.round(scale * 100)}%
         </button>
-
         <button
-          onClick={zoomIn}
+          onClick={(e) => { e.stopPropagation(); zoomIn(); }}
           disabled={scale >= 5}
           className="w-11 h-11 md:w-10 md:h-10 flex items-center justify-center text-white/80 hover:text-white disabled:text-white/30 disabled:cursor-not-allowed transition-colors"
           aria-label="Aumentar zoom"
@@ -214,57 +190,40 @@ const ImageLightbox: React.FC<ImageLightboxProps> = ({
         </button>
       </div>
 
-      {/* Image info - hidden on small mobile */}
+      {/* Title / artist info */}
       {(title || artist) && (
-        <div className="absolute top-4 left-4 md:top-6 md:left-6 z-50 text-white max-w-[60%] md:max-w-none">
+        <div className="absolute top-4 left-4 md:top-6 md:left-6 z-10 text-white max-w-[60%] md:max-w-sm">
           {title && <h3 className="text-base md:text-xl serif line-clamp-2">{title}</h3>}
           {artist && <p className="text-xs md:text-sm text-white/70 italic">{artist}</p>}
         </div>
       )}
 
-      {/* Zoom hint - hidden on mobile */}
-      <div className="hidden md:block absolute top-6 left-1/2 -translate-x-1/2 z-50 text-white/50 text-xs tracking-wide">
-        Doble clic o scroll para zoom - Arrastra para mover
+      {/* Desktop hint */}
+      <div className="hidden md:block absolute top-6 left-1/2 -translate-x-1/2 z-10 text-white/50 text-xs tracking-wide pointer-events-none">
+        Doble clic o scroll para zoom · Arrastra para mover
       </div>
 
       {/* Mobile hint */}
-      <div className="md:hidden absolute bottom-[76px] left-1/2 -translate-x-1/2 z-50 text-white/40 text-[10px] tracking-wide text-center px-4 whitespace-nowrap">
+      <div className="md:hidden absolute bottom-[76px] left-1/2 -translate-x-1/2 z-10 text-white/40 text-[10px] tracking-wide text-center px-4 whitespace-nowrap pointer-events-none">
         Pellizca para zoom · Doble tap para ampliar
       </div>
 
-      {/* Image container */}
-      <div
-        ref={containerRef}
-        className="absolute inset-0 flex items-center justify-center touch-none px-4"
+      {/* Image — direct flex child so items-center/justify-center lo centra correctamente */}
+      <img
+        ref={imageRef}
+        src={imageUrl}
+        alt={alt}
+        className="max-w-[92vw] md:max-w-[82vw] select-none"
         style={{
-          paddingTop: '72px',
-          paddingBottom: '80px',
-          cursor: scale > 1 ? (isDragging ? 'grabbing' : 'grab') : 'zoom-in',
+          maxHeight: 'calc(100vh - 152px)',
+          transform: `translate(${position.x}px, ${position.y}px) scale(${scale})`,
+          transformOrigin: 'center center',
+          willChange: 'transform',
+          transition: isDragging ? 'none' : 'transform 0.15s ease',
+          pointerEvents: 'none',
         }}
-        onWheel={handleWheel}
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseUp}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-        onDoubleClick={handleDoubleClick}
-      >
-        <img
-          ref={imageRef}
-          src={imageUrl}
-          alt={alt}
-          className="max-w-[92vw] md:max-w-[82vw] select-none transition-transform duration-150"
-          style={{
-            maxHeight: 'calc(100vh - 152px)',
-            transform: `scale(${scale}) translate(${position.x / scale}px, ${position.y / scale}px)`,
-            transformOrigin: 'center center',
-            willChange: 'transform',
-          }}
-          draggable={false}
-        />
-      </div>
+        draggable={false}
+      />
     </div>
   );
 };
