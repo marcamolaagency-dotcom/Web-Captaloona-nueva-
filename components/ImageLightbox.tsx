@@ -220,7 +220,7 @@ const ImageLightbox: React.FC<ImageLightboxProps> = ({
           transformOrigin: 'center center',
           willChange: 'transform',
           transition: isDragging ? 'none' : 'transform 0.15s ease',
-          pointerEvents: 'none',
+          cursor: scale > 1 ? (isDragging ? 'grabbing' : 'grab') : 'zoom-in',
         }}
         draggable={false}
       />
