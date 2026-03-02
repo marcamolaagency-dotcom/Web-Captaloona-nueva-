@@ -8,20 +8,32 @@ interface EventosProps {
   otherEvents: OtherEvent[];
 }
 
-const parseEventDate = (dateStr: string): Date => {
-  const months: Record<string, number> = {
-    'ENE': 0, 'FEB': 1, 'MAR': 2, 'ABR': 3, 'MAY': 4, 'JUN': 5,
-    'JUL': 6, 'AGO': 7, 'SEP': 8, 'OCT': 9, 'NOV': 10, 'DIC': 11,
-    'JAN': 0, 'APR': 3, 'AUG': 7, 'DEC': 11
-  };
-  const parts = dateStr.trim().toUpperCase().split(/\s+/);
-  if (parts.length >= 3) {
-    const day = parseInt(parts[0], 10);
-    const month = months[parts[1]] ?? 0;
-    const year = parseInt(parts[2], 10);
-    if (!isNaN(day) && !isNaN(year)) return new Date(year, month, day);
-  }
-  return new Date(0);
+// Soporta fechas simples ("21 MAR 2026") y rangos ("10 - 21 MAR 2026", "10 AL 21 ABR 2026", etc.)
+// boundary='end'   → fecha final del rango (para filtrar si el evento ya terminó)
+// boundary='start' → fecha de inicio (para ordenar por proximidad)
+const MONTH_MAP: Record<string, number> = {
+  'ENE': 0, 'FEB': 1, 'MAR': 2, 'ABR': 3, 'MAY': 4, 'JUN': 5,
+  'JUL': 6, 'AGO': 7, 'SEP': 8, 'OCT': 9, 'NOV': 10, 'DIC': 11,
+  'JAN': 0, 'APR': 3, 'AUG': 7, 'DEC': 11,
+};
+const MONTH_RE = /\b(ENE|FEB|MAR|ABR|MAY|JUN|JUL|AGO|SEP|OCT|NOV|DIC|JAN|APR|AUG|DEC)\b/g;
+
+const parseBoundaryDate = (dateStr: string, boundary: 'start' | 'end'): Date => {
+  const str = dateStr.trim().toUpperCase();
+  const yearMatch = str.match(/\b(20\d{2})\b/);
+  if (!yearMatch) return new Date(0);
+  const year = parseInt(yearMatch[1]);
+  const monthMatches = [...str.matchAll(MONTH_RE)].map(m => MONTH_MAP[m[1]]);
+  const month = monthMatches.length > 0
+    ? (boundary === 'end' ? monthMatches[monthMatches.length - 1] : monthMatches[0])
+    : 0;
+  const dayMatches = [...str.matchAll(/\b(\d{1,2})\b/g)]
+    .map(m => parseInt(m[1]))
+    .filter(n => n >= 1 && n <= 31);
+  const day = dayMatches.length > 0
+    ? (boundary === 'end' ? dayMatches[dayMatches.length - 1] : dayMatches[0])
+    : 1;
+  return new Date(year, month, day);
 };
 
 type CombinedEvent = {
@@ -51,8 +63,8 @@ const Eventos: React.FC<EventosProps> = ({ events, otherEvents }) => {
     ];
 
     return all
-      .filter(e => parseEventDate(e.date).getTime() >= todayMs)
-      .sort((a, b) => parseEventDate(a.date).getTime() - parseEventDate(b.date).getTime());
+      .filter(e => parseBoundaryDate(e.date, 'end').getTime() >= todayMs)
+      .sort((a, b) => parseBoundaryDate(a.date, 'start').getTime() - parseBoundaryDate(b.date, 'start').getTime());
   }, [events, otherEvents]);
 
   return (
