@@ -166,7 +166,7 @@ const ImageLightbox: React.FC<ImageLightboxProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 animate-fadeIn"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 animate-fadeInOpacity"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
