@@ -5,7 +5,7 @@ import Footer from './components/Footer.tsx';
 import Home from './pages/Home.tsx';
 import Coleccion from './pages/Coleccion.tsx';
 import Eventos from './pages/Eventos.tsx';
-import OtrosEventos from './pages/OtrosEventos.tsx';
+import Historia from './pages/Historia.tsx';
 import Contacto from './pages/Contacto.tsx';
 import Artista from './pages/Artista.tsx';
 import Artistas from './pages/Artistas.tsx';
@@ -60,8 +60,8 @@ const App: React.FC = () => {
     switch (currentPath) {
       case '#/': return <Home onNavigate={navigate} lang={lang} artworks={artworks} featuredArtworkIds={featuredArtworkIds} events={events} />;
       case '#/coleccion': return <Coleccion artworks={artworks} artists={artists} lang={lang} />;
-      case '#/eventos': return <Eventos events={events} />;
-      case '#/otros-eventos': return <OtrosEventos events={otherEvents} />;
+      case '#/eventos': return <Eventos events={events} otherEvents={otherEvents} />;
+      case '#/historia': return <Historia events={events} otherEvents={otherEvents} />;
       case '#/contacto': return <Contacto />;
       case '#/artista': return <Artista lang={lang} />;
       case '#/artistas': return <Artistas artists={artists} artworks={artworks} lang={lang} />;

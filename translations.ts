@@ -8,8 +8,8 @@ export const TRANSLATIONS: Record<Language, any> = {
       artists: 'Artistas',
       collection: 'Colección',
       artist: 'Claudio Fiorentini',
-      events: 'Exposiciones',
-      otherEvents: 'Eventos',
+      events: 'Eventos',
+      history: 'Historia',
       space: 'Captaloona',
       contact: 'Contacto',
       config: 'Config'
@@ -113,8 +113,8 @@ export const TRANSLATIONS: Record<Language, any> = {
       artists: 'Artists',
       collection: 'Collection',
       artist: 'Claudio Fiorentini',
-      events: 'Exhibitions',
-      otherEvents: 'Events',
+      events: 'Events',
+      history: 'History',
       space: 'Captaloona',
       contact: 'Contact',
       config: 'Config'
@@ -218,8 +218,8 @@ export const TRANSLATIONS: Record<Language, any> = {
       artists: 'Artistes',
       collection: 'Collection',
       artist: 'Claudio Fiorentini',
-      events: 'Expositions',
-      otherEvents: 'Événements',
+      events: 'Événements',
+      history: 'Histoire',
       space: 'Captaloona',
       contact: 'Contact',
       config: 'Config'
@@ -323,8 +323,8 @@ export const TRANSLATIONS: Record<Language, any> = {
       artists: 'Artisti',
       collection: 'Collezione',
       artist: 'Claudio Fiorentini',
-      events: 'Mostre',
-      otherEvents: 'Eventi',
+      events: 'Eventi',
+      history: 'Storia',
       space: 'Captaloona',
       contact: 'Contatto',
       config: 'Config'
