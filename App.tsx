@@ -60,7 +60,7 @@ const App: React.FC = () => {
     switch (currentPath) {
       case '#/': return <Home onNavigate={navigate} lang={lang} artworks={artworks} featuredArtworkIds={featuredArtworkIds} events={events} />;
       case '#/coleccion': return <Coleccion artworks={artworks} artists={artists} lang={lang} />;
-      case '#/eventos': return <Eventos events={events} otherEvents={otherEvents} />;
+      case '#/eventos': return <Eventos events={events} otherEvents={otherEvents} lang={lang} />;
       case '#/historia': return <Historia events={events} otherEvents={otherEvents} />;
       case '#/contacto': return <Contacto />;
       case '#/artista': return <Artista lang={lang} />;

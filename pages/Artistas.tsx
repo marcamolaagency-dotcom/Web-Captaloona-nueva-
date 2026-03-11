@@ -1,6 +1,6 @@
 
 import React, { useState, useMemo } from 'react';
-import { Artwork, Artist, Language } from '../types';
+import { Artwork, Artist, Language, getLocalizedText } from '../types';
 import { TRANSLATIONS } from '../translations';
 import ImageLightbox from '../components/ImageLightbox';
 
@@ -76,7 +76,7 @@ const Artistas: React.FC<ArtistasProps> = ({ artists, artworks, lang }) => {
                 <p className="text-xs font-bold uppercase tracking-widest text-zinc-400">{selectedArtist.location}</p>
               )}
               {selectedArtist.bio && (
-                <p className="text-zinc-500 leading-relaxed text-base md:text-lg">{selectedArtist.bio}</p>
+                <p className="text-zinc-500 leading-relaxed text-base md:text-lg">{getLocalizedText(selectedArtist.bio, lang)}</p>
               )}
               <div className="flex gap-10 pt-4 border-t border-zinc-100">
                 <div>
@@ -196,7 +196,7 @@ const Artistas: React.FC<ArtistasProps> = ({ artists, artworks, lang }) => {
                     <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-3 md:mb-4">{artist.location}</p>
                   )}
                   {artist.bio && (
-                    <p className="text-sm text-zinc-500 leading-relaxed line-clamp-3">{artist.bio}</p>
+                    <p className="text-sm text-zinc-500 leading-relaxed line-clamp-3">{getLocalizedText(artist.bio, lang)}</p>
                   )}
                   <div className="mt-4 md:mt-6 pt-4 border-t border-zinc-100 flex items-center justify-between">
                     <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-600">

@@ -24,6 +24,7 @@ const ImageLightbox: React.FC<ImageLightboxProps> = ({
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [lastTouchDistance, setLastTouchDistance] = useState<number | null>(null);
   const imageRef = useRef<HTMLImageElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (isOpen) {
@@ -46,20 +47,55 @@ const ImageLightbox: React.FC<ImageLightboxProps> = ({
     };
   }, [isOpen, onClose]);
 
-  const handleWheel = useCallback((e: React.WheelEvent) => {
-    e.preventDefault();
-    const delta = e.deltaY > 0 ? -0.2 : 0.2;
-    const newScale = Math.min(Math.max(scale + delta, 1), 5);
-    setScale(newScale);
-    if (newScale <= 1) setPosition({ x: 0, y: 0 });
-  }, [scale]);
+  // Wheel no-pasivo: evita que el scroll del fondo se active al hacer zoom
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el || !isOpen) return;
+
+    const onWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      const rect = el.getBoundingClientRect();
+      // Cursor relativo al centro del contenedor
+      const cx = e.clientX - (rect.left + rect.width / 2);
+      const cy = e.clientY - (rect.top + rect.height / 2);
+      const delta = e.deltaY > 0 ? -0.2 : 0.2;
+      setScale(prev => {
+        const next = Math.min(Math.max(prev + delta, 1), 5);
+        if (next <= 1) {
+          setPosition({ x: 0, y: 0 });
+        } else {
+          // Zoom anclado al cursor
+          setPosition(pos => clampDrag(
+            pos.x - cx * (next / prev - 1),
+            pos.y - cy * (next / prev - 1),
+            next
+          ));
+        }
+        return next;
+      });
+    };
+
+    el.addEventListener('wheel', onWheel, { passive: false });
+    return () => el.removeEventListener('wheel', onWheel);
+  }, [isOpen]);
+
+  const clampDrag = (x: number, y: number, currentScale: number) => {
+    const maxX = (window.innerWidth / 2) * (currentScale - 1);
+    const maxY = (window.innerHeight / 2) * (currentScale - 1);
+    return {
+      x: Math.min(Math.max(x, -maxX), maxX),
+      y: Math.min(Math.max(y, -maxY), maxY),
+    };
+  };
 
   const zoomIn = () => setScale(prev => Math.min(prev + 0.5, 5));
 
   const zoomOut = () => {
-    const newScale = Math.max(scale - 0.5, 1);
-    setScale(newScale);
-    if (newScale <= 1) setPosition({ x: 0, y: 0 });
+    setScale(prev => {
+      const next = Math.max(prev - 0.5, 1);
+      if (next <= 1) setPosition({ x: 0, y: 0 });
+      return next;
+    });
   };
 
   const resetZoom = () => {
@@ -77,7 +113,8 @@ const ImageLightbox: React.FC<ImageLightboxProps> = ({
 
   const handleMouseMove = (e: React.MouseEvent) => {
     if (isDragging && scale > 1) {
-      setPosition({ x: e.clientX - dragStart.x, y: e.clientY - dragStart.y });
+      const raw = { x: e.clientX - dragStart.x, y: e.clientY - dragStart.y };
+      setPosition(clampDrag(raw.x, raw.y, scale));
     }
   };
 
@@ -104,12 +141,19 @@ const ImageLightbox: React.FC<ImageLightboxProps> = ({
       e.preventDefault();
       const currentDistance = getTouchDistance(e.touches);
       const delta = (currentDistance - lastTouchDistance) * 0.01;
-      const newScale = Math.min(Math.max(scale + delta, 1), 5);
-      setScale(newScale);
-      setLastTouchDistance(currentDistance);
-      if (newScale <= 1) setPosition({ x: 0, y: 0 });
+      setScale(prev => {
+        const next = Math.min(Math.max(prev + delta, 1), 5);
+        setLastTouchDistance(currentDistance);
+        if (next <= 1) {
+          setPosition({ x: 0, y: 0 });
+        } else {
+          setPosition(pos => clampDrag(pos.x, pos.y, next));
+        }
+        return next;
+      });
     } else if (isDragging && e.touches.length === 1 && scale > 1) {
-      setPosition({ x: e.touches[0].clientX - dragStart.x, y: e.touches[0].clientY - dragStart.y });
+      const raw = { x: e.touches[0].clientX - dragStart.x, y: e.touches[0].clientY - dragStart.y };
+      setPosition(clampDrag(raw.x, raw.y, scale));
     }
   };
 
@@ -119,7 +163,6 @@ const ImageLightbox: React.FC<ImageLightboxProps> = ({
   };
 
   const handleDoubleClick = (e: React.MouseEvent) => {
-    // Don't toggle close — only zoom
     e.stopPropagation();
     if (scale === 1) setScale(2.5);
     else resetZoom();
@@ -130,6 +173,7 @@ const ImageLightbox: React.FC<ImageLightboxProps> = ({
   return (
     // z-[200] ensures the lightbox is always above the navbar (z-50) and any other fixed UI
     <div
+      ref={containerRef}
       className="fixed inset-0 z-[200] bg-black/95 animate-fadeInOpacity flex items-center justify-center"
       style={{
         paddingTop: '72px',
@@ -139,7 +183,6 @@ const ImageLightbox: React.FC<ImageLightboxProps> = ({
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
-      onWheel={handleWheel}
       onMouseDown={handleMouseDown}
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
