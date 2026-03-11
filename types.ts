@@ -49,3 +49,26 @@ export interface OtherEvent {
   imageUrl: string;
   description: string;
 }
+
+/**
+ * Devuelve el texto en el idioma solicitado.
+ * Compatible con texto plano (registros existentes) y con JSON multilingüe
+ * generado por el admin: {"ES":"...","EN":"...","FR":"...","IT":"..."}.
+ */
+export function getLocalizedText(
+  field: string | undefined | null,
+  lang: Language,
+  fallback: Language = 'ES'
+): string {
+  if (!field) return '';
+  try {
+    const parsed = JSON.parse(field);
+    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+      return (parsed[lang] as string)
+        || (parsed[fallback] as string)
+        || (Object.values(parsed)[0] as string)
+        || '';
+    }
+  } catch {}
+  return field; // texto plano existente — sin cambios
+}

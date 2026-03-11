@@ -1,11 +1,12 @@
 
 import React, { useMemo, useState } from 'react';
-import { EventItem, OtherEvent } from '../types';
+import { EventItem, OtherEvent, Language, getLocalizedText } from '../types';
 import ImageLightbox from '../components/ImageLightbox';
 
 interface EventosProps {
   events: EventItem[];
   otherEvents: OtherEvent[];
+  lang: Language;
 }
 
 // Soporta fechas simples ("21 MAR 2026") y rangos ("10 - 21 MAR 2026", "10 AL 21 ABR 2026", etc.)
@@ -49,7 +50,7 @@ type CombinedEvent = {
   category?: string;
 };
 
-const Eventos: React.FC<EventosProps> = ({ events, otherEvents }) => {
+const Eventos: React.FC<EventosProps> = ({ events, otherEvents, lang }) => {
   const [lightboxImage, setLightboxImage] = useState<{ url: string; title: string } | null>(null);
 
   const upcomingEvents = useMemo(() => {
@@ -104,7 +105,7 @@ const Eventos: React.FC<EventosProps> = ({ events, otherEvents }) => {
                     {ev.location}
                   </div>
                 )}
-                <p className="text-zinc-500 leading-relaxed text-lg">{ev.description}</p>
+                <p className="text-zinc-500 leading-relaxed text-lg">{getLocalizedText(ev.description, lang)}</p>
                 {(ev.catalogUrl || ev.videoUrl) && (
                   <div className="flex flex-wrap gap-3 pt-2">
                     {ev.catalogUrl && (

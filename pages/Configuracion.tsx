@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Artwork, EventItem, OtherEvent, Artist } from '../types';
+import { Artwork, EventItem, OtherEvent, Artist, Language } from '../types';
 import { useAuth } from '../lib/useAuth';
 import { isSupabaseConfigured } from '../lib/supabase';
 import ImageUpload from '../components/ImageUpload';
@@ -59,6 +59,32 @@ const Configuracion: React.FC<ConfiguracionProps> = ({
   const [eventImageUrl, setEventImageUrl] = useState('');
   const [otherEventImageUrl, setOtherEventImageUrl] = useState('');
   const [artistImageUrl, setArtistImageUrl] = useState('');
+
+  // Multilingual bio tabs for artists
+  const LANGS: Language[] = ['ES', 'EN', 'FR', 'IT'];
+  const emptyLangValues = (): Record<Language, string> => ({ ES: '', EN: '', FR: '', IT: '' });
+  const parseLangValues = (text: string): Record<Language, string> => {
+    try {
+      const p = JSON.parse(text);
+      if (p && typeof p === 'object' && !Array.isArray(p)) {
+        return { ES: p.ES || '', EN: p.EN || '', FR: p.FR || '', IT: p.IT || '' };
+      }
+    } catch {}
+    // Plain text: pre-fill all tabs with existing text so saving without changes is lossless
+    return { ES: text || '', EN: text || '', FR: text || '', IT: text || '' };
+  };
+  const serializeLangValues = (v: Record<Language, string>): string => {
+    const { ES, EN, FR, IT } = v;
+    const hasUnique = (EN !== '' && EN !== ES) || (FR !== '' && FR !== ES) || (IT !== '' && IT !== ES);
+    return hasUnique ? JSON.stringify({ ES, EN, FR, IT }) : ES;
+  };
+
+  const [bioLang, setBioLang] = useState<Language>('ES');
+  const [bioValues, setBioValues] = useState<Record<Language, string>>(emptyLangValues());
+  const [eventDescLang, setEventDescLang] = useState<Language>('ES');
+  const [eventDescValues, setEventDescValues] = useState<Record<Language, string>>(emptyLangValues());
+  const [otherDescLang, setOtherDescLang] = useState<Language>('ES');
+  const [otherDescValues, setOtherDescValues] = useState<Record<Language, string>>(emptyLangValues());
 
   const { isAuthenticated, login, loginWithPassword, logout, user } = useAuth();
   const supabaseEnabled = isSupabaseConfigured();
@@ -172,14 +198,20 @@ ${otherEventsSQL}
 
   const resetEventForm = () => {
     setEventImageUrl('');
+    setEventDescValues(emptyLangValues());
+    setEventDescLang('ES');
   };
 
   const resetOtherEventForm = () => {
     setOtherEventImageUrl('');
+    setOtherDescValues(emptyLangValues());
+    setOtherDescLang('ES');
   };
 
   const resetArtistForm = () => {
     setArtistImageUrl('');
+    setBioValues(emptyLangValues());
+    setBioLang('ES');
   };
 
   if (!isAuthenticated) {
@@ -479,7 +511,7 @@ ${otherEventsSQL}
                       title: form.title.value,
                       date: form.date.value,
                       location: form.location.value,
-                      description: form.description.value,
+                      description: serializeLangValues(eventDescValues),
                       imageUrl: editEventImageUrl || editingEvent.imageUrl,
                       catalogUrl: form.catalogUrl.value || undefined,
                       videoUrl: form.videoUrl.value || undefined,
@@ -492,7 +524,23 @@ ${otherEventsSQL}
                 <input name="title" defaultValue={editingEvent.title} placeholder="Nombre de la expo" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" required />
                 <input name="date" defaultValue={editingEvent.date} placeholder="Fecha (ej: 12 DIC 2024)" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" required />
                 <input name="location" defaultValue={editingEvent.location} placeholder="Sede" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" />
-                <textarea name="description" defaultValue={editingEvent.description} placeholder="Resumen corto" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm h-32 resize-none" />
+                <div>
+                  <p className="text-[9px] font-bold uppercase tracking-widest text-zinc-400 mb-2">Descripción</p>
+                  <div className="flex gap-1 mb-2">
+                    {LANGS.map(l => (
+                      <button type="button" key={l} onClick={() => setEventDescLang(l)}
+                        className={`px-2 py-1 text-[9px] font-bold uppercase tracking-widest rounded-sm transition-colors ${eventDescLang === l ? 'bg-zinc-900 text-white' : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'}`}>
+                        {l}
+                      </button>
+                    ))}
+                  </div>
+                  <textarea
+                    value={eventDescValues[eventDescLang]}
+                    onChange={e => setEventDescValues(v => ({ ...v, [eventDescLang]: e.target.value }))}
+                    placeholder={`Descripción en ${eventDescLang}`}
+                    className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm h-32 resize-none"
+                  />
+                </div>
                 <input name="catalogUrl" type="url" defaultValue={editingEvent.catalogUrl || ''} placeholder="Link al catálogo (opcional)" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" />
                 <input name="videoUrl" type="url" defaultValue={editingEvent.videoUrl || ''} placeholder="Link al video (opcional)" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" />
                 <ImageUpload
@@ -520,7 +568,7 @@ ${otherEventsSQL}
                       title: form.title.value,
                       date: form.date.value,
                       location: form.location.value,
-                      description: form.description.value,
+                      description: serializeLangValues(eventDescValues),
                       imageUrl: eventImageUrl || 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30',
                       catalogUrl: form.catalogUrl.value || undefined,
                       videoUrl: form.videoUrl.value || undefined,
@@ -533,7 +581,23 @@ ${otherEventsSQL}
                 <input name="title" placeholder="Nombre de la expo" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" required />
                 <input name="date" placeholder="Fecha (ej: 12 DIC 2024)" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" required />
                 <input name="location" placeholder="Sede" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" />
-                <textarea name="description" placeholder="Resumen corto" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm h-32 resize-none" />
+                <div>
+                  <p className="text-[9px] font-bold uppercase tracking-widest text-zinc-400 mb-2">Descripción</p>
+                  <div className="flex gap-1 mb-2">
+                    {LANGS.map(l => (
+                      <button type="button" key={l} onClick={() => setEventDescLang(l)}
+                        className={`px-2 py-1 text-[9px] font-bold uppercase tracking-widest rounded-sm transition-colors ${eventDescLang === l ? 'bg-zinc-900 text-white' : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'}`}>
+                        {l}
+                      </button>
+                    ))}
+                  </div>
+                  <textarea
+                    value={eventDescValues[eventDescLang]}
+                    onChange={e => setEventDescValues(v => ({ ...v, [eventDescLang]: e.target.value }))}
+                    placeholder={`Descripción en ${eventDescLang}`}
+                    className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm h-32 resize-none"
+                  />
+                </div>
                 <input name="catalogUrl" type="url" placeholder="Link al catálogo (opcional)" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" />
                 <input name="videoUrl" type="url" placeholder="Link al video (opcional)" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" />
                 <ImageUpload
@@ -565,7 +629,7 @@ ${otherEventsSQL}
                    </div>
                    <div className="flex gap-3 flex-shrink-0">
                      <button
-                       onClick={() => { setEditingEvent(ev); setEditEventImageUrl(ev.imageUrl); }}
+                       onClick={() => { setEditingEvent(ev); setEditEventImageUrl(ev.imageUrl); setEventDescValues(parseLangValues(ev.description || '')); setEventDescLang('ES'); }}
                        className="text-zinc-400 hover:text-emerald-600 text-sm font-medium transition-colors"
                      >
                        Editar
@@ -593,7 +657,7 @@ ${otherEventsSQL}
                     title: form.title.value,
                     date: form.date.value,
                     category: form.category.value,
-                    description: form.description.value,
+                    description: serializeLangValues(otherDescValues),
                     imageUrl: otherEventImageUrl || 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4'
                 };
                 await onAddOtherEvent(newEv);
@@ -604,7 +668,23 @@ ${otherEventsSQL}
               <input name="title" placeholder="Título del evento" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" required />
               <input name="date" placeholder="Fecha" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" required />
               <input name="category" placeholder="Categoría (Taller, Charla, etc.)" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" />
-              <textarea name="description" placeholder="Descripción" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm h-32 resize-none" />
+              <div>
+                <p className="text-[9px] font-bold uppercase tracking-widest text-zinc-400 mb-2">Descripción</p>
+                <div className="flex gap-1 mb-2">
+                  {LANGS.map(l => (
+                    <button type="button" key={l} onClick={() => setOtherDescLang(l)}
+                      className={`px-2 py-1 text-[9px] font-bold uppercase tracking-widest rounded-sm transition-colors ${otherDescLang === l ? 'bg-zinc-900 text-white' : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'}`}>
+                      {l}
+                    </button>
+                  ))}
+                </div>
+                <textarea
+                  value={otherDescValues[otherDescLang]}
+                  onChange={e => setOtherDescValues(v => ({ ...v, [otherDescLang]: e.target.value }))}
+                  placeholder={`Descripción en ${otherDescLang}`}
+                  className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm h-32 resize-none"
+                />
+              </div>
 
               {/* Image Upload Component */}
               <ImageUpload
@@ -652,7 +732,7 @@ ${otherEventsSQL}
                   const form = e.target as any;
                   const updates: Partial<Artist> = {
                       name: form.name.value,
-                      bio: form.bio.value,
+                      bio: serializeLangValues(bioValues),
                       location: form.location.value,
                       imageUrl: artistImageUrl || editingArtist.imageUrl
                   };
@@ -663,7 +743,23 @@ ${otherEventsSQL}
               }}>
                 <input name="name" defaultValue={editingArtist.name} placeholder="Nombre completo" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" required />
                 <input name="location" defaultValue={editingArtist.location || ''} placeholder="Ubicación" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" />
-                <textarea name="bio" defaultValue={editingArtist.bio} placeholder="Biografía" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm h-40 resize-none" />
+                <div>
+                  <p className="text-[9px] font-bold uppercase tracking-widest text-zinc-400 mb-2">Biografía</p>
+                  <div className="flex gap-1 mb-2">
+                    {LANGS.map(l => (
+                      <button type="button" key={l} onClick={() => setBioLang(l)}
+                        className={`px-2 py-1 text-[9px] font-bold uppercase tracking-widest rounded-sm transition-colors ${bioLang === l ? 'bg-zinc-900 text-white' : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'}`}>
+                        {l}
+                      </button>
+                    ))}
+                  </div>
+                  <textarea
+                    value={bioValues[bioLang]}
+                    onChange={e => setBioValues(v => ({ ...v, [bioLang]: e.target.value }))}
+                    placeholder={`Biografía en ${bioLang}`}
+                    className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm h-40 resize-none"
+                  />
+                </div>
 
                 <ImageUpload
                   onImageUploaded={setArtistImageUrl}
@@ -689,7 +785,7 @@ ${otherEventsSQL}
                   const form = e.target as any;
                   const newArtist: Omit<Artist, 'id'> = {
                       name: form.name.value,
-                      bio: form.bio.value,
+                      bio: serializeLangValues(bioValues),
                       location: form.location.value,
                       imageUrl: artistImageUrl || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d'
                   };
@@ -700,7 +796,23 @@ ${otherEventsSQL}
               }}>
                 <input name="name" placeholder="Nombre completo" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" required />
                 <input name="location" placeholder="Ubicación" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" />
-                <textarea name="bio" placeholder="Biografía" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm h-40 resize-none" />
+                <div>
+                  <p className="text-[9px] font-bold uppercase tracking-widest text-zinc-400 mb-2">Biografía</p>
+                  <div className="flex gap-1 mb-2">
+                    {LANGS.map(l => (
+                      <button type="button" key={l} onClick={() => setBioLang(l)}
+                        className={`px-2 py-1 text-[9px] font-bold uppercase tracking-widest rounded-sm transition-colors ${bioLang === l ? 'bg-zinc-900 text-white' : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'}`}>
+                        {l}
+                      </button>
+                    ))}
+                  </div>
+                  <textarea
+                    value={bioValues[bioLang]}
+                    onChange={e => setBioValues(v => ({ ...v, [bioLang]: e.target.value }))}
+                    placeholder={`Biografía en ${bioLang}`}
+                    className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm h-40 resize-none"
+                  />
+                </div>
 
                 <ImageUpload
                   onImageUploaded={setArtistImageUrl}
@@ -728,6 +840,8 @@ ${otherEventsSQL}
                        onClick={() => {
                          setEditingArtist(a);
                          setArtistImageUrl(a.imageUrl);
+                         setBioValues(parseLangValues(a.bio || ''));
+                         setBioLang('ES');
                        }}
                        className="text-zinc-400 hover:text-emerald-600 text-sm"
                      >
