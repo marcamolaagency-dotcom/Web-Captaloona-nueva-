@@ -112,6 +112,80 @@ const Home: React.FC<HomeProps> = ({ onNavigate, lang, artworks, featuredArtwork
         </div>
       </section>
 
+      {/* Featured Grid */}
+      <section className="py-16 md:py-40 bg-white border-t border-zinc-100">
+        <div className="max-w-7xl mx-auto px-4 md:px-8">
+          <div className="text-center mb-12 md:mb-32 space-y-4 md:space-y-6">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl serif italic">{t.featuredTitle}</h2>
+            <p className="text-zinc-400 text-[9px] md:text-[10px] uppercase tracking-[0.4em] md:tracking-[0.5em] font-bold">{t.featuredSub}</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-16">
+            {featuredArtworks.length > 0 ? (
+              // Show selected featured artworks from admin
+              featuredArtworks.map((artwork) => (
+                <div key={artwork.id} className="group bg-white p-6 shadow-sm border border-zinc-100 hover-lift">
+                  <div
+                    className="relative aspect-square overflow-hidden mb-8 bg-zinc-50 cursor-zoom-in"
+                    onClick={() => setLightboxImage({url: artwork.imageUrl, title: artwork.title, artist: artwork.artistName})}
+                  >
+                    <img
+                      src={artwork.imageUrl}
+                      alt={artwork.title}
+                      className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110 grayscale group-hover:grayscale-0"
+                      loading="lazy"
+                    />
+                    {/* Zoom indicator */}
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+                      <span className="bg-white/90 px-4 py-2 rounded-full text-xs font-medium text-zinc-700 shadow-lg">
+                        Click para ampliar
+                      </span>
+                    </div>
+                  </div>
+                  <h3
+                    className="text-2xl serif mb-3 hover:text-emerald-600 transition-colors cursor-pointer"
+                    onClick={() => onNavigate('/coleccion')}
+                  >
+                    {artwork.title}
+                  </h3>
+                  <p className="text-[9px] text-zinc-400 uppercase tracking-[0.3em] font-bold">{artwork.artistName}</p>
+                </div>
+              ))
+            ) : (
+              // Fallback to default images when no featured artworks selected
+              defaultFeaturedImages.map((url, i) => (
+                <div key={i} className="group bg-white p-6 shadow-sm border border-zinc-100 hover-lift">
+                  <div
+                    className="relative aspect-square overflow-hidden mb-8 bg-zinc-50 cursor-zoom-in"
+                    onClick={() => setLightboxImage({url, title: 'Selección Contemporánea', artist: 'Curado por Loona Contemporary'})}
+                  >
+                    <img
+                      src={url}
+                      alt={`Art piece ${i + 1}`}
+                      className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110 grayscale group-hover:grayscale-0"
+                      loading="lazy"
+                    />
+                    {/* Zoom indicator */}
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+                      <span className="bg-white/90 px-4 py-2 rounded-full text-xs font-medium text-zinc-700 shadow-lg">
+                        Click para ampliar
+                      </span>
+                    </div>
+                  </div>
+                  <h3
+                    className="text-2xl serif mb-3 hover:text-emerald-600 transition-colors cursor-pointer"
+                    onClick={() => onNavigate('/coleccion')}
+                  >
+                    Selección Contemporánea
+                  </h3>
+                  <p className="text-[9px] text-zinc-400 uppercase tracking-[0.3em] font-bold">Curado por Loona Contemporary</p>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      </section>
+
       {/* Featured Exhibition Section */}
       {featuredEvent && (
         <section className="py-16 md:py-32 bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900 relative overflow-hidden">
@@ -212,80 +286,6 @@ const Home: React.FC<HomeProps> = ({ onNavigate, lang, artworks, featuredArtwork
                     </div>
                 </div>
             </div>
-        </div>
-      </section>
-
-      {/* Featured Grid */}
-      <section className="py-16 md:py-40 bg-white border-t border-zinc-100">
-        <div className="max-w-7xl mx-auto px-4 md:px-8">
-          <div className="text-center mb-12 md:mb-32 space-y-4 md:space-y-6">
-            <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl serif italic">{t.featuredTitle}</h2>
-            <p className="text-zinc-400 text-[9px] md:text-[10px] uppercase tracking-[0.4em] md:tracking-[0.5em] font-bold">{t.featuredSub}</p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-16">
-            {featuredArtworks.length > 0 ? (
-              // Show selected featured artworks from admin
-              featuredArtworks.map((artwork) => (
-                <div key={artwork.id} className="group bg-white p-6 shadow-sm border border-zinc-100 hover-lift">
-                  <div
-                    className="relative aspect-square overflow-hidden mb-8 bg-zinc-50 cursor-zoom-in"
-                    onClick={() => setLightboxImage({url: artwork.imageUrl, title: artwork.title, artist: artwork.artistName})}
-                  >
-                    <img
-                      src={artwork.imageUrl}
-                      alt={artwork.title}
-                      className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110 grayscale group-hover:grayscale-0"
-                      loading="lazy"
-                    />
-                    {/* Zoom indicator */}
-                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
-                      <span className="bg-white/90 px-4 py-2 rounded-full text-xs font-medium text-zinc-700 shadow-lg">
-                        Click para ampliar
-                      </span>
-                    </div>
-                  </div>
-                  <h3
-                    className="text-2xl serif mb-3 hover:text-emerald-600 transition-colors cursor-pointer"
-                    onClick={() => onNavigate('/coleccion')}
-                  >
-                    {artwork.title}
-                  </h3>
-                  <p className="text-[9px] text-zinc-400 uppercase tracking-[0.3em] font-bold">{artwork.artistName}</p>
-                </div>
-              ))
-            ) : (
-              // Fallback to default images when no featured artworks selected
-              defaultFeaturedImages.map((url, i) => (
-                <div key={i} className="group bg-white p-6 shadow-sm border border-zinc-100 hover-lift">
-                  <div
-                    className="relative aspect-square overflow-hidden mb-8 bg-zinc-50 cursor-zoom-in"
-                    onClick={() => setLightboxImage({url, title: 'Selección Contemporánea', artist: 'Curado por Loona Contemporary'})}
-                  >
-                    <img
-                      src={url}
-                      alt={`Art piece ${i + 1}`}
-                      className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110 grayscale group-hover:grayscale-0"
-                      loading="lazy"
-                    />
-                    {/* Zoom indicator */}
-                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
-                      <span className="bg-white/90 px-4 py-2 rounded-full text-xs font-medium text-zinc-700 shadow-lg">
-                        Click para ampliar
-                      </span>
-                    </div>
-                  </div>
-                  <h3
-                    className="text-2xl serif mb-3 hover:text-emerald-600 transition-colors cursor-pointer"
-                    onClick={() => onNavigate('/coleccion')}
-                  >
-                    Selección Contemporánea
-                  </h3>
-                  <p className="text-[9px] text-zinc-400 uppercase tracking-[0.3em] font-bold">Curado por Loona Contemporary</p>
-                </div>
-              ))
-            )}
-          </div>
         </div>
       </section>
 
