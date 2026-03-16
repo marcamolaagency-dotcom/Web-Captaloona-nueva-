@@ -1,5 +1,6 @@
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
+import ReactDOM from 'react-dom';
 
 interface ImageLightboxProps {
   isOpen: boolean;
@@ -170,7 +171,7 @@ const ImageLightbox: React.FC<ImageLightboxProps> = ({
 
   if (!isOpen) return null;
 
-  return (
+  return ReactDOM.createPortal(
     // z-[200] ensures the lightbox is always above the navbar (z-50) and any other fixed UI
     <div
       ref={containerRef}
@@ -267,7 +268,8 @@ const ImageLightbox: React.FC<ImageLightboxProps> = ({
         }}
         draggable={false}
       />
-    </div>
+    </div>,
+    document.body
   );
 };
 
