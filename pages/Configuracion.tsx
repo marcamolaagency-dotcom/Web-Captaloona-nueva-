@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Artwork, EventItem, OtherEvent, Artist, Language } from '../types';
+import { Artwork, EventItem, OtherEvent, Artist, Gallery, Language } from '../types';
 import { useAuth } from '../lib/useAuth';
 import { isSupabaseConfigured } from '../lib/supabase';
 import ImageUpload from '../components/ImageUpload';
@@ -25,6 +25,10 @@ interface ConfiguracionProps {
   onEditArtist: (id: string, updates: Partial<Artist>) => Promise<void>;
   onRemoveArtist: (id: string) => Promise<void>;
   onUpdateFeaturedArtworkIds: (ids: string[]) => void;
+  galleries: Gallery[];
+  onAddGallery: (gallery: Omit<Gallery, 'id'>) => Promise<void>;
+  onEditGallery: (id: string, updates: Partial<Gallery>) => Promise<void>;
+  onRemoveGallery: (id: string) => Promise<void>;
 }
 
 const Configuracion: React.FC<ConfiguracionProps> = ({
@@ -33,7 +37,8 @@ const Configuracion: React.FC<ConfiguracionProps> = ({
   onAddArtwork, onEditArtwork, onRemoveArtwork,
   onAddEvent, onEditEvent, onRemoveEvent,
   onAddOtherEvent, onRemoveOtherEvent, onAddArtist, onEditArtist, onRemoveArtist,
-  onUpdateFeaturedArtworkIds
+  onUpdateFeaturedArtworkIds,
+  galleries, onAddGallery, onEditGallery, onRemoveGallery,
 }) => {
   const [isSaving, setIsSaving] = useState(false);
   const [backupMsg, setBackupMsg] = useState<string | null>(null);
@@ -48,9 +53,10 @@ const Configuracion: React.FC<ConfiguracionProps> = ({
 
   // Artist editing state
   const [editingArtist, setEditingArtist] = useState<Artist | null>(null);
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [activeTab, setActiveTab] = useState<'obras' | 'exposiciones' | 'otros' | 'artistas' | 'destacados'>('obras');
+  const [activeTab, setActiveTab] = useState<'obras' | 'exposiciones' | 'otros' | 'artistas' | 'destacados' | 'galerias'>('obras');
   const [loginError, setLoginError] = useState<string | null>(null);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
 
@@ -85,6 +91,13 @@ const Configuracion: React.FC<ConfiguracionProps> = ({
   const [eventDescValues, setEventDescValues] = useState<Record<Language, string>>(emptyLangValues());
   const [otherDescLang, setOtherDescLang] = useState<Language>('ES');
   const [otherDescValues, setOtherDescValues] = useState<Record<Language, string>>(emptyLangValues());
+
+  // Gallery editing state
+  const [editingGallery, setEditingGallery] = useState<Gallery | null>(null);
+  const [galleryImageUrl, setGalleryImageUrl] = useState('');
+  const [editGalleryImageUrl, setEditGalleryImageUrl] = useState('');
+  const [galleryDescLang, setGalleryDescLang] = useState<Language>('ES');
+  const [galleryDescValues, setGalleryDescValues] = useState<Record<Language, string>>(emptyLangValues());
 
   const { isAuthenticated, login, loginWithPassword, logout, user } = useAuth();
   const supabaseEnabled = isSupabaseConfigured();
@@ -214,6 +227,12 @@ ${otherEventsSQL}
     setBioLang('ES');
   };
 
+  const resetGalleryForm = () => {
+    setGalleryImageUrl('');
+    setGalleryDescValues(emptyLangValues());
+    setGalleryDescLang('ES');
+  };
+
   if (!isAuthenticated) {
     return (
       <div className="pt-60 pb-40 flex items-center justify-center animate-fadeIn">
@@ -328,7 +347,7 @@ ${otherEventsSQL}
           <p className="text-zinc-400 text-sm font-light mt-2">Gestión de contenidos dinámicos del sitio web.</p>
         </div>
         <div className="flex bg-zinc-50 p-1 rounded-sm border border-zinc-100">
-          {(['obras', 'exposiciones', 'otros', 'artistas', 'destacados'] as const).map((tab) => (
+          {(['obras', 'exposiciones', 'otros', 'artistas', 'destacados', 'galerias'] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -853,6 +872,202 @@ ${otherEventsSQL}
                    </div>
                 </div>
              ))}
+          </div>
+        </div>
+      )}
+
+      {/* GALERIAS TAB */}
+      {activeTab === 'galerias' && (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-16">
+          <div className="lg:col-span-1 space-y-8 bg-zinc-50 p-8 rounded-sm">
+            <h2 className="text-xl serif italic mb-6">
+              {editingGallery ? 'Editar Galería' : 'Añadir Nueva Galería'}
+            </h2>
+
+            {editingGallery ? (
+              /* ── EDIT GALLERY FORM ── */
+              <form className="space-y-4" onSubmit={async (e) => {
+                e.preventDefault();
+                setIsSaving(true);
+                const form = e.target as any;
+                const updates: Partial<Gallery> = {
+                  name: form.gname.value,
+                  address: form.address.value,
+                  city: form.city.value,
+                  type: form.type.value,
+                  status: form.status.value,
+                  website: form.website.value || undefined,
+                  phone: form.phone.value || undefined,
+                  email: form.gemail.value || undefined,
+                  imageUrl: editGalleryImageUrl || editingGallery.imageUrl,
+                  description: serializeLangValues(galleryDescValues),
+                };
+                await onEditGallery(editingGallery.id, updates);
+                setEditingGallery(null);
+                setEditGalleryImageUrl('');
+                resetGalleryForm();
+                setIsSaving(false);
+              }}>
+                <input name="gname" defaultValue={editingGallery.name} placeholder="Nombre de la galería" className="w-full p-3 border-b bg-transparent border-zinc-200 focus:outline-none focus:border-emerald-600 text-sm" required />
+                <div className="grid grid-cols-2 gap-4">
+                  <select name="type" defaultValue={editingGallery.type} className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm">
+                    <option value="propia">Propia</option>
+                    <option value="gestionada">Gestionada</option>
+                  </select>
+                  <select name="status" defaultValue={editingGallery.status} className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm">
+                    <option value="activa">Activa</option>
+                    <option value="inactiva">Inactiva</option>
+                  </select>
+                </div>
+                <input name="address" defaultValue={editingGallery.address} placeholder="Dirección" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" />
+                <input name="city" defaultValue={editingGallery.city} placeholder="Ciudad" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" />
+                <input name="website" defaultValue={editingGallery.website || ''} placeholder="Web (opcional)" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" />
+                <input name="phone" defaultValue={editingGallery.phone || ''} placeholder="Teléfono (opcional)" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" />
+                <input name="gemail" defaultValue={editingGallery.email || ''} placeholder="Email (opcional)" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" />
+                <div>
+                  <p className="text-[9px] font-bold uppercase tracking-widest text-zinc-400 mb-2">Descripción</p>
+                  <div className="flex gap-1 mb-2">
+                    {LANGS.map(l => (
+                      <button type="button" key={l} onClick={() => setGalleryDescLang(l)}
+                        className={`px-2 py-1 text-[9px] font-bold uppercase tracking-widest rounded-sm transition-colors ${galleryDescLang === l ? 'bg-zinc-900 text-white' : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'}`}>
+                        {l}
+                      </button>
+                    ))}
+                  </div>
+                  <textarea
+                    value={galleryDescValues[galleryDescLang]}
+                    onChange={e => setGalleryDescValues(v => ({ ...v, [galleryDescLang]: e.target.value }))}
+                    placeholder={`Descripción en ${galleryDescLang}`}
+                    className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm h-28 resize-none"
+                  />
+                </div>
+                <ImageUpload
+                  onImageUploaded={setEditGalleryImageUrl}
+                  currentImageUrl={editGalleryImageUrl || editingGallery.imageUrl}
+                  folder="galleries"
+                  label="Imagen de la galería"
+                />
+                <div className="flex gap-2">
+                  <button type="submit" disabled={isSaving} className="flex-1 bg-emerald-600 text-white py-4 text-[9px] font-bold uppercase tracking-[0.3em] hover:bg-emerald-700 transition-all disabled:opacity-50">
+                    {isSaving ? 'Guardando...' : 'Guardar Cambios'}
+                  </button>
+                  <button type="button" onClick={() => { setEditingGallery(null); setEditGalleryImageUrl(''); resetGalleryForm(); }} className="px-6 bg-zinc-200 text-zinc-600 py-4 text-[9px] font-bold uppercase tracking-[0.3em] hover:bg-zinc-300 transition-all">
+                    Cancelar
+                  </button>
+                </div>
+              </form>
+            ) : (
+              /* ── ADD GALLERY FORM ── */
+              <form className="space-y-4" onSubmit={async (e) => {
+                e.preventDefault();
+                setIsSaving(true);
+                const form = e.target as any;
+                const newGallery: Omit<Gallery, 'id'> = {
+                  name: form.gname.value,
+                  address: form.address.value,
+                  city: form.city.value,
+                  type: form.type.value,
+                  status: form.status.value,
+                  website: form.website.value || undefined,
+                  phone: form.phone.value || undefined,
+                  email: form.gemail.value || undefined,
+                  imageUrl: galleryImageUrl || '',
+                  description: serializeLangValues(galleryDescValues),
+                };
+                await onAddGallery(newGallery);
+                form.reset();
+                resetGalleryForm();
+                setIsSaving(false);
+              }}>
+                <input name="gname" placeholder="Nombre de la galería" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" required />
+                <div className="grid grid-cols-2 gap-4">
+                  <select name="type" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm">
+                    <option value="propia">Propia</option>
+                    <option value="gestionada">Gestionada</option>
+                  </select>
+                  <select name="status" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm">
+                    <option value="activa">Activa</option>
+                    <option value="inactiva">Inactiva</option>
+                  </select>
+                </div>
+                <input name="address" placeholder="Dirección" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" />
+                <input name="city" placeholder="Ciudad" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" />
+                <input name="website" placeholder="Web (opcional)" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" />
+                <input name="phone" placeholder="Teléfono (opcional)" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" />
+                <input name="gemail" placeholder="Email (opcional)" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" />
+                <div>
+                  <p className="text-[9px] font-bold uppercase tracking-widest text-zinc-400 mb-2">Descripción</p>
+                  <div className="flex gap-1 mb-2">
+                    {LANGS.map(l => (
+                      <button type="button" key={l} onClick={() => setGalleryDescLang(l)}
+                        className={`px-2 py-1 text-[9px] font-bold uppercase tracking-widest rounded-sm transition-colors ${galleryDescLang === l ? 'bg-zinc-900 text-white' : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'}`}>
+                        {l}
+                      </button>
+                    ))}
+                  </div>
+                  <textarea
+                    value={galleryDescValues[galleryDescLang]}
+                    onChange={e => setGalleryDescValues(v => ({ ...v, [galleryDescLang]: e.target.value }))}
+                    placeholder={`Descripción en ${galleryDescLang}`}
+                    className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm h-28 resize-none"
+                  />
+                </div>
+                <ImageUpload
+                  onImageUploaded={setGalleryImageUrl}
+                  currentImageUrl={galleryImageUrl}
+                  folder="galleries"
+                  label="Imagen de la galería"
+                />
+                <button disabled={isSaving} className="w-full bg-zinc-900 text-white py-4 text-[9px] font-bold uppercase tracking-[0.3em] hover:bg-emerald-600 transition-all disabled:opacity-50">
+                  {isSaving ? 'Guardando...' : 'Registrar Galería'}
+                </button>
+              </form>
+            )}
+          </div>
+
+          <div className="lg:col-span-2 space-y-4">
+            {galleries.map(g => (
+              <div key={g.id} className={`flex gap-6 p-6 border bg-white items-center ${editingGallery?.id === g.id ? 'border-emerald-500 bg-emerald-50' : 'border-zinc-100'}`}>
+                {g.imageUrl ? (
+                  <img src={g.imageUrl} className="w-16 h-16 object-cover flex-shrink-0" />
+                ) : (
+                  <div className="w-16 h-16 bg-zinc-100 flex-shrink-0 flex items-center justify-center">
+                    <svg className="w-6 h-6 text-zinc-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                )}
+                <div className="flex-grow min-w-0">
+                  <h3 className="text-lg serif italic truncate">{g.name}</h3>
+                  <p className="text-[10px] text-zinc-400 uppercase tracking-widest">{g.city}</p>
+                  <span className={`inline-block text-[8px] font-bold uppercase tracking-widest px-2 py-0.5 mt-1 rounded-sm ${g.type === 'propia' ? 'bg-emerald-50 text-emerald-600' : 'bg-zinc-100 text-zinc-500'}`}>
+                    {g.type === 'propia' ? 'Propia' : 'Gestionada'}
+                  </span>
+                  {g.status === 'inactiva' && (
+                    <span className="inline-block text-[8px] font-bold uppercase tracking-widest px-2 py-0.5 mt-1 ml-1 rounded-sm bg-red-50 text-red-400">Inactiva</span>
+                  )}
+                </div>
+                <div className="flex gap-3 flex-shrink-0">
+                  <button
+                    onClick={() => {
+                      setEditingGallery(g);
+                      setEditGalleryImageUrl(g.imageUrl);
+                      setGalleryDescValues(parseLangValues(g.description || ''));
+                      setGalleryDescLang('ES');
+                    }}
+                    className="text-zinc-400 hover:text-emerald-600 text-sm"
+                  >
+                    Editar
+                  </button>
+                  <button onClick={() => onRemoveGallery(g.id)} className="text-zinc-300 hover:text-red-500 text-sm">
+                    Eliminar
+                  </button>
+                </div>
+              </div>
+            ))}
+            {galleries.length === 0 && (
+              <p className="text-center text-zinc-400 text-sm py-12 italic">No hay galerías registradas.</p>
+            )}
           </div>
         </div>
       )}

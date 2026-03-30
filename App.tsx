@@ -11,6 +11,7 @@ import Artista from './pages/Artista.tsx';
 import Artistas from './pages/Artistas.tsx';
 import Configuracion from './pages/Configuracion.tsx';
 import Espacio from './pages/Espacio.tsx';
+import Galerias from './pages/Galerias.tsx';
 import SchemaMarkup from './components/SchemaMarkup.tsx';
 import { useData } from './lib/useData';
 import { Language } from './types.ts';
@@ -41,6 +42,10 @@ const App: React.FC = () => {
     addOtherEvent,
     removeOtherEvent,
     setFeaturedArtworkIds,
+    galleries,
+    addGallery,
+    editGallery,
+    removeGallery,
   } = useData();
 
   useEffect(() => {
@@ -86,8 +91,13 @@ const App: React.FC = () => {
           onEditArtist={editArtist}
           onRemoveArtist={removeArtist}
           onUpdateFeaturedArtworkIds={setFeaturedArtworkIds}
+          galleries={galleries}
+          onAddGallery={addGallery}
+          onEditGallery={editGallery}
+          onRemoveGallery={removeGallery}
         />
       );
+      case '#/galerias': return <Galerias galleries={galleries} lang={lang} />;
       case '#/espacio': return <Espacio lang={lang} />;
       default: return <Home onNavigate={navigate} lang={lang} artworks={artworks} featuredArtworkIds={featuredArtworkIds} events={events} />;
     }

@@ -9,7 +9,7 @@ import type {
   ContactMessageInsert,
 } from './database.types';
 
-import type { Artwork as LocalArtwork, EventItem, OtherEvent, Artist as LocalArtist } from '../types';
+import type { Artwork as LocalArtwork, EventItem, OtherEvent, Artist as LocalArtist, Gallery } from '../types';
 
 // ============================================
 // LOCAL STORAGE HELPERS
@@ -21,6 +21,7 @@ const STORAGE_KEYS = {
   events: 'captaloona_events',
   otherEvents: 'captaloona_other_events',
   featuredArtworkIds: 'featuredArtworkIds',
+  galleries: 'captaloona_galleries',
 };
 
 function getFromLocalStorage<T>(key: string, defaultValue: T): T {
@@ -733,6 +734,145 @@ export async function saveFeaturedArtworkIds(ids: string[]): Promise<boolean> {
 
   if (error) {
     console.error('Error saving featured artwork IDs:', error);
+    return false;
+  }
+
+  return true;
+}
+
+// ============================================
+// GALLERIES
+// ============================================
+
+function dbToGallery(row: any): Gallery {
+  return {
+    id: row.id,
+    name: row.name,
+    description: row.description || '',
+    imageUrl: row.image_url || '',
+    address: row.address || '',
+    city: row.city || '',
+    type: row.type || 'propia',
+    website: row.website || undefined,
+    phone: row.phone || undefined,
+    email: row.email || undefined,
+    status: row.status || 'activa',
+  };
+}
+
+export async function getGalleries(): Promise<Gallery[]> {
+  const storedGalleries = getFromLocalStorage<Gallery[]>(STORAGE_KEYS.galleries, []);
+
+  if (!isSupabaseConfigured()) {
+    return storedGalleries;
+  }
+
+  const { data, error } = await supabase
+    .from('galleries')
+    .select('*')
+    .order('created_at', { ascending: true });
+
+  if (error) {
+    console.error('Error fetching galleries:', error);
+    return storedGalleries;
+  }
+
+  const galleries = data.map(dbToGallery);
+  saveToLocalStorage(STORAGE_KEYS.galleries, galleries);
+  return galleries;
+}
+
+export async function createGallery(gallery: Omit<Gallery, 'id'>): Promise<Gallery | null> {
+  const newGallery: Gallery = {
+    ...gallery,
+    id: Date.now().toString(),
+  };
+
+  const currentGalleries = getFromLocalStorage<Gallery[]>(STORAGE_KEYS.galleries, []);
+  saveToLocalStorage(STORAGE_KEYS.galleries, [newGallery, ...currentGalleries]);
+
+  if (!isSupabaseConfigured()) {
+    return newGallery;
+  }
+
+  const { data, error } = await supabase
+    .from('galleries')
+    .insert({
+      name: gallery.name,
+      description: gallery.description,
+      image_url: gallery.imageUrl,
+      address: gallery.address,
+      city: gallery.city,
+      type: gallery.type,
+      website: gallery.website || null,
+      phone: gallery.phone || null,
+      email: gallery.email || null,
+      status: gallery.status,
+    })
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error creating gallery:', error);
+    return newGallery;
+  }
+
+  const savedGallery = dbToGallery(data);
+  const updatedGalleries = currentGalleries.filter(g => g.id !== newGallery.id);
+  saveToLocalStorage(STORAGE_KEYS.galleries, [savedGallery, ...updatedGalleries]);
+  return savedGallery;
+}
+
+export async function updateGallery(id: string, updates: Partial<Gallery>): Promise<boolean> {
+  const currentGalleries = getFromLocalStorage<Gallery[]>(STORAGE_KEYS.galleries, []);
+  const updatedGalleries = currentGalleries.map(g =>
+    g.id === id ? { ...g, ...updates } : g
+  );
+  saveToLocalStorage(STORAGE_KEYS.galleries, updatedGalleries);
+
+  if (!isSupabaseConfigured()) {
+    return true;
+  }
+
+  const { error } = await supabase
+    .from('galleries')
+    .update({
+      name: updates.name,
+      description: updates.description,
+      image_url: updates.imageUrl,
+      address: updates.address,
+      city: updates.city,
+      type: updates.type,
+      website: updates.website || null,
+      phone: updates.phone || null,
+      email: updates.email || null,
+      status: updates.status,
+    })
+    .eq('id', id);
+
+  if (error) {
+    console.error('Error updating gallery:', error);
+    return false;
+  }
+
+  return true;
+}
+
+export async function deleteGallery(id: string): Promise<boolean> {
+  const currentGalleries = getFromLocalStorage<Gallery[]>(STORAGE_KEYS.galleries, []);
+  saveToLocalStorage(STORAGE_KEYS.galleries, currentGalleries.filter(g => g.id !== id));
+
+  if (!isSupabaseConfigured()) {
+    return true;
+  }
+
+  const { error } = await supabase
+    .from('galleries')
+    .delete()
+    .eq('id', id);
+
+  if (error) {
+    console.error('Error deleting gallery:', error);
     return false;
   }
 

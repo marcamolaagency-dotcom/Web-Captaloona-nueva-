@@ -9,14 +9,34 @@ interface HistoriaProps {
 }
 
 const MONTH_MAP: Record<string, number> = {
-  'ENE': 0, 'FEB': 1, 'MAR': 2, 'ABR': 3, 'MAY': 4, 'JUN': 5,
+  // Nombres completos en español
+  'ENERO': 0, 'FEBRERO': 1, 'MARZO': 2, 'ABRIL': 3, 'MAYO': 4, 'JUNIO': 5,
+  'JULIO': 6, 'AGOSTO': 7, 'SEPTIEMBRE': 8, 'OCTUBRE': 9, 'NOVIEMBRE': 10, 'DICIEMBRE': 11,
+  // Abreviaturas en español e inglés
+  'ENE': 0, 'FEB': 1, 'MAR': 2, 'ABR': 3, 'JUN': 5,
   'JUL': 6, 'AGO': 7, 'SEP': 8, 'OCT': 9, 'NOV': 10, 'DIC': 11,
   'JAN': 0, 'APR': 3, 'AUG': 7, 'DEC': 11,
 };
-const MONTH_RE = /\b(ENE|FEB|MAR|ABR|MAY|JUN|JUL|AGO|SEP|OCT|NOV|DIC|JAN|APR|AUG|DEC)\b/g;
+// Nombres completos primero para que matchAll no capture solo el prefijo de 3 letras
+const MONTH_RE = /\b(ENERO|FEBRERO|MARZO|ABRIL|MAYO|JUNIO|JULIO|AGOSTO|SEPTIEMBRE|OCTUBRE|NOVIEMBRE|DICIEMBRE|ENE|FEB|MAR|ABR|JUN|JUL|AGO|SEP|OCT|NOV|DIC|JAN|APR|AUG|DEC)\b/g;
 
 const parseBoundaryDate = (dateStr: string, boundary: 'start' | 'end'): Date => {
+  if (!dateStr) return new Date(0);
   const str = dateStr.trim().toUpperCase();
+
+  // ISO: "2024-11-15"
+  const isoMatch = str.match(/^(20\d{2})-(0?\d|1[0-2])-(0?\d|[12]\d|3[01])$/);
+  if (isoMatch) {
+    return new Date(parseInt(isoMatch[1]), parseInt(isoMatch[2]) - 1, parseInt(isoMatch[3]));
+  }
+
+  // Barras: "15/11/2024"
+  const slashMatch = str.match(/\b(\d{1,2})\/(\d{1,2})\/(20\d{2})\b/);
+  if (slashMatch) {
+    return new Date(parseInt(slashMatch[3]), parseInt(slashMatch[2]) - 1, parseInt(slashMatch[1]));
+  }
+
+  // Formato con nombres/abreviaturas: "15 NOV 2024", "noviembre 2024", "10 AL 20 NOV 2024"
   const yearMatch = str.match(/\b(20\d{2})\b/);
   if (!yearMatch) return new Date(0);
   const year = parseInt(yearMatch[1]);
