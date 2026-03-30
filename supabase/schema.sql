@@ -291,6 +291,42 @@ INSERT INTO events (title, date, location, description, image_url, event_type) V
     'exposicion'
 );
 
+-- ============================================
+-- GALLERIES TABLE
+-- ============================================
+
+CREATE TABLE galleries (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name TEXT NOT NULL,
+    description TEXT NOT NULL DEFAULT '',
+    image_url TEXT NOT NULL DEFAULT '',
+    address TEXT NOT NULL DEFAULT '',
+    city TEXT NOT NULL DEFAULT '',
+    type TEXT NOT NULL DEFAULT 'propia' CHECK (type IN ('propia', 'gestionada')),
+    website TEXT,
+    phone TEXT,
+    email TEXT,
+    status TEXT NOT NULL DEFAULT 'activa' CHECK (status IN ('activa', 'inactiva')),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX idx_galleries_status ON galleries(status);
+CREATE INDEX idx_galleries_type ON galleries(type);
+
+ALTER TABLE galleries ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Galleries are viewable by everyone" ON galleries
+    FOR SELECT USING (true);
+
+CREATE POLICY "Galleries are editable by authenticated users" ON galleries
+    FOR ALL USING (auth.role() = 'authenticated');
+
+CREATE TRIGGER update_galleries_updated_at
+    BEFORE UPDATE ON galleries
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+
 -- Insert sample other events
 INSERT INTO events (title, date, location, description, image_url, event_type, category) VALUES
 (

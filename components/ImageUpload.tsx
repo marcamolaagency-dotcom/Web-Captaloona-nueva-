@@ -4,7 +4,7 @@ import { uploadImage, validateImageFile, fileToBase64 } from '../lib/storage';
 interface ImageUploadProps {
   onImageUploaded: (url: string) => void;
   currentImageUrl?: string;
-  folder?: 'artworks' | 'artists' | 'events' | 'general';
+  folder?: 'artworks' | 'artists' | 'events' | 'general' | 'galleries';
   label?: string;
   className?: string;
 }

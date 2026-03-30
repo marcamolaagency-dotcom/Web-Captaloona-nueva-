@@ -46,7 +46,7 @@ const Navbar: React.FC<NavbarProps> = ({ currentPath, onNavigate, lang, onLangua
     { label: t.events, path: '/eventos' },
     { label: t.history, path: '/historia' },
     { label: t.artist, path: '/artista' },
-    { label: t.space, path: '/espacio' },
+    { label: t.space, path: '/galerias' },
     { label: t.collection, path: '/coleccion' },
     { label: t.contact, path: '/contacto' },
   ];

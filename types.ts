@@ -50,6 +50,20 @@ export interface OtherEvent {
   description: string;
 }
 
+export interface Gallery {
+  id: string;
+  name: string;
+  description: string;
+  imageUrl: string;
+  address: string;
+  city: string;
+  type: 'propia' | 'gestionada';
+  website?: string;
+  phone?: string;
+  email?: string;
+  status: 'activa' | 'inactiva';
+}
+
 /**
  * Devuelve el texto en el idioma solicitado.
  * Compatible con texto plano (registros existentes) y con JSON multilingüe

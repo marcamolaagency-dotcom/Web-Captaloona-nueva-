@@ -17,8 +17,12 @@ import {
   deleteOtherEvent,
   getFeaturedArtworkIds,
   saveFeaturedArtworkIds,
+  getGalleries,
+  createGallery,
+  updateGallery,
+  deleteGallery,
 } from './database';
-import type { Artwork, EventItem, OtherEvent, Artist } from '../types';
+import type { Artwork, EventItem, OtherEvent, Artist, Gallery } from '../types';
 
 interface UseDataReturn {
   // Data
@@ -50,6 +54,11 @@ interface UseDataReturn {
   addOtherEvent: (event: Omit<OtherEvent, 'id'>) => Promise<void>;
   removeOtherEvent: (id: string) => Promise<void>;
 
+  galleries: Gallery[];
+  addGallery: (gallery: Omit<Gallery, 'id'>) => Promise<void>;
+  editGallery: (id: string, updates: Partial<Gallery>) => Promise<void>;
+  removeGallery: (id: string) => Promise<void>;
+
   // For backwards compatibility with existing code
   setArtists: React.Dispatch<React.SetStateAction<Artist[]>>;
   setArtworks: React.Dispatch<React.SetStateAction<Artwork[]>>;
@@ -66,6 +75,7 @@ export function useData(): UseDataReturn {
   const [artworks, setArtworks] = useState<Artwork[]>([]);
   const [events, setEvents] = useState<EventItem[]>([]);
   const [otherEvents, setOtherEvents] = useState<OtherEvent[]>([]);
+  const [galleries, setGalleries] = useState<Gallery[]>([]);
   const [featuredArtworkIds, setFeaturedArtworkIdsState] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -84,12 +94,13 @@ export function useData(): UseDataReturn {
     setError(null);
 
     try {
-      const [artistsData, artworksData, eventsData, otherEventsData, featuredIds] = await Promise.all([
+      const [artistsData, artworksData, eventsData, otherEventsData, featuredIds, galleriesData] = await Promise.all([
         getArtists(),
         getArtworks(),
         getEvents(),
         getOtherEvents(),
         getFeaturedArtworkIds(),
+        getGalleries(),
       ]);
 
       // Clean up orphaned featured artwork IDs
@@ -107,6 +118,7 @@ export function useData(): UseDataReturn {
       setEvents(eventsData);
       setOtherEvents(otherEventsData);
       setFeaturedArtworkIdsState(validFeaturedIds);
+      setGalleries(galleriesData);
     } catch (err) {
       console.error('Error loading data:', err);
       setError('Error al cargar los datos. Usando datos locales.');
@@ -216,6 +228,32 @@ export function useData(): UseDataReturn {
     setOtherEvents((prev) => prev.filter((e) => e.id !== id));
   };
 
+  // Gallery actions
+  const addGallery = async (gallery: Omit<Gallery, 'id'>) => {
+    setSaveError(null);
+    const newGallery = await createGallery(gallery);
+    if (newGallery) {
+      setGalleries((prev) => [newGallery, ...prev]);
+    } else {
+      setSaveError('No se pudo guardar la galería en Supabase.');
+    }
+  };
+
+  const editGallery = async (id: string, updates: Partial<Gallery>) => {
+    setSaveError(null);
+    const ok = await updateGallery(id, updates);
+    if (ok) {
+      setGalleries((prev) => prev.map((g) => (g.id === id ? { ...g, ...updates } : g)));
+    } else {
+      setSaveError('No se pudieron guardar los cambios de la galería en Supabase.');
+    }
+  };
+
+  const removeGallery = async (id: string) => {
+    await deleteGallery(id);
+    setGalleries((prev) => prev.filter((g) => g.id !== id));
+  };
+
   return {
     artists,
     artworks,
@@ -237,6 +275,10 @@ export function useData(): UseDataReturn {
     removeEvent,
     addOtherEvent,
     removeOtherEvent,
+    galleries,
+    addGallery,
+    editGallery,
+    removeGallery,
     setArtists,
     setArtworks,
     setEvents,
