@@ -94,8 +94,10 @@ const Configuracion: React.FC<ConfiguracionProps> = ({
 
   // Gallery editing state
   const [editingGallery, setEditingGallery] = useState<Gallery | null>(null);
-  const [galleryImageUrl, setGalleryImageUrl] = useState('');
-  const [editGalleryImageUrl, setEditGalleryImageUrl] = useState('');
+  const [galleryImages, setGalleryImages] = useState<string[]>([]);
+  const [editGalleryImages, setEditGalleryImages] = useState<string[]>([]);
+  const [showGalleryUploader, setShowGalleryUploader] = useState(false);
+  const [showEditGalleryUploader, setShowEditGalleryUploader] = useState(false);
   const [galleryDescLang, setGalleryDescLang] = useState<Language>('ES');
   const [galleryDescValues, setGalleryDescValues] = useState<Record<Language, string>>(emptyLangValues());
 
@@ -228,7 +230,8 @@ ${otherEventsSQL}
   };
 
   const resetGalleryForm = () => {
-    setGalleryImageUrl('');
+    setGalleryImages([]);
+    setShowGalleryUploader(false);
     setGalleryDescValues(emptyLangValues());
     setGalleryDescLang('ES');
   };
@@ -899,12 +902,13 @@ ${otherEventsSQL}
                   website: form.website.value || undefined,
                   phone: form.phone.value || undefined,
                   email: form.gemail.value || undefined,
-                  imageUrl: editGalleryImageUrl || editingGallery.imageUrl,
+                  images: editGalleryImages,
                   description: serializeLangValues(galleryDescValues),
                 };
                 await onEditGallery(editingGallery.id, updates);
                 setEditingGallery(null);
-                setEditGalleryImageUrl('');
+                setEditGalleryImages([]);
+                setShowEditGalleryUploader(false);
                 resetGalleryForm();
                 setIsSaving(false);
               }}>
@@ -941,17 +945,49 @@ ${otherEventsSQL}
                     className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm h-28 resize-none"
                   />
                 </div>
-                <ImageUpload
-                  onImageUploaded={setEditGalleryImageUrl}
-                  currentImageUrl={editGalleryImageUrl || editingGallery.imageUrl}
-                  folder="galleries"
-                  label="Imagen de la galería"
-                />
+                <div className="space-y-2">
+                  <p className="text-[9px] font-bold uppercase tracking-widest text-zinc-400">
+                    Imágenes ({editGalleryImages.length})
+                  </p>
+                  {editGalleryImages.length > 0 && (
+                    <div className="flex flex-wrap gap-2">
+                      {editGalleryImages.map((url, idx) => (
+                        <div key={idx} className="relative group">
+                          <img src={url} className="w-16 h-16 object-cover rounded-sm" />
+                          <button
+                            type="button"
+                            onClick={() => setEditGalleryImages(prev => prev.filter((_, i) => i !== idx))}
+                            className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white rounded-full text-[10px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity leading-none"
+                          >×</button>
+                          {idx === 0 && (
+                            <span className="absolute bottom-0 left-0 right-0 text-[7px] text-center bg-black/50 text-white py-0.5">Portada</span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {!showEditGalleryUploader ? (
+                    <button
+                      type="button"
+                      onClick={() => setShowEditGalleryUploader(true)}
+                      className="w-full py-2 border-dashed border border-zinc-300 text-[9px] uppercase tracking-widest text-zinc-400 hover:border-emerald-500 hover:text-emerald-600 transition-colors"
+                    >+ Añadir imagen</button>
+                  ) : (
+                    <ImageUpload
+                      onImageUploaded={(url) => {
+                        if (url) setEditGalleryImages(prev => [...prev, url]);
+                        setShowEditGalleryUploader(false);
+                      }}
+                      folder="galleries"
+                      label=""
+                    />
+                  )}
+                </div>
                 <div className="flex gap-2">
                   <button type="submit" disabled={isSaving} className="flex-1 bg-emerald-600 text-white py-4 text-[9px] font-bold uppercase tracking-[0.3em] hover:bg-emerald-700 transition-all disabled:opacity-50">
                     {isSaving ? 'Guardando...' : 'Guardar Cambios'}
                   </button>
-                  <button type="button" onClick={() => { setEditingGallery(null); setEditGalleryImageUrl(''); resetGalleryForm(); }} className="px-6 bg-zinc-200 text-zinc-600 py-4 text-[9px] font-bold uppercase tracking-[0.3em] hover:bg-zinc-300 transition-all">
+                  <button type="button" onClick={() => { setEditingGallery(null); setEditGalleryImages([]); setShowEditGalleryUploader(false); resetGalleryForm(); }} className="px-6 bg-zinc-200 text-zinc-600 py-4 text-[9px] font-bold uppercase tracking-[0.3em] hover:bg-zinc-300 transition-all">
                     Cancelar
                   </button>
                 </div>
@@ -971,7 +1007,7 @@ ${otherEventsSQL}
                   website: form.website.value || undefined,
                   phone: form.phone.value || undefined,
                   email: form.gemail.value || undefined,
-                  imageUrl: galleryImageUrl || '',
+                  images: galleryImages,
                   description: serializeLangValues(galleryDescValues),
                 };
                 await onAddGallery(newGallery);
@@ -1012,12 +1048,44 @@ ${otherEventsSQL}
                     className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm h-28 resize-none"
                   />
                 </div>
-                <ImageUpload
-                  onImageUploaded={setGalleryImageUrl}
-                  currentImageUrl={galleryImageUrl}
-                  folder="galleries"
-                  label="Imagen de la galería"
-                />
+                <div className="space-y-2">
+                  <p className="text-[9px] font-bold uppercase tracking-widest text-zinc-400">
+                    Imágenes ({galleryImages.length})
+                  </p>
+                  {galleryImages.length > 0 && (
+                    <div className="flex flex-wrap gap-2">
+                      {galleryImages.map((url, idx) => (
+                        <div key={idx} className="relative group">
+                          <img src={url} className="w-16 h-16 object-cover rounded-sm" />
+                          <button
+                            type="button"
+                            onClick={() => setGalleryImages(prev => prev.filter((_, i) => i !== idx))}
+                            className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white rounded-full text-[10px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity leading-none"
+                          >×</button>
+                          {idx === 0 && (
+                            <span className="absolute bottom-0 left-0 right-0 text-[7px] text-center bg-black/50 text-white py-0.5">Portada</span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {!showGalleryUploader ? (
+                    <button
+                      type="button"
+                      onClick={() => setShowGalleryUploader(true)}
+                      className="w-full py-2 border-dashed border border-zinc-300 text-[9px] uppercase tracking-widest text-zinc-400 hover:border-emerald-500 hover:text-emerald-600 transition-colors"
+                    >+ Añadir imagen</button>
+                  ) : (
+                    <ImageUpload
+                      onImageUploaded={(url) => {
+                        if (url) setGalleryImages(prev => [...prev, url]);
+                        setShowGalleryUploader(false);
+                      }}
+                      folder="galleries"
+                      label=""
+                    />
+                  )}
+                </div>
                 <button disabled={isSaving} className="w-full bg-zinc-900 text-white py-4 text-[9px] font-bold uppercase tracking-[0.3em] hover:bg-emerald-600 transition-all disabled:opacity-50">
                   {isSaving ? 'Guardando...' : 'Registrar Galería'}
                 </button>
@@ -1028,8 +1096,8 @@ ${otherEventsSQL}
           <div className="lg:col-span-2 space-y-4">
             {galleries.map(g => (
               <div key={g.id} className={`flex gap-6 p-6 border bg-white items-center ${editingGallery?.id === g.id ? 'border-emerald-500 bg-emerald-50' : 'border-zinc-100'}`}>
-                {g.imageUrl ? (
-                  <img src={g.imageUrl} className="w-16 h-16 object-cover flex-shrink-0" />
+                {g.images?.[0] ? (
+                  <img src={g.images[0]} className="w-16 h-16 object-cover flex-shrink-0" />
                 ) : (
                   <div className="w-16 h-16 bg-zinc-100 flex-shrink-0 flex items-center justify-center">
                     <svg className="w-6 h-6 text-zinc-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1051,7 +1119,8 @@ ${otherEventsSQL}
                   <button
                     onClick={() => {
                       setEditingGallery(g);
-                      setEditGalleryImageUrl(g.imageUrl);
+                      setEditGalleryImages(g.images || []);
+                      setShowEditGalleryUploader(false);
                       setGalleryDescValues(parseLangValues(g.description || ''));
                       setGalleryDescLang('ES');
                     }}

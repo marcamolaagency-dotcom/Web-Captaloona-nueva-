@@ -41,11 +41,11 @@ const Galerias: React.FC<GaleriasProps> = ({ galleries, lang }) => {
                   key={gallery.id}
                   className="group border border-zinc-100 bg-white hover:shadow-xl transition-all duration-500"
                 >
-                  {/* Image */}
+                  {/* Cover image */}
                   <div className="aspect-[4/3] overflow-hidden bg-zinc-100">
-                    {gallery.imageUrl ? (
+                    {gallery.images?.[0] ? (
                       <img
-                        src={gallery.imageUrl}
+                        src={gallery.images[0]}
                         alt={gallery.name}
                         className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 group-hover:scale-105"
                       />
@@ -57,6 +57,20 @@ const Galerias: React.FC<GaleriasProps> = ({ galleries, lang }) => {
                       </div>
                     )}
                   </div>
+
+                  {/* Additional images strip */}
+                  {gallery.images?.length > 1 && (
+                    <div className="flex gap-1 px-3 pt-2 pb-0 overflow-x-auto">
+                      {gallery.images.slice(1).map((url, idx) => (
+                        <img
+                          key={idx}
+                          src={url}
+                          alt={`${gallery.name} ${idx + 2}`}
+                          className="w-12 h-12 object-cover flex-shrink-0 opacity-50 hover:opacity-100 transition-opacity"
+                        />
+                      ))}
+                    </div>
+                  )}
 
                   {/* Content */}
                   <div className="p-6 space-y-3">

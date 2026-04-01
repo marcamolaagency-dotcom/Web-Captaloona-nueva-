@@ -745,11 +745,17 @@ export async function saveFeaturedArtworkIds(ids: string[]): Promise<boolean> {
 // ============================================
 
 function dbToGallery(row: any): Gallery {
+  let images: string[] = [];
+  if (Array.isArray(row.images)) {
+    images = row.images;
+  } else if (typeof row.image_url === 'string' && row.image_url) {
+    images = [row.image_url];
+  }
   return {
     id: row.id,
     name: row.name,
     description: row.description || '',
-    imageUrl: row.image_url || '',
+    images,
     address: row.address || '',
     city: row.city || '',
     type: row.type || 'propia',
@@ -800,7 +806,7 @@ export async function createGallery(gallery: Omit<Gallery, 'id'>): Promise<Galle
     .insert({
       name: gallery.name,
       description: gallery.description,
-      image_url: gallery.imageUrl,
+      images: gallery.images,
       address: gallery.address,
       city: gallery.city,
       type: gallery.type,
@@ -839,7 +845,7 @@ export async function updateGallery(id: string, updates: Partial<Gallery>): Prom
     .update({
       name: updates.name,
       description: updates.description,
-      image_url: updates.imageUrl,
+      images: updates.images,
       address: updates.address,
       city: updates.city,
       type: updates.type,
