@@ -54,7 +54,7 @@ export interface Gallery {
   id: string;
   name: string;
   description: string;
-  imageUrl: string;
+  images: string[];
   address: string;
   city: string;
   type: 'propia' | 'gestionada';

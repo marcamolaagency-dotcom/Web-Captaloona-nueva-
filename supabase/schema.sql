@@ -299,7 +299,7 @@ CREATE TABLE galleries (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     name TEXT NOT NULL,
     description TEXT NOT NULL DEFAULT '',
-    image_url TEXT NOT NULL DEFAULT '',
+    images JSONB NOT NULL DEFAULT '[]'::jsonb,
     address TEXT NOT NULL DEFAULT '',
     city TEXT NOT NULL DEFAULT '',
     type TEXT NOT NULL DEFAULT 'propia' CHECK (type IN ('propia', 'gestionada')),
@@ -310,6 +310,10 @@ CREATE TABLE galleries (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
+
+-- ALTER TABLE for existing installations:
+-- ALTER TABLE galleries ADD COLUMN IF NOT EXISTS images JSONB DEFAULT '[]'::jsonb;
+-- ALTER TABLE galleries DROP COLUMN IF EXISTS image_url;
 
 CREATE INDEX idx_galleries_status ON galleries(status);
 CREATE INDEX idx_galleries_type ON galleries(type);
