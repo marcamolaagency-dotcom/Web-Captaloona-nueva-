@@ -21,7 +21,7 @@ export interface UploadResult {
  */
 export async function uploadImage(
   file: File,
-  folder: 'artworks' | 'artists' | 'events' | 'general' = 'general'
+  folder: 'artworks' | 'artists' | 'events' | 'general' | 'galleries' = 'general'
 ): Promise<UploadResult> {
   // Check if Supabase is configured
   if (!isSupabaseConfigured()) {

@@ -820,7 +820,7 @@ export async function createGallery(gallery: Omit<Gallery, 'id'>): Promise<Galle
 
   if (error) {
     console.error('Error creating gallery:', error);
-    return newGallery;
+    return null;
   }
 
   const savedGallery = dbToGallery(data);
