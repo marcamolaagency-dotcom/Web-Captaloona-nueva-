@@ -1,6 +1,6 @@
 
 import React, { useState, useMemo } from 'react';
-import { Language, Artwork, EventItem } from '../types.ts';
+import { Language, Artwork, EventItem, getLocalizedText } from '../types.ts';
 import { TRANSLATIONS } from '../translations.ts';
 import ImageLightbox from '../components/ImageLightbox.tsx';
 
@@ -243,7 +243,7 @@ const Home: React.FC<HomeProps> = ({ onNavigate, lang, artworks, featuredArtwork
                 )}
 
                 <p className="text-zinc-400 text-base md:text-lg leading-relaxed italic font-light">
-                  {featuredEvent.description}
+                  {getLocalizedText(featuredEvent.description, lang)}
                 </p>
 
                 <button

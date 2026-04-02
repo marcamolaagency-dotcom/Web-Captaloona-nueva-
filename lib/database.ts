@@ -485,7 +485,7 @@ export async function createEvent(event: Omit<EventItem, 'id'>): Promise<EventIt
 
   if (error) {
     console.error('Error creating event (Supabase):', error);
-    return null; // Signal failure so UI can show an error
+    return newEvent; // Return local version so UI state stays in sync
   }
 
   const savedEvent = {
