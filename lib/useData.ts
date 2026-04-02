@@ -192,6 +192,10 @@ export function useData(): UseDataReturn {
     const newEvent = await createEvent(event);
     if (newEvent) {
       setEvents((prev) => [newEvent, ...prev]);
+      // Timestamp-only ID means Supabase INSERT failed; event saved locally only
+      if (/^\d+$/.test(newEvent.id)) {
+        setSaveError('La exposición se guardó localmente pero no se pudo sincronizar con el servidor.');
+      }
     } else {
       setSaveError('No se pudo guardar la exposición en Supabase. Revisa la consola del navegador para más detalles.');
     }
