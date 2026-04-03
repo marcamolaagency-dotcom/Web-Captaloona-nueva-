@@ -102,12 +102,12 @@ export async function submitContactToGHL(
  * The function calls the GHL API server-side using GHL_API_KEY + GHL_LOCATION_ID
  * env vars configured in the Netlify dashboard (not exposed to the browser).
  */
-export async function submitNewsletterToGHL(email: string): Promise<boolean> {
+export async function submitNewsletterToGHL(email: string, name?: string): Promise<boolean> {
   try {
     const response = await fetch('/.netlify/functions/newsletter', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email }),
+      body: JSON.stringify({ email, name }),
     });
     return response.ok;
   } catch (error) {

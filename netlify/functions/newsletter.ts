@@ -26,12 +26,17 @@ export const handler = async (event: any) => {
 
   // Parse request body
   let email: string;
+  let firstName = '';
+  let lastName = '';
   try {
     const body = JSON.parse(event.body || '{}');
     email = (body.email || '').trim().toLowerCase();
     if (!email || !email.includes('@')) {
       return { statusCode: 400, headers, body: JSON.stringify({ error: 'Invalid email' }) };
     }
+    const nameParts = (body.name || '').trim().split(/\s+/);
+    firstName = nameParts[0] || '';
+    lastName = nameParts.slice(1).join(' ') || '';
   } catch {
     return { statusCode: 400, headers, body: JSON.stringify({ error: 'Invalid request body' }) };
   }
@@ -55,6 +60,8 @@ export const handler = async (event: any) => {
       },
       body: JSON.stringify({
         email,
+        firstName,
+        lastName,
         locationId,
         tags: ['newsletter'],
         source: 'Captaloona Web',
