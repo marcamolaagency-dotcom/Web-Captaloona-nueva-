@@ -12,25 +12,45 @@ interface HomeProps {
   events: EventItem[];
 }
 
-// Helper function to parse date strings like "24 NOV 2024" to Date objects.
-// Always returns a valid Date — never Invalid Date — so filtering never drops events.
+// Helper function to parse date strings to Date objects.
+// Handles multiple formats used in the app:
+//   "24 NOV 2024"                  → standard
+//   "10-21 MAR 2026"               → range (uses start date)
+//   "Del 16 al 30 DE ABRIL DE 2026"→ Spanish range sentence
+//   "2026-04-16"                   → ISO
+// Always returns a valid Date — never falls back to Invalid Date.
 const parseEventDate = (dateStr: string): Date => {
-  const months: Record<string, number> = {
+  const monthMap: Record<string, number> = {
     'ENE': 0, 'FEB': 1, 'MAR': 2, 'ABR': 3, 'MAY': 4, 'JUN': 5,
     'JUL': 6, 'AGO': 7, 'SEP': 8, 'OCT': 9, 'NOV': 10, 'DIC': 11,
-    'JAN': 0, 'APR': 3, 'AUG': 7, 'DEC': 11
+    'JAN': 0, 'APR': 3, 'AUG': 7, 'DEC': 11,
   };
 
-  const parts = dateStr.trim().toUpperCase().split(/\s+/);
-  if (parts.length >= 3) {
-    const day = parseInt(parts[0], 10);
-    const month = months[parts[1]] ?? 0;
-    const year = parseInt(parts[2], 10);
-    if (!isNaN(day) && !isNaN(year)) {
-      return new Date(year, month, day);
-    }
+  const upper = dateStr.trim().toUpperCase();
+
+  // ISO format: YYYY-MM-DD
+  const iso = upper.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (iso) return new Date(parseInt(iso[1]), parseInt(iso[2]) - 1, parseInt(iso[3]));
+
+  // Extract 4-digit year
+  const yearMatch = upper.match(/\b(\d{4})\b/);
+  if (!yearMatch) return new Date(0);
+  const year = parseInt(yearMatch[1]);
+
+  // Find month abbreviation (check longer keys first to avoid partial matches)
+  const sortedKeys = Object.keys(monthMap).sort((a, b) => b.length - a.length);
+  let month = -1;
+  for (const key of sortedKeys) {
+    if (upper.includes(key)) { month = monthMap[key]; break; }
   }
-  return new Date(0); // Fallback to epoch so the event still appears as past
+  if (month === -1) return new Date(0);
+
+  // Find first 1-2 digit number as day (word-boundary so it doesn't match inside 4-digit year)
+  const dayMatch = upper.match(/\b(\d{1,2})\b/);
+  if (!dayMatch) return new Date(0);
+  const day = parseInt(dayMatch[1]);
+
+  return new Date(year, month, day);
 };
 
 

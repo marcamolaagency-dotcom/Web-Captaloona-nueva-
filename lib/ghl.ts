@@ -98,12 +98,20 @@ export async function submitContactToGHL(
 }
 
 /**
- * Submit newsletter subscription to GHL
+ * Submit newsletter subscription to GHL via Netlify serverless function.
+ * The function calls the GHL API server-side using GHL_API_KEY + GHL_LOCATION_ID
+ * env vars configured in the Netlify dashboard (not exposed to the browser).
  */
 export async function submitNewsletterToGHL(email: string): Promise<boolean> {
-  return submitToGHL({
-    email,
-    tags: [GHL_TAGS.NEWSLETTER],
-    source: 'Captaloona Web - Newsletter',
-  });
+  try {
+    const response = await fetch('/.netlify/functions/newsletter', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    });
+    return response.ok;
+  } catch (error) {
+    console.error('Error calling newsletter function:', error);
+    return false;
+  }
 }

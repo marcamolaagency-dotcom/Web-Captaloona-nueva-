@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { submitNewsletterToGHL, isGHLConfigured } from '../lib/ghl';
+import { submitNewsletterToGHL } from '../lib/ghl';
 
 const Footer: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -17,10 +17,8 @@ const Footer: React.FC = () => {
     setStatus('sending');
 
     try {
-      // Submit to GHL if configured
-      if (isGHLConfigured()) {
-        await submitNewsletterToGHL(email);
-      }
+      // Submit to GHL via Netlify function (creates contact + adds 'newsletter' tag)
+      await submitNewsletterToGHL(email);
 
       // Also submit to Netlify Forms as backup
       const netlifyFormData = new FormData();
