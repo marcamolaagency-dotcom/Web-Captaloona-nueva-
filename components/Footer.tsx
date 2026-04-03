@@ -3,26 +3,24 @@ import React, { useState } from 'react';
 import { submitNewsletterToGHL } from '../lib/ghl';
 
 const Footer: React.FC = () => {
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');
 
   const handleNewsletterSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    if (!email || !email.includes('@')) {
-      setStatus('error');
-      return;
-    }
+    if (!name.trim()) { setStatus('error'); return; }
+    if (!email || !email.includes('@')) { setStatus('error'); return; }
 
     setStatus('sending');
 
     try {
-      // Submit to GHL via Netlify function (creates contact + adds 'newsletter' tag)
-      await submitNewsletterToGHL(email);
+      await submitNewsletterToGHL(email, name.trim());
 
-      // Also submit to Netlify Forms as backup
       const netlifyFormData = new FormData();
       netlifyFormData.append('form-name', 'newsletter');
+      netlifyFormData.append('name', name.trim());
       netlifyFormData.append('email', email);
 
       await fetch('/', {
@@ -32,9 +30,8 @@ const Footer: React.FC = () => {
       });
 
       setStatus('success');
+      setName('');
       setEmail('');
-
-      // Reset after 3 seconds
       setTimeout(() => setStatus('idle'), 3000);
     } catch (error) {
       console.error('Newsletter submission error:', error);
@@ -52,10 +49,21 @@ const Footer: React.FC = () => {
             <p className="text-zinc-500 mb-8 max-w-md">Mantente al tanto de nuestras próximas exposiciones, nuevos lanzamientos y eventos exclusivos.</p>
             {/* Hidden form for Netlify Forms detection */}
             <form name="newsletter" data-netlify="true" hidden>
+              <input type="text" name="name" />
               <input type="email" name="email" />
             </form>
 
-            <form onSubmit={handleNewsletterSubmit} className="flex flex-col max-w-md">
+            <form onSubmit={handleNewsletterSubmit} className="flex flex-col max-w-md gap-3">
+              <input
+                type="text"
+                name="name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Tu nombre"
+                className="w-full bg-white border border-zinc-200 px-4 py-3 text-sm focus:outline-none focus:border-emerald-600 transition-colors"
+                disabled={status === 'sending'}
+                required
+              />
               <div className="flex">
                 <input
                   type="email"
@@ -65,6 +73,7 @@ const Footer: React.FC = () => {
                   placeholder="Tu correo electrónico"
                   className="flex-1 bg-white border border-zinc-200 px-4 py-3 text-sm focus:outline-none focus:border-emerald-600 transition-colors"
                   disabled={status === 'sending'}
+                  required
                 />
                 <button
                   type="submit"
@@ -75,10 +84,10 @@ const Footer: React.FC = () => {
                 </button>
               </div>
               {status === 'success' && (
-                <p className="text-emerald-600 text-sm mt-2">Gracias por suscribirte</p>
+                <p className="text-emerald-600 text-sm">Gracias por suscribirte</p>
               )}
               {status === 'error' && (
-                <p className="text-red-500 text-sm mt-2">Por favor, introduce un email válido</p>
+                <p className="text-red-500 text-sm">Por favor, completa tu nombre y un email válido</p>
               )}
             </form>
           </div>
