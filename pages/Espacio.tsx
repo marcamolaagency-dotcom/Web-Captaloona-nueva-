@@ -131,6 +131,47 @@ const Espacio: React.FC<EspacioProps> = ({ lang }) => {
         </div>
       </div>
 
+      {/* FAQ Section — AEO: preguntas sobre la galería */}
+      <div className="max-w-3xl mx-auto px-6 py-16 border-t border-zinc-100">
+        <div className="text-center mb-12">
+          <span className="text-emerald-600 text-[10px] font-bold uppercase tracking-[0.5em]">Preguntas frecuentes</span>
+          <h2 className="text-3xl serif italic mt-4">Sobre Captaloona Art</h2>
+        </div>
+
+        <div className="space-y-0 divide-y divide-zinc-100">
+          {[
+            {
+              q: '¿Dónde está Captaloona Art?',
+              a: 'Captaloona Art está en Andrés Mellado 55, barrio Gaztambide, Madrid 28015. Se encuentra en el distrito de Argüelles, a pocos minutos de los metros Islas Filipinas y Argüelles.'
+            },
+            {
+              q: '¿Cuándo está abierta la galería?',
+              a: 'Captaloona Art abre de lunes a viernes de 10:00 a 19:00, y los sábados de 11:00 a 14:00. Para visitas concertadas fuera de horario puede contactar en info@loonacontemporary.com o al +34 669 61 62 20.'
+            },
+            {
+              q: '¿Qué tipo de arte expone Captaloona Art?',
+              a: 'Captaloona Art expone arte contemporáneo emergente con enfoque filosófico: pintura matérica y polimatérica, neo-expresionismo mediterráneo, obra sobre papel y escultura. Todos los artistas son seleccionados por Claudio Fiorentini siguiendo el criterio de que el arte debe anticipar el pensamiento, no seguirlo.'
+            },
+            {
+              q: '¿Cómo puedo visitar la galería o adquirir una obra?',
+              a: 'Puedes visitar Captaloona Art en horario de apertura sin cita previa. Para adquisición de obras o información sobre artistas, escríbenos a info@loonacontemporary.com. También puedes explorar la colección en línea y usar la herramienta Inner Vision para ver cómo quedaría una obra en tu espacio.'
+            }
+          ].map(({ q, a }, i) => (
+            <details key={i} className="group py-6">
+              <summary className="flex justify-between items-center cursor-pointer list-none gap-4">
+                <h3 className="text-lg font-medium text-zinc-900 group-open:text-emerald-700 transition-colors">{q}</h3>
+                <span className="flex-shrink-0 w-6 h-6 flex items-center justify-center text-zinc-400 group-open:text-emerald-600 transition-colors">
+                  <svg className="w-4 h-4 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"/>
+                  </svg>
+                </span>
+              </summary>
+              <p className="mt-4 text-zinc-500 leading-relaxed text-base">{a}</p>
+            </details>
+          ))}
+        </div>
+      </div>
+
       {/* Lightbox Modal */}
       {selectedImage !== null && (
         <div

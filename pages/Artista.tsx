@@ -157,6 +157,47 @@ const Artista: React.FC<{ lang?: Language }> = ({ lang = 'ES' }) => {
         </div>
       </section>
 
+      {/* FAQ Section — AEO: preguntas frecuentes sobre Claudio y el KHAOS Method */}
+      <section className="mb-32">
+        <div className="text-center mb-16">
+          <span className="text-emerald-600 text-[10px] font-bold uppercase tracking-[0.5em]">Preguntas frecuentes</span>
+          <h2 className="text-4xl serif italic mt-4">Sobre Claudio y la metodología</h2>
+        </div>
+
+        <div className="max-w-3xl mx-auto space-y-0 divide-y divide-zinc-100">
+          {[
+            {
+              q: '¿Qué es el KHAOS Method?',
+              a: 'El KHAOS Method es la metodología de trabajo artístico desarrollada por Claudio Fiorentini. No busca imponer una dirección creativa, sino provocar al artista para que excave en su propio subconsciente y encuentre su voz interior auténtica. A través de proyectos de investigación artística diseñados específicamente para cada creador, el método ayuda a quebrar el lenguaje plástico establecido y reformularlo desde arquetipos universales.'
+            },
+            {
+              q: '¿Cómo trabaja Claudio Fiorentini con los artistas?',
+              a: 'Claudio trabaja como coach de artistas y curador. Diseña para cada artista proyectos de investigación individualizados que los ayudan a profundizar en su subconsciente, conectar con arquetipos universales y desarrollar coherencia conceptual entre su filosofía personal y su obra. Como describe Teresa Jimeno, acuarelista: "Los proyectos de Capataloona Art supusieron una irrupción decisiva, quebrando y reformulando mi lenguaje plástico."'
+            },
+            {
+              q: '¿Qué diferencia a Loona Contemporary de otras galerías de arte en Madrid?',
+              a: 'Loona Contemporary no es una galería tradicional. Es una plataforma filosófica y curatorial que trabaja exclusivamente con artistas emergentes auténticos, posicionándose contra el mercado del arte tradicional donde las galerías priorizan nombres establecidos sobre talento real. Captaloona Art es el espacio físico donde los artistas pueden desarrollarse sin comprometer su visión creativa.'
+            },
+            {
+              q: '¿Quién es Claudio Fiorentini?',
+              a: 'Claudio Fiorentini es escritor, curador y coach de artistas nacido en Roma, Italia, residente en Madrid desde el año 2000. Autor de más de diez novelas y siete poemarios, es director de Loona Contemporary y Captaloona Art. Reconocido mediador cultural que conecta distintas tradiciones artísticas con el coleccionismo contemporáneo.'
+            }
+          ].map(({ q, a }, i) => (
+            <details key={i} className="group py-6">
+              <summary className="flex justify-between items-center cursor-pointer list-none gap-4">
+                <h3 className="text-lg font-medium text-zinc-900 group-open:text-emerald-700 transition-colors">{q}</h3>
+                <span className="flex-shrink-0 w-6 h-6 flex items-center justify-center text-zinc-400 group-open:text-emerald-600 transition-colors">
+                  <svg className="w-4 h-4 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"/>
+                  </svg>
+                </span>
+              </summary>
+              <p className="mt-4 text-zinc-500 leading-relaxed text-base">{a}</p>
+            </details>
+          ))}
+        </div>
+      </section>
+
       {/* Works Section */}
       <section className="mb-32">
         <div className="text-center mb-16">
