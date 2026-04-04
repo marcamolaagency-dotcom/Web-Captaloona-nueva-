@@ -1,8 +1,10 @@
-// Netlify Function: Newsletter subscription → GHL API v1
-// Uses GHL's v1 REST API which works with location-level API keys.
+// Netlify Function: Newsletter subscription → GHL Inbound Webhook
+// POSTs contact data to a GHL automation webhook that creates the contact
+// and adds the 'newsletter' tag — no API key needed.
 //
-// Required env vars in Netlify dashboard:
-//   GHL_API_KEY  → Location API key from GHL: Settings → Claves de API
+// Required env var in Netlify dashboard:
+//   GHL_WEBHOOK_URL → Inbound Webhook URL from the GHL automation workflow
+//                     (Settings → Automatizaciones → Webhook Entrante → URL)
 
 export const handler = async (event: any) => {
   const headers = {
@@ -34,36 +36,26 @@ export const handler = async (event: any) => {
     return { statusCode: 400, headers, body: JSON.stringify({ error: 'Invalid request body' }) };
   }
 
-  const apiKey = process.env.GHL_API_KEY;
+  const webhookUrl = process.env.GHL_WEBHOOK_URL;
 
-  if (!apiKey) {
-    console.warn('GHL_API_KEY not configured — skipping GHL, Netlify Forms is backup');
+  if (!webhookUrl) {
+    console.warn('GHL_WEBHOOK_URL not configured — skipping GHL, Netlify Forms is backup');
     return { statusCode: 200, headers, body: JSON.stringify({ success: true, source: 'backup' }) };
   }
 
   try {
-    // GHL API v1 — location-scoped key, no locationId needed in body
-    const response = await fetch('https://rest.gohighlevel.com/v1/contacts/', {
+    const response = await fetch(webhookUrl, {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        email,
-        firstName,
-        lastName,
-        tags: ['newsletter'],
-        source: 'Captaloona Web',
-      }),
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, firstName, lastName, tags: ['newsletter'] }),
     });
 
     const responseText = await response.text();
-    console.log('GHL v1 response:', response.status, responseText.slice(0, 300));
+    console.log('GHL webhook response:', response.status, responseText.slice(0, 200));
 
     if (!response.ok) {
-      console.error('GHL API v1 error:', response.status, responseText);
-      return { statusCode: 500, headers, body: JSON.stringify({ error: 'GHL error', status: response.status }) };
+      console.error('GHL webhook error:', response.status, responseText);
+      return { statusCode: 500, headers, body: JSON.stringify({ error: 'GHL webhook error' }) };
     }
 
     return { statusCode: 200, headers, body: JSON.stringify({ success: true }) };
