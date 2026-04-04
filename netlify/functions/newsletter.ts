@@ -1,12 +1,8 @@
-// Netlify Function: Newsletter subscription → GHL API
-// Creates a contact in GoHighLevel with the 'newsletter' tag.
+// Netlify Function: Newsletter subscription → GHL API v1
+// Uses GHL's v1 REST API which works with location-level API keys.
 //
-// Required env vars in Netlify dashboard (NOT prefixed with VITE_):
-//   GHL_API_KEY      → Location-level Private Integration token (pit-...)
-//   GHL_LOCATION_ID  → GHL Location ID (from the URL: /v2/location/{ID}/...)
-
-const GHL_CONTACTS_URL = 'https://services.leadconnectorhq.com/contacts/';
-const GHL_API_VERSION = '2021-07-28';
+// Required env vars in Netlify dashboard:
+//   GHL_API_KEY  → Location API key from GHL: Settings → Claves de API
 
 export const handler = async (event: any) => {
   const headers = {
@@ -41,68 +37,36 @@ export const handler = async (event: any) => {
   const apiKey = process.env.GHL_API_KEY;
 
   if (!apiKey) {
-    console.warn('GHL not configured: GHL_API_KEY missing');
+    console.warn('GHL_API_KEY not configured — skipping GHL, Netlify Forms is backup');
     return { statusCode: 200, headers, body: JSON.stringify({ success: true, source: 'backup' }) };
   }
 
-  const authHeaders = {
-    'Authorization': `Bearer ${apiKey}`,
-    'Content-Type': 'application/json',
-    'Version': GHL_API_VERSION,
-  };
-
   try {
-    // Location-level PIT already carries the location context implicitly.
-    // Do NOT include locationId in the body — that causes a 403 with location tokens.
-    const contactPayload: any = {
-      email,
-      tags: ['newsletter'],
-      source: 'Captaloona Web',
-    };
-    if (firstName) contactPayload.firstName = firstName;
-    if (lastName) contactPayload.lastName = lastName;
-
-    console.log('Creating GHL contact for:', email);
-
-    const response = await fetch(GHL_CONTACTS_URL, {
+    // GHL API v1 — location-scoped key, no locationId needed in body
+    const response = await fetch('https://rest.gohighlevel.com/v1/contacts/', {
       method: 'POST',
-      headers: authHeaders,
-      body: JSON.stringify(contactPayload),
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        email,
+        firstName,
+        lastName,
+        tags: ['newsletter'],
+        source: 'Captaloona Web',
+      }),
     });
 
     const responseText = await response.text();
-    console.log('GHL response:', response.status, responseText.slice(0, 300));
+    console.log('GHL v1 response:', response.status, responseText.slice(0, 300));
 
-    // Contact created successfully
-    if (response.ok) {
-      return { statusCode: 200, headers, body: JSON.stringify({ success: true }) };
+    if (!response.ok) {
+      console.error('GHL API v1 error:', response.status, responseText);
+      return { statusCode: 500, headers, body: JSON.stringify({ error: 'GHL error', status: response.status }) };
     }
 
-    // Contact already exists — search by email and add tag
-    if (response.status === 422) {
-      const searchRes = await fetch(
-        `https://services.leadconnectorhq.com/contacts/search/duplicate?email=${encodeURIComponent(email)}`,
-        { headers: authHeaders }
-      );
-
-      if (searchRes.ok) {
-        const searchData = await searchRes.json();
-        const contactId = searchData?.contact?.id;
-        if (contactId) {
-          await fetch(`https://services.leadconnectorhq.com/contacts/${contactId}/tags`, {
-            method: 'POST',
-            headers: authHeaders,
-            body: JSON.stringify({ tags: ['newsletter'] }),
-          });
-        }
-      }
-      return { statusCode: 200, headers, body: JSON.stringify({ success: true }) };
-    }
-
-    // Any other error
-    console.error('GHL API error:', response.status, responseText);
-    return { statusCode: 500, headers, body: JSON.stringify({ error: 'GHL API error', status: response.status, detail: responseText }) };
-
+    return { statusCode: 200, headers, body: JSON.stringify({ success: true }) };
   } catch (err) {
     console.error('Newsletter function error:', err);
     return { statusCode: 500, headers, body: JSON.stringify({ error: 'Internal error' }) };
