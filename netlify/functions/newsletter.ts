@@ -1,11 +1,9 @@
 // Netlify Function: Newsletter subscription → GHL API
-// Creates/updates a contact in GoHighLevel and adds the 'newsletter' tag
+// Creates a contact in GoHighLevel with the 'newsletter' tag.
 //
 // Required env vars in Netlify dashboard (NOT prefixed with VITE_):
-//   GHL_API_KEY      → GHL Private Integration token
-//                      (Settings → Integrations → API Keys → Private Integration Token)
-//   GHL_LOCATION_ID  → GHL Location/Sub-account ID
-//                      (Settings → Business Profile → Location ID)
+//   GHL_API_KEY      → Location-level Private Integration token (pit-...)
+//   GHL_LOCATION_ID  → GHL Location ID (from the URL: /v2/location/{ID}/...)
 
 const GHL_CONTACTS_URL = 'https://services.leadconnectorhq.com/contacts/';
 const GHL_API_VERSION = '2021-07-28';
@@ -24,7 +22,6 @@ export const handler = async (event: any) => {
     return { statusCode: 405, headers, body: JSON.stringify({ error: 'Method not allowed' }) };
   }
 
-  // Parse request body
   let email: string;
   let firstName = '';
   let lastName = '';
@@ -44,73 +41,70 @@ export const handler = async (event: any) => {
   const apiKey = process.env.GHL_API_KEY;
   const locationId = process.env.GHL_LOCATION_ID;
 
-  // If GHL is not configured, succeed silently (Netlify Forms is the backup)
   if (!apiKey || !locationId) {
     console.warn('GHL not configured: GHL_API_KEY or GHL_LOCATION_ID missing');
     return { statusCode: 200, headers, body: JSON.stringify({ success: true, source: 'backup' }) };
   }
 
+  const authHeaders = {
+    'Authorization': `Bearer ${apiKey}`,
+    'Content-Type': 'application/json',
+    'Version': GHL_API_VERSION,
+  };
+
   try {
+    // Create contact — location-level PIT already carries location context
+    // locationId is still required in body per GHL v2 API spec
+    const contactPayload: any = {
+      email,
+      locationId,
+      tags: ['newsletter'],
+      source: 'Captaloona Web',
+    };
+    if (firstName) contactPayload.firstName = firstName;
+    if (lastName) contactPayload.lastName = lastName;
+
+    console.log('Creating GHL contact for:', email, 'locationId:', locationId);
+
     const response = await fetch(GHL_CONTACTS_URL, {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-        'Version': GHL_API_VERSION,
-      },
-      body: JSON.stringify({
-        email,
-        firstName,
-        lastName,
-        locationId,
-        tags: ['newsletter'],
-        source: 'Captaloona Web',
-      }),
+      headers: authHeaders,
+      body: JSON.stringify(contactPayload),
     });
 
     const responseText = await response.text();
+    console.log('GHL response:', response.status, responseText.slice(0, 300));
 
-    // 422 typically means the contact already exists — still a success for our purposes
-    if (!response.ok && response.status !== 422) {
-      console.error('GHL API error:', response.status, responseText);
-      return {
-        statusCode: 500,
-        headers,
-        body: JSON.stringify({ error: 'GHL API error', status: response.status }),
-      };
+    // Contact created successfully
+    if (response.ok) {
+      return { statusCode: 200, headers, body: JSON.stringify({ success: true }) };
     }
 
-    // If contact already exists (422), add the newsletter tag via update
+    // Contact already exists — search by email and add tag
     if (response.status === 422) {
       const searchRes = await fetch(
         `https://services.leadconnectorhq.com/contacts/search/duplicate?locationId=${locationId}&email=${encodeURIComponent(email)}`,
-        {
-          headers: {
-            'Authorization': `Bearer ${apiKey}`,
-            'Version': GHL_API_VERSION,
-          },
-        }
+        { headers: authHeaders }
       );
 
       if (searchRes.ok) {
         const searchData = await searchRes.json();
         const contactId = searchData?.contact?.id;
-
         if (contactId) {
           await fetch(`https://services.leadconnectorhq.com/contacts/${contactId}/tags`, {
             method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${apiKey}`,
-              'Content-Type': 'application/json',
-              'Version': GHL_API_VERSION,
-            },
+            headers: authHeaders,
             body: JSON.stringify({ tags: ['newsletter'] }),
           });
         }
       }
+      return { statusCode: 200, headers, body: JSON.stringify({ success: true }) };
     }
 
-    return { statusCode: 200, headers, body: JSON.stringify({ success: true }) };
+    // Any other error
+    console.error('GHL API error:', response.status, responseText);
+    return { statusCode: 500, headers, body: JSON.stringify({ error: 'GHL API error', status: response.status, detail: responseText }) };
+
   } catch (err) {
     console.error('Newsletter function error:', err);
     return { statusCode: 500, headers, body: JSON.stringify({ error: 'Internal error' }) };
