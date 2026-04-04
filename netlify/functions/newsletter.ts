@@ -39,10 +39,9 @@ export const handler = async (event: any) => {
   }
 
   const apiKey = process.env.GHL_API_KEY;
-  const locationId = process.env.GHL_LOCATION_ID;
 
-  if (!apiKey || !locationId) {
-    console.warn('GHL not configured: GHL_API_KEY or GHL_LOCATION_ID missing');
+  if (!apiKey) {
+    console.warn('GHL not configured: GHL_API_KEY missing');
     return { statusCode: 200, headers, body: JSON.stringify({ success: true, source: 'backup' }) };
   }
 
@@ -53,18 +52,17 @@ export const handler = async (event: any) => {
   };
 
   try {
-    // Create contact — location-level PIT already carries location context
-    // locationId is still required in body per GHL v2 API spec
+    // Location-level PIT already carries the location context implicitly.
+    // Do NOT include locationId in the body — that causes a 403 with location tokens.
     const contactPayload: any = {
       email,
-      locationId,
       tags: ['newsletter'],
       source: 'Captaloona Web',
     };
     if (firstName) contactPayload.firstName = firstName;
     if (lastName) contactPayload.lastName = lastName;
 
-    console.log('Creating GHL contact for:', email, 'locationId:', locationId);
+    console.log('Creating GHL contact for:', email);
 
     const response = await fetch(GHL_CONTACTS_URL, {
       method: 'POST',
@@ -83,7 +81,7 @@ export const handler = async (event: any) => {
     // Contact already exists — search by email and add tag
     if (response.status === 422) {
       const searchRes = await fetch(
-        `https://services.leadconnectorhq.com/contacts/search/duplicate?locationId=${locationId}&email=${encodeURIComponent(email)}`,
+        `https://services.leadconnectorhq.com/contacts/search/duplicate?email=${encodeURIComponent(email)}`,
         { headers: authHeaders }
       );
 
