@@ -168,19 +168,19 @@ const Artista: React.FC<{ lang?: Language }> = ({ lang = 'ES' }) => {
           {[
             {
               q: '¿Qué es el KHAOS Method?',
-              a: 'El KHAOS Method es la metodología de trabajo artístico desarrollada por Claudio Fiorentini. No busca imponer una dirección creativa, sino provocar al artista para que excave en su propio subconsciente y encuentre su voz interior auténtica. A través de proyectos de investigación artística diseñados específicamente para cada creador, el método ayuda a quebrar el lenguaje plástico establecido y reformularlo desde arquetipos universales.'
+              a: 'El KHAOS Method es la metodología de trabajo artístico desarrollada por Claudio Fiorentini. No busca imponer una dirección creativa, sino provocar al artista para que excave en su propio subconsciente y encuentre su voz interior. A través de proyectos de investigación artística el artista es motivado a desarrollar su camino; al mismo tiempo se buscan los enlaces más profundos que convierten la experiencia en una unión profunda, siendo la de los artistas una comunidad aún no manifiesta. Además, el método ayuda a quebrar el lenguaje plástico establecido y reformularlo desde arquetipos universales.'
             },
             {
               q: '¿Cómo trabaja Claudio Fiorentini con los artistas?',
-              a: 'Claudio trabaja como coach de artistas y curador. Diseña para cada artista proyectos de investigación individualizados que los ayudan a profundizar en su subconsciente, conectar con arquetipos universales y desarrollar coherencia conceptual entre su filosofía personal y su obra. Como describe Teresa Jimeno, acuarelista: "Los proyectos de Capataloona Art supusieron una irrupción decisiva, quebrando y reformulando mi lenguaje plástico."'
+              a: 'Claudio trabaja como coach de artistas y curador. Define para cada artista proyectos de investigación individualizados que los ayudan a profundizar en su subconsciente, conectar con arquetipos universales y desarrollar coherencia conceptual entre su filosofía personal y su obra. Como describe Teresa Jimeno, acuarelista: "Los proyectos de Capataloona Art supusieron una irrupción decisiva, quebrando y reformulando mi lenguaje plástico."'
             },
             {
               q: '¿Qué diferencia a Loona Contemporary de otras galerías de arte en Madrid?',
-              a: 'Loona Contemporary no es una galería tradicional. Es una plataforma filosófica y curatorial que trabaja exclusivamente con artistas emergentes auténticos, posicionándose contra el mercado del arte tradicional donde las galerías priorizan nombres establecidos sobre talento real. Captaloona Art es el espacio físico donde los artistas pueden desarrollarse sin comprometer su visión creativa.'
+              a: 'Loona Contemporary no es una galería, sino un concepto que se despliega en una plataforma filosófica y curatorial. Trabaja en prevalencia con artistas emergentes, posicionándose en un nicho de mercado que aún no se ha explorado del todo. Si el mercado del arte tradicional prioriza nombres establecidos, Loona Contemporary se concentra sobre el talento. El espacio físico no es un perímetro de paredes en las que se cuelgan cuadros, sino una partitura en la que se desarrolla la «suite» musical del arte en su conjunto. El concepto Loona Contemporary, nacido en el espacio Captaloona Art Madrid, se reconoce en el lema «El arte no tiene fronteras».'
             },
             {
               q: '¿Quién es Claudio Fiorentini?',
-              a: 'Claudio Fiorentini es escritor, curador y coach de artistas nacido en Roma, Italia, residente en Madrid desde el año 2000. Autor de más de diez novelas y siete poemarios, es director de Loona Contemporary y Captaloona Art. Reconocido mediador cultural que conecta distintas tradiciones artísticas con el coleccionismo contemporáneo.'
+              a: 'Claudio Fiorentini es escritor, poeta, pintor, crítico literario, curador y coach de artistas. Nacido en Roma, Italia, residente en Madrid desde el año 2018. Autor de diez novelas, una colección de relatos breves y siete poemarios, es director de Loona Contemporary y animador de Captaloona Art. Es un reconocido mediador cultural que conecta distintas tradiciones artísticas con el coleccionismo contemporáneo.'
             }
           ].map(({ q, a }, i) => (
             <details key={i} className="group py-6">
