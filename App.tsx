@@ -13,6 +13,8 @@ import Configuracion from './pages/Configuracion.tsx';
 import Espacio from './pages/Espacio.tsx';
 import Galerias from './pages/Galerias.tsx';
 import SchemaMarkup from './components/SchemaMarkup.tsx';
+import WhatsAppFloat from './components/WhatsAppFloat.tsx';
+import CookieConsent from './components/CookieConsent.tsx';
 import { useData } from './lib/useData';
 import { useSEO } from './lib/useSEO';
 import { Language } from './types.ts';
@@ -126,6 +128,8 @@ const App: React.FC = () => {
         {renderPage()}
       </main>
       <Footer />
+      <WhatsAppFloat />
+      <CookieConsent lang={lang} />
     </div>
   );
 };
