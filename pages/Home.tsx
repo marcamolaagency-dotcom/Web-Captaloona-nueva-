@@ -101,7 +101,7 @@ const Home: React.FC<HomeProps> = ({ onNavigate, lang, artworks, featuredArtwork
         <div className="absolute inset-0 z-0">
           <img
             src="https://images.unsplash.com/photo-1492684223066-81342ee5ff30?q=80&w=1920&auto=format&fit=crop"
-            alt="Gallery Background"
+            alt="Exposición de arte contemporáneo en Captaloona Art, Madrid — galería de Loona Contemporary"
             className="w-full h-full object-cover opacity-10 scale-105"
           />
           <div className="absolute inset-0 bg-gradient-to-b from-white via-transparent to-white"></div>
@@ -181,7 +181,7 @@ const Home: React.FC<HomeProps> = ({ onNavigate, lang, artworks, featuredArtwork
                   >
                     <img
                       src={url}
-                      alt={`Art piece ${i + 1}`}
+                      alt="Obra de arte contemporáneo de la colección Loona Contemporary — arte emergente en Madrid"
                       className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110 grayscale group-hover:grayscale-0"
                       loading="lazy"
                     />
@@ -299,7 +299,7 @@ const Home: React.FC<HomeProps> = ({ onNavigate, lang, artworks, featuredArtwork
                     <div className="relative aspect-[16/10] overflow-hidden shadow-2xl">
                         <img
                             src={coachImage}
-                            alt="Claudio Fiorentini Works"
+                            alt="Claudio Fiorentini, curador y coach de artistas, en Captaloona Art Madrid"
                             className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-1000"
                             loading="lazy"
                         />
