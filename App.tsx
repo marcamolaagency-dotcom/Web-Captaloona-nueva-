@@ -66,7 +66,7 @@ const App: React.FC = () => {
       case '#/': return <Home onNavigate={navigate} lang={lang} artworks={artworks} featuredArtworkIds={featuredArtworkIds} events={events} />;
       case '#/coleccion': return <Coleccion artworks={artworks} artists={artists} lang={lang} />;
       case '#/eventos': return <Eventos events={events} otherEvents={otherEvents} lang={lang} />;
-      case '#/historia': return <Historia events={events} otherEvents={otherEvents} />;
+      case '#/historia': return <Historia events={events} otherEvents={otherEvents} lang={lang} />;
       case '#/contacto': return <Contacto />;
       case '#/artista': return <Artista lang={lang} />;
       case '#/artistas': return <Artistas artists={artists} artworks={artworks} lang={lang} />;
