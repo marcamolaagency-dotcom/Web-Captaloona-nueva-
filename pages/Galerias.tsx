@@ -186,11 +186,11 @@ const Galerias: React.FC<GaleriasProps> = ({ galleries, lang }) => {
             </button>
           </div>
 
-          {/* Main content: image + info */}
-          <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
+          {/* Main content: scrollable on mobile, side-by-side on desktop */}
+          <div className="flex-1 flex flex-col md:flex-row overflow-y-auto md:overflow-hidden">
 
-            {/* Image area */}
-            <div className="relative flex-1 bg-zinc-950 flex flex-col min-h-0">
+            {/* Image area — fixed height on mobile, fills column on desktop */}
+            <div className="relative flex-none md:flex-1 h-[45vh] md:h-auto bg-zinc-950 flex flex-col md:min-h-0">
               {/* Main image */}
               <div className="flex-1 relative flex items-center justify-center overflow-hidden min-h-0">
                 {currentImage ? (
@@ -274,7 +274,7 @@ const Galerias: React.FC<GaleriasProps> = ({ galleries, lang }) => {
             </div>
 
             {/* Info sidebar */}
-            <div className="flex-none md:w-80 lg:w-96 bg-zinc-900 border-t md:border-t-0 md:border-l border-zinc-800 overflow-y-auto">
+            <div className="flex-none md:w-80 lg:w-96 bg-zinc-900 border-t md:border-t-0 md:border-l border-zinc-800 md:overflow-y-auto">
               <div className="p-8 space-y-6">
                 {/* Type badge */}
                 <span className={`inline-block text-[9px] font-bold uppercase tracking-[0.3em] px-2 py-1 rounded-sm ${
