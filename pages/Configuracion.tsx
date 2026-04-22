@@ -387,6 +387,7 @@ ${otherEventsSQL}
                       imageUrl: editArtworkImageUrl || editingArtwork.imageUrl,
                       style: form.style.value || undefined,
                       isPermanent: form.isPermanent.checked,
+                      videoUrl: form.videoUrl.value || undefined,
                   };
                   await onEditArtwork(editingArtwork.id, updates);
                   setEditingArtwork(null);
@@ -410,6 +411,7 @@ ${otherEventsSQL}
                 <input name="medium" defaultValue={editingArtwork.medium} placeholder="Técnica" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" />
                 <input name="size" defaultValue={editingArtwork.size} placeholder="Medidas (ej: 100x100 cm)" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" />
                 <input name="style" defaultValue={editingArtwork.style || ''} placeholder="Estilo (ej: Abstracto, Figurativo...)" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" />
+                <input name="videoUrl" type="url" defaultValue={editingArtwork.videoUrl || ''} placeholder="Link de video (YouTube, Vimeo — opcional)" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" />
                 <label className="flex items-center gap-3 py-2 cursor-pointer">
                   <input type="checkbox" name="isPermanent" defaultChecked={editingArtwork.isPermanent} className="w-4 h-4 accent-emerald-600" />
                   <span className="text-sm text-zinc-600">Obra de colección permanente</span>
@@ -418,7 +420,7 @@ ${otherEventsSQL}
                   onImageUploaded={setEditArtworkImageUrl}
                   currentImageUrl={editArtworkImageUrl || editingArtwork.imageUrl}
                   folder="artworks"
-                  label="Imagen de la obra"
+                  label="Imagen / Carátula de la obra"
                 />
                 <div className="flex gap-2">
                   <button type="submit" disabled={isSaving} className="flex-1 bg-emerald-600 text-white py-4 text-[9px] font-bold uppercase tracking-[0.3em] hover:bg-emerald-700 transition-all disabled:opacity-50">
@@ -447,6 +449,7 @@ ${otherEventsSQL}
                       imageUrl: artworkImageUrl || 'https://images.unsplash.com/photo-1541963463532-d68292c34b19',
                       style: form.style.value || undefined,
                       isPermanent: form.isPermanent.checked,
+                      videoUrl: form.videoUrl.value || undefined,
                   };
                   await onAddArtwork(newArt);
                   form.reset();
@@ -470,6 +473,7 @@ ${otherEventsSQL}
                 <input name="medium" placeholder="Técnica" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" />
                 <input name="size" placeholder="Medidas (ej: 100x100 cm)" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" />
                 <input name="style" placeholder="Estilo (ej: Abstracto, Figurativo...)" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" />
+                <input name="videoUrl" type="url" placeholder="Link de video (YouTube, Vimeo — opcional)" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" />
                 <label className="flex items-center gap-3 py-2 cursor-pointer">
                   <input type="checkbox" name="isPermanent" className="w-4 h-4 accent-emerald-600" />
                   <span className="text-sm text-zinc-600">Obra de colección permanente</span>
@@ -478,7 +482,7 @@ ${otherEventsSQL}
                   onImageUploaded={setArtworkImageUrl}
                   currentImageUrl={artworkImageUrl}
                   folder="artworks"
-                  label="Imagen de la obra"
+                  label="Imagen / Carátula de la obra"
                 />
                 <button disabled={isSaving} className="w-full bg-zinc-900 text-white py-4 text-[9px] font-bold uppercase tracking-[0.3em] hover:bg-emerald-600 transition-all disabled:opacity-50">
                   {isSaving ? 'Guardando...' : 'Añadir a Colección'}
