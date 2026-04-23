@@ -214,6 +214,7 @@ export async function getArtworks(): Promise<LocalArtwork[]> {
     status: artwork.status,
     isPermanent: artwork.is_permanent ?? false,
     style: artwork.style || undefined,
+    videoUrl: artwork.video_url || undefined,
   }));
 
   saveToLocalStorage(STORAGE_KEYS.artworks, artworks);
@@ -247,10 +248,10 @@ export async function createArtwork(artwork: Omit<LocalArtwork, 'id'>): Promise<
 
   const selectQuery = `*, artists (name)`;
 
-  // Try full insert first (with style and is_permanent)
+  // Try full insert first (with style, is_permanent, video_url)
   let { data, error } = await supabase
     .from('artworks')
-    .insert({ ...baseInsert, is_permanent: artwork.isPermanent ?? false, style: artwork.style || null })
+    .insert({ ...baseInsert, is_permanent: artwork.isPermanent ?? false, style: artwork.style || null, video_url: artwork.videoUrl || null })
     .select(selectQuery)
     .single();
 
@@ -282,6 +283,7 @@ export async function createArtwork(artwork: Omit<LocalArtwork, 'id'>): Promise<
     status: data.status,
     isPermanent: (data as any).is_permanent ?? false,
     style: (data as any).style || undefined,
+    videoUrl: (data as any).video_url || undefined,
   };
 
   // Update localStorage with the Supabase ID
@@ -314,10 +316,10 @@ export async function updateArtwork(id: string, updates: Partial<LocalArtwork>):
     status: updates.status,
   };
 
-  // Try full update first (with style and is_permanent)
+  // Try full update first (with style, is_permanent, video_url)
   let { error } = await supabase
     .from('artworks')
-    .update({ ...baseUpdate, is_permanent: updates.isPermanent, style: updates.style || null })
+    .update({ ...baseUpdate, is_permanent: updates.isPermanent, style: updates.style || null, video_url: updates.videoUrl || null })
     .eq('id', id);
 
   // If failed (e.g. columns don't exist yet), retry with only base columns

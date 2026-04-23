@@ -23,6 +23,7 @@ export interface Artwork {
   status: 'disponible' | 'vendido';
   isPermanent?: boolean;
   style?: string;
+  videoUrl?: string;
 }
 
 export interface NavItem {
