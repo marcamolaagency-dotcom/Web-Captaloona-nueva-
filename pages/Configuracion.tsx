@@ -404,6 +404,9 @@ ${otherEventsSQL}
                   <select name="category" defaultValue={editingArtwork.category} className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm">
                     <option>Pintura</option>
                     <option>Escultura</option>
+                    <option>Fotografía</option>
+                    <option>Video Arte</option>
+                    <option>Arte Digital</option>
                     <option>Poesía</option>
                     <option>Narrativa</option>
                   </select>
@@ -466,6 +469,9 @@ ${otherEventsSQL}
                   <select name="category" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm">
                     <option>Pintura</option>
                     <option>Escultura</option>
+                    <option>Fotografía</option>
+                    <option>Video Arte</option>
+                    <option>Arte Digital</option>
                     <option>Poesía</option>
                     <option>Narrativa</option>
                   </select>

@@ -19,7 +19,7 @@ export interface Artwork {
   size: string;
   price: number;
   imageUrl: string;
-  category: 'Poesía' | 'Narrativa' | 'Pintura' | 'Escultura';
+  category: 'Poesía' | 'Narrativa' | 'Pintura' | 'Escultura' | 'Fotografía' | 'Video Arte' | 'Arte Digital';
   status: 'disponible' | 'vendido';
   isPermanent?: boolean;
   style?: string;
