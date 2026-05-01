@@ -1,8 +1,13 @@
 
 import React, { useState } from 'react';
 import { submitNewsletterToGHL } from '../lib/ghl';
+import { TRANSLATIONS } from '../translations.ts';
+import { Language } from '../types.ts';
 
-const Footer: React.FC = () => {
+interface FooterProps { lang: Language; }
+
+const Footer: React.FC<FooterProps> = ({ lang }) => {
+  const t = TRANSLATIONS[lang]?.home || TRANSLATIONS['ES'].home;
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');
@@ -45,8 +50,8 @@ const Footer: React.FC = () => {
       <div className="max-w-7xl mx-auto px-6">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 mb-20">
           <div>
-            <h3 className="text-3xl font-normal mb-6 serif">Sé el primero en saber lo que las otras galerías no hacen.</h3>
-            <p className="text-zinc-500 mb-8 max-w-md">Exposiciones antes de que se abran al público. Artistas emergentes antes de que el mercado los descubra. Conversaciones con Claudio para quienes buscan algo que el circuito convencional no les da.</p>
+            <h3 className="text-3xl font-normal mb-6 serif">{t.newsletterTitle}</h3>
+            <p className="text-zinc-500 mb-8 max-w-md">{t.newsletterDesc}</p>
             {/* Hidden form for Netlify Forms detection */}
             <form name="newsletter" data-netlify="true" hidden>
               <input type="text" name="name" />
