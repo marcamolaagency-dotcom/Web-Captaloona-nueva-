@@ -45,8 +45,8 @@ const Footer: React.FC = () => {
       <div className="max-w-7xl mx-auto px-6">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 mb-20">
           <div>
-            <h3 className="text-3xl font-normal mb-6 serif">Subscríbete a nuestra Newsletter</h3>
-            <p className="text-zinc-500 mb-8 max-w-md">Mantente al tanto de nuestras próximas exposiciones, nuevos lanzamientos y eventos exclusivos.</p>
+            <h3 className="text-3xl font-normal mb-6 serif">Sé el primero en saber lo que las otras galerías no hacen.</h3>
+            <p className="text-zinc-500 mb-8 max-w-md">Exposiciones antes de que se abran al público. Artistas emergentes antes de que el mercado los descubra. Conversaciones con Claudio para quienes buscan algo que el circuito convencional no les da.</p>
             {/* Hidden form for Netlify Forms detection */}
             <form name="newsletter" data-netlify="true" hidden>
               <input type="text" name="name" />
