@@ -223,7 +223,7 @@ const Home: React.FC<HomeProps> = ({ onNavigate, lang, artworks, featuredArtwork
                 PRÓXIMA EXPOSICIÓN
               </span>
               <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl serif italic text-white">
-                Lo que está pasando en Capataloona — y los otros no hacen.
+                {t.exhibitionSectionTitle}
               </h2>
             </div>
 
@@ -283,7 +283,7 @@ const Home: React.FC<HomeProps> = ({ onNavigate, lang, artworks, featuredArtwork
         <div className="max-w-7xl mx-auto px-4 md:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 md:gap-20 items-center">
                 <div className="lg:col-span-5 space-y-6 md:space-y-10">
-                    <span className="text-emerald-600 text-[9px] md:text-[10px] font-bold uppercase tracking-[0.4em] md:tracking-[0.5em]">EL CURADOR QUE DECIDIÓ NO JUGAR EL JUEGO DEL MERCADO</span>
+                    <span className="text-emerald-600 text-[9px] md:text-[10px] font-bold uppercase tracking-[0.4em] md:tracking-[0.5em]">{t.coachLabel}</span>
                     <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl serif italic leading-tight">{t.coachTitle}</h2>
                     <p className="text-zinc-500 text-base md:text-lg leading-relaxed font-light italic">
                         {t.coachDesc}

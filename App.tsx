@@ -127,7 +127,7 @@ const App: React.FC = () => {
       <main className="flex-grow">
         {renderPage()}
       </main>
-      <Footer />
+      <Footer lang={lang} />
       <WhatsAppFloat />
       <CookieConsent lang={lang} />
     </div>
