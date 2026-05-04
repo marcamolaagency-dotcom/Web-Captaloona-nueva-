@@ -43,6 +43,7 @@ const Navbar: React.FC<NavbarProps> = ({ currentPath, onNavigate, lang, onLangua
   const navItems = [
     { label: t.home, path: '/' },
     { label: t.artists, path: '/artistas' },
+    { label: t.poetryHub, path: '/poetry-hub' },
     { label: t.events, path: '/eventos' },
     { label: t.history, path: '/historia' },
     { label: t.artist, path: '/artista' },
