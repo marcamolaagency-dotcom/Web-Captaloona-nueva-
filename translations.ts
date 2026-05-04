@@ -16,7 +16,7 @@ export const TRANSLATIONS: Record<Language, any> = {
     },
     home: {
       heroSub: 'LOONA CONTEMPORARY • ART CONCEPT',
-      heroTitle: 'Hay galerías que venden arte. Nosotros hacemos lo que las otras no hacen.',
+      heroTitle: 'No es lo mismo vender arte que promover arte. Aquí promovemos.',
       heroDesc: 'Las galerías convencionales priorizan nombres sobre talento. Capataloona hace lo contrario: conecta personas reales con obras que aún no tienen precio de fama — pero que ya tienen alma suficiente para transformar un espacio y a quien lo habita.',
       bannerProfiler: '¿Qué tipo de coleccionista eres? Descúbrelo en 8 minutos — es gratuito.',
       bannerBtn: 'Iniciar mi Perfil de Coleccionista',
@@ -178,7 +178,7 @@ export const TRANSLATIONS: Record<Language, any> = {
     },
     home: {
       heroSub: 'LOONA CONTEMPORARY • ART CONCEPT',
-      heroTitle: 'Some galleries sell art. We do what the others don\'t.',
+      heroTitle: 'Selling art is not the same as promoting art. Here we promote.',
       heroDesc: 'Conventional galleries prioritize names over talent. Capataloona does the opposite: it connects real people with works that don\'t yet carry a fame price tag — but already have enough soul to transform a space and the person who inhabits it.',
       bannerProfiler: 'What kind of collector are you? Find out in 8 minutes — it\'s free.',
       bannerBtn: 'Start My Collector Profile',
@@ -340,7 +340,7 @@ export const TRANSLATIONS: Record<Language, any> = {
     },
     home: {
       heroSub: 'LOONA CONTEMPORARY • ART CONCEPT',
-      heroTitle: 'Certaines galeries vendent de l\'art. Nous faisons ce que les autres ne font pas.',
+      heroTitle: 'Vendre de l\'art n\'est pas la même chose que promouvoir l\'art. Ici, nous promouvons.',
       heroDesc: 'Les galeries conventionnelles privilégient les noms au talent. Capataloona fait le contraire : elle connecte des personnes réelles avec des œuvres qui n\'ont pas encore de prix de célébrité — mais qui ont déjà suffisamment d\'âme pour transformer un espace et celui qui l\'habite.',
       bannerProfiler: 'Quel type de collectionneur êtes-vous ? Découvrez-le en 8 minutes — c\'est gratuit.',
       bannerBtn: 'Démarrer Mon Profil de Collectionneur',
@@ -502,7 +502,7 @@ export const TRANSLATIONS: Record<Language, any> = {
     },
     home: {
       heroSub: 'LOONA CONTEMPORARY • ART CONCEPT',
-      heroTitle: 'Alcune gallerie vendono arte. Noi facciamo quello che le altre non fanno.',
+      heroTitle: 'Vendere arte non è la stessa cosa che promuovere arte. Qui promuoviamo.',
       heroDesc: 'Le gallerie convenzionali privilegiano i nomi rispetto al talento. Capataloona fa il contrario: connette persone reali con opere che non hanno ancora un prezzo di fama — ma che hanno già abbastanza anima per trasformare uno spazio e chi lo abita.',
       bannerProfiler: 'Che tipo di collezionista sei? Scoprilo in 8 minuti — è gratuito.',
       bannerBtn: 'Inizia il Mio Profilo da Collezionista',
