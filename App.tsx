@@ -12,6 +12,7 @@ import Artistas from './pages/Artistas.tsx';
 import Configuracion from './pages/Configuracion.tsx';
 import Espacio from './pages/Espacio.tsx';
 import Galerias from './pages/Galerias.tsx';
+import PoetryHub from './pages/PoetryHub.tsx';
 import SchemaMarkup from './components/SchemaMarkup.tsx';
 import WhatsAppFloat from './components/WhatsAppFloat.tsx';
 import CookieConsent from './components/CookieConsent.tsx';
@@ -105,6 +106,7 @@ const App: React.FC = () => {
         />
       );
       case '/galerias': return <Galerias galleries={galleries} lang={lang} />;
+      case '/poetry-hub': return <PoetryHub artists={artists} artworks={artworks} lang={lang} />;
       case '/espacio': return <Espacio lang={lang} />;
       default: return <Home onNavigate={navigate} lang={lang} artworks={artworks} featuredArtworkIds={featuredArtworkIds} events={events} />;
     }

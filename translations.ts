@@ -12,7 +12,8 @@ export const TRANSLATIONS: Record<Language, any> = {
       history: 'Historia',
       space: 'Galerias',
       contact: 'Contacto',
-      config: 'Config'
+      config: 'Config',
+      poetryHub: 'Poetry Hub'
     },
     home: {
       heroSub: 'LOONA CONTEMPORARY • ART CONCEPT',
@@ -162,6 +163,20 @@ export const TRANSLATIONS: Record<Language, any> = {
       backToHistory: 'Historia',
       close: 'Cerrar',
       explore: 'Ver detalles',
+    },
+    poetryHub: {
+      heroDesc: 'Un espacio dedicado a la palabra poética. Explora la obra de los poetas que forman parte de Loona Contemporary — sus voces, sus mundos, sus versos.',
+      poet: 'Poeta',
+      poetsLabel: 'Poetas',
+      poem: 'poema',
+      poems: 'poemas',
+      readPoems: 'Leer poemas',
+      backToPoets: 'Volver a poetas',
+      worksBy: 'Poemas de',
+      noPoets: 'No hay poetas disponibles todavía.',
+      noPoems: 'Este poeta no tiene poemas publicados aún.',
+      readFull: 'Leer poema completo',
+      collapse: 'Colapsar',
     }
   },
   EN: {
@@ -174,7 +189,8 @@ export const TRANSLATIONS: Record<Language, any> = {
       history: 'History',
       space: 'Galleries',
       contact: 'Contact',
-      config: 'Config'
+      config: 'Config',
+      poetryHub: 'Poetry Hub'
     },
     home: {
       heroSub: 'LOONA CONTEMPORARY • ART CONCEPT',
@@ -324,6 +340,20 @@ export const TRANSLATIONS: Record<Language, any> = {
       backToHistory: 'History',
       close: 'Close',
       explore: 'View details',
+    },
+    poetryHub: {
+      heroDesc: 'A space dedicated to the poetic word. Explore the work of the poets who are part of Loona Contemporary — their voices, their worlds, their verses.',
+      poet: 'Poet',
+      poetsLabel: 'Poets',
+      poem: 'poem',
+      poems: 'poems',
+      readPoems: 'Read poems',
+      backToPoets: 'Back to poets',
+      worksBy: 'Poems by',
+      noPoets: 'No poets available yet.',
+      noPoems: 'This poet has no published poems yet.',
+      readFull: 'Read full poem',
+      collapse: 'Collapse',
     }
   },
   FR: {
@@ -336,7 +366,8 @@ export const TRANSLATIONS: Record<Language, any> = {
       history: 'Histoire',
       space: 'Galeries',
       contact: 'Contact',
-      config: 'Config'
+      config: 'Config',
+      poetryHub: 'Poetry Hub'
     },
     home: {
       heroSub: 'LOONA CONTEMPORARY • ART CONCEPT',
@@ -486,6 +517,20 @@ export const TRANSLATIONS: Record<Language, any> = {
       backToHistory: 'Histoire',
       close: 'Fermer',
       explore: 'Voir les détails',
+    },
+    poetryHub: {
+      heroDesc: 'Un espace dédié à la parole poétique. Explorez l\'œuvre des poètes qui font partie de Loona Contemporary — leurs voix, leurs mondes, leurs vers.',
+      poet: 'Poète',
+      poetsLabel: 'Poètes',
+      poem: 'poème',
+      poems: 'poèmes',
+      readPoems: 'Lire les poèmes',
+      backToPoets: 'Retour aux poètes',
+      worksBy: 'Poèmes de',
+      noPoets: 'Aucun poète disponible pour le moment.',
+      noPoems: 'Ce poète n\'a pas encore de poèmes publiés.',
+      readFull: 'Lire le poème complet',
+      collapse: 'Réduire',
     }
   },
   IT: {
@@ -498,7 +543,8 @@ export const TRANSLATIONS: Record<Language, any> = {
       history: 'Storia',
       space: 'Gallerie',
       contact: 'Contatto',
-      config: 'Config'
+      config: 'Config',
+      poetryHub: 'Poetry Hub'
     },
     home: {
       heroSub: 'LOONA CONTEMPORARY • ART CONCEPT',
@@ -648,6 +694,20 @@ export const TRANSLATIONS: Record<Language, any> = {
       backToHistory: 'Storia',
       close: 'Chiudi',
       explore: 'Vedi i dettagli',
+    },
+    poetryHub: {
+      heroDesc: 'Uno spazio dedicato alla parola poetica. Esplora l\'opera dei poeti che fanno parte di Loona Contemporary — le loro voci, i loro mondi, i loro versi.',
+      poet: 'Poeta',
+      poetsLabel: 'Poeti',
+      poem: 'poema',
+      poems: 'poemi',
+      readPoems: 'Leggi i poemi',
+      backToPoets: 'Torna ai poeti',
+      worksBy: 'Poesie di',
+      noPoets: 'Nessun poeta disponibile ancora.',
+      noPoems: 'Questo poeta non ha ancora poesie pubblicate.',
+      readFull: 'Leggi il poema completo',
+      collapse: 'Comprimi',
     }
   }
 };
