@@ -159,6 +159,30 @@ CREATE TABLE settings (
 );
 
 -- ============================================
+-- EXPLICIT GRANTS (required from Oct 30 2026 — Supabase Data API change)
+-- ============================================
+
+GRANT SELECT ON public.artists TO anon;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.artists TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.artists TO service_role;
+
+GRANT SELECT ON public.artworks TO anon;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.artworks TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.artworks TO service_role;
+
+GRANT SELECT ON public.events TO anon;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.events TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.events TO service_role;
+
+GRANT INSERT ON public.contact_messages TO anon;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.contact_messages TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.contact_messages TO service_role;
+
+GRANT SELECT ON public.settings TO anon;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.settings TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.settings TO service_role;
+
+-- ============================================
 -- ROW LEVEL SECURITY (RLS)
 -- ============================================
 
@@ -317,6 +341,10 @@ CREATE TABLE galleries (
 
 CREATE INDEX idx_galleries_status ON galleries(status);
 CREATE INDEX idx_galleries_type ON galleries(type);
+
+GRANT SELECT ON public.galleries TO anon;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.galleries TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.galleries TO service_role;
 
 ALTER TABLE galleries ENABLE ROW LEVEL SECURITY;
 
