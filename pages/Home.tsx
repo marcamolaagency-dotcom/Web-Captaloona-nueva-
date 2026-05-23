@@ -270,7 +270,7 @@ const Home: React.FC<HomeProps> = ({ onNavigate, lang, artworks, featuredArtwork
                   onClick={() => onNavigate('/eventos')}
                   className="px-8 md:px-12 py-4 md:py-5 bg-amber-400 text-zinc-900 tracking-[0.2em] md:tracking-[0.3em] uppercase text-[9px] md:text-[10px] font-bold hover:bg-amber-300 transition-all shadow-xl"
                 >
-                  Ver todas las exposiciones
+                  Ver más
                 </button>
               </div>
             </div>
