@@ -4,9 +4,9 @@ import { submitNewsletterToGHL } from '../lib/ghl';
 import { TRANSLATIONS } from '../translations.ts';
 import { Language } from '../types.ts';
 
-interface FooterProps { lang: Language; }
+interface FooterProps { lang: Language; onNavigate: (path: string) => void; }
 
-const Footer: React.FC<FooterProps> = ({ lang }) => {
+const Footer: React.FC<FooterProps> = ({ lang, onNavigate }) => {
   const t = TRANSLATIONS[lang]?.home || TRANSLATIONS['ES'].home;
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -100,10 +100,10 @@ const Footer: React.FC<FooterProps> = ({ lang }) => {
             <div>
               <h4 className="font-semibold text-zinc-900 mb-4 uppercase tracking-tighter">Explorar</h4>
               <ul className="space-y-2 text-zinc-500">
-                <li><a href="#" className="hover:text-emerald-600">Inicio</a></li>
-                <li><a href="#" className="hover:text-emerald-600">Artistas</a></li>
-                <li><a href="#" className="hover:text-emerald-600">Colección</a></li>
-                <li><a href="#" className="hover:text-emerald-600">Blog</a></li>
+                <li><button onClick={() => onNavigate('/')} className="hover:text-emerald-600">Inicio</button></li>
+                <li><button onClick={() => onNavigate('/artistas')} className="hover:text-emerald-600">Artistas</button></li>
+                <li><button onClick={() => onNavigate('/coleccion')} className="hover:text-emerald-600">Colección</button></li>
+                <li><span className="text-zinc-400 cursor-default">Blog</span></li>
               </ul>
             </div>
             <div>
