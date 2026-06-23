@@ -411,7 +411,7 @@ ${otherEventsSQL}
                     <option>Narrativa</option>
                   </select>
                 </div>
-                <input name="medium" defaultValue={editingArtwork.medium} placeholder="Técnica" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" />
+                <textarea name="medium" defaultValue={editingArtwork.medium} placeholder="Técnica / Texto del poema" rows={5} autoCapitalize="none" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm resize-y focus:outline-none focus:border-emerald-600" />
                 <input name="size" defaultValue={editingArtwork.size} placeholder="Medidas (ej: 100x100 cm)" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" />
                 <input name="style" defaultValue={editingArtwork.style || ''} placeholder="Estilo (ej: Abstracto, Figurativo...)" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" />
                 <input name="videoUrl" type="url" defaultValue={editingArtwork.videoUrl || ''} placeholder="Link de video (YouTube, Vimeo — opcional)" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" />
@@ -476,7 +476,7 @@ ${otherEventsSQL}
                     <option>Narrativa</option>
                   </select>
                 </div>
-                <input name="medium" placeholder="Técnica" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" />
+                <textarea name="medium" placeholder="Técnica / Texto del poema" rows={5} autoCapitalize="none" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm resize-y focus:outline-none focus:border-emerald-600" />
                 <input name="size" placeholder="Medidas (ej: 100x100 cm)" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" />
                 <input name="style" placeholder="Estilo (ej: Abstracto, Figurativo...)" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" />
                 <input name="videoUrl" type="url" placeholder="Link de video (YouTube, Vimeo — opcional)" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" />
