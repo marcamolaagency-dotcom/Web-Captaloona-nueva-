@@ -100,6 +100,8 @@ const Configuracion: React.FC<ConfiguracionProps> = ({
   const [showEditGalleryUploader, setShowEditGalleryUploader] = useState(false);
   const [galleryDescLang, setGalleryDescLang] = useState<Language>('ES');
   const [galleryDescValues, setGalleryDescValues] = useState<Record<Language, string>>(emptyLangValues());
+  const [mediumLang, setMediumLang] = useState<Language>('ES');
+  const [mediumValues, setMediumValues] = useState<Record<Language, string>>(emptyLangValues());
 
   const { isAuthenticated, login, loginWithPassword, logout, user } = useAuth();
   const supabaseEnabled = isSupabaseConfigured();
@@ -209,6 +211,8 @@ ${otherEventsSQL}
   // Reset form helper
   const resetArtworkForm = () => {
     setArtworkImageUrl('');
+    setMediumValues(emptyLangValues());
+    setMediumLang('ES');
   };
 
   const resetEventForm = () => {
@@ -380,7 +384,7 @@ ${otherEventsSQL}
                       title: form.title.value,
                       artistId: form.artistId.value,
                       artistName: artists.find(a => a.id === form.artistId.value)?.name || editingArtwork.artistName,
-                      medium: form.medium.value,
+                      medium: serializeLangValues(mediumValues),
                       size: form.size.value,
                       price: Number(form.price.value),
                       category: form.category.value,
@@ -411,7 +415,25 @@ ${otherEventsSQL}
                     <option>Narrativa</option>
                   </select>
                 </div>
-                <textarea name="medium" defaultValue={editingArtwork.medium} placeholder="Técnica / Texto del poema" rows={5} autoCapitalize="none" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm resize-y focus:outline-none focus:border-emerald-600" />
+                <div>
+                  <p className="text-[9px] font-bold uppercase tracking-widest text-zinc-400 mb-2">Técnica / Texto del poema</p>
+                  <div className="flex gap-1 mb-2">
+                    {LANGS.map(l => (
+                      <button type="button" key={l} onClick={() => setMediumLang(l)}
+                        className={`px-2 py-1 text-[9px] font-bold uppercase tracking-widest rounded-sm transition-colors ${mediumLang === l ? 'bg-zinc-900 text-white' : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'}`}>
+                        {l}
+                      </button>
+                    ))}
+                  </div>
+                  <textarea
+                    value={mediumValues[mediumLang]}
+                    onChange={e => setMediumValues(v => ({ ...v, [mediumLang]: e.target.value }))}
+                    placeholder={`Técnica / Texto del poema en ${mediumLang}`}
+                    rows={6}
+                    autoCapitalize="none"
+                    className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm resize-y focus:outline-none focus:border-emerald-600"
+                  />
+                </div>
                 <input name="size" defaultValue={editingArtwork.size} placeholder="Medidas (ej: 100x100 cm)" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" />
                 <input name="style" defaultValue={editingArtwork.style || ''} placeholder="Estilo (ej: Abstracto, Figurativo...)" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" />
                 <input name="videoUrl" type="url" defaultValue={editingArtwork.videoUrl || ''} placeholder="Link de video (YouTube, Vimeo — opcional)" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" />
@@ -444,7 +466,7 @@ ${otherEventsSQL}
                       title: form.title.value,
                       artistId: form.artistId.value,
                       artistName: artists.find(a => a.id === form.artistId.value)?.name || '',
-                      medium: form.medium.value,
+                      medium: serializeLangValues(mediumValues),
                       size: form.size.value,
                       price: Number(form.price.value),
                       category: form.category.value,
@@ -476,7 +498,25 @@ ${otherEventsSQL}
                     <option>Narrativa</option>
                   </select>
                 </div>
-                <textarea name="medium" placeholder="Técnica / Texto del poema" rows={5} autoCapitalize="none" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm resize-y focus:outline-none focus:border-emerald-600" />
+                <div>
+                  <p className="text-[9px] font-bold uppercase tracking-widest text-zinc-400 mb-2">Técnica / Texto del poema</p>
+                  <div className="flex gap-1 mb-2">
+                    {LANGS.map(l => (
+                      <button type="button" key={l} onClick={() => setMediumLang(l)}
+                        className={`px-2 py-1 text-[9px] font-bold uppercase tracking-widest rounded-sm transition-colors ${mediumLang === l ? 'bg-zinc-900 text-white' : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'}`}>
+                        {l}
+                      </button>
+                    ))}
+                  </div>
+                  <textarea
+                    value={mediumValues[mediumLang]}
+                    onChange={e => setMediumValues(v => ({ ...v, [mediumLang]: e.target.value }))}
+                    placeholder={`Técnica / Texto del poema en ${mediumLang}`}
+                    rows={6}
+                    autoCapitalize="none"
+                    className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm resize-y focus:outline-none focus:border-emerald-600"
+                  />
+                </div>
                 <input name="size" placeholder="Medidas (ej: 100x100 cm)" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" />
                 <input name="style" placeholder="Estilo (ej: Abstracto, Figurativo...)" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" />
                 <input name="videoUrl" type="url" placeholder="Link de video (YouTube, Vimeo — opcional)" className="w-full p-3 border-b bg-transparent border-zinc-200 text-sm" />
@@ -509,7 +549,7 @@ ${otherEventsSQL}
                   </div>
                   <div className="flex gap-2 flex-shrink-0">
                     <button
-                      onClick={() => { setEditingArtwork(art); setEditArtworkImageUrl(art.imageUrl); }}
+                      onClick={() => { setEditingArtwork(art); setEditArtworkImageUrl(art.imageUrl); setMediumValues(parseLangValues(art.medium || '')); setMediumLang('ES'); }}
                       className="text-zinc-400 hover:text-emerald-600 text-xs font-medium transition-colors"
                     >
                       Editar

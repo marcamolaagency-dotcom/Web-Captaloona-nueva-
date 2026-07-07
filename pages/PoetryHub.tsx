@@ -116,7 +116,8 @@ const PoetryHub: React.FC<PoetryHubProps> = ({ artists, artworks, lang }) => {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {works.map((poem) => {
                   const isExpanded = expandedPoem === poem.id;
-                  const hasLongText = poem.medium && poem.medium.length > 300;
+                  const localizedMedium = getLocalizedText(poem.medium, lang);
+                  const hasLongText = localizedMedium.length > 300;
                   return (
                     <div
                       key={poem.id}
@@ -147,14 +148,14 @@ const PoetryHub: React.FC<PoetryHubProps> = ({ artists, artworks, lang }) => {
                       </div>
 
                       {/* Poem body */}
-                      {poem.medium && (
+                      {localizedMedium && (
                         <div className="flex-1">
                           <p
                             className={`text-zinc-300 leading-loose text-sm md:text-base font-light whitespace-pre-wrap serif ${
                               !isExpanded && hasLongText ? 'line-clamp-[10]' : ''
                             }`}
                           >
-                            {poem.medium}
+                            {localizedMedium}
                           </p>
                           {hasLongText && (
                             <button
