@@ -9,25 +9,81 @@ interface PoetryHubProps {
   lang: Language;
 }
 
+// ─── Language detection for plain-text poems ─────────────────────────────────
+
+const IT_WORDS = new Set([
+  'gli','questa','questo','nella','delle','degli','però','anche','tutto',
+  'così','alla','agli','nelle','sui','sulle','siamo','sono','hanno','essere',
+  'viene','dunque','quindi','invece','senza','verso','dentro','sempre','già',
+  'forse','niente','nulla','ogni','qualcosa','nessuno','quello','quella',
+  'dell','dal','dal','nei','mia','mio','miei','mie','tuo','tua','tuoi','tue',
+  'nostro','nostra','nostri','nostre','loro','quel','questa','quello',
+  'bisogno','ancora','quasi','molto','poco','bene','male','dopo','prima',
+  'mentre','perché','quando','come','dove','chi','che','cui','quale','quali',
+]);
+
+const ES_WORDS = new Set([
+  'los','las','porque','pero','cuando','todo','muy','donde','entre',
+  'también','sobre','ahora','después','antes','siempre','jamás','nunca','algo',
+  'alguien','nadie','nuestro','nuestros','ellos','ellas','este','esta','estos',
+  'estas','aquel','aquella','aunque','mientras','además','tampoco','quizás',
+  'quizá','cada','cual','cuyo','cuyos','cuya','cuyas','sino','misma','mismo',
+  'ella','nosotros','vosotros','del','esa','eso','esas','esos','unos','unas',
+  'cualquier','algún','ningún','apenas','luego','desde','hasta','bajo','hacia',
+]);
+
+function detectMediumLanguage(text: string): Language {
+  if (!text) return 'ES';
+  const lower = text.toLowerCase();
+  const tokens = lower.split(/[\s\n\r,;.!?—""''()\[\]«»:]+/).filter(Boolean);
+
+  let itScore = 0;
+  let esScore = 0;
+  for (const w of tokens) {
+    if (IT_WORDS.has(w)) itScore++;
+    if (ES_WORDS.has(w)) esScore++;
+  }
+
+  if (itScore > esScore) return 'IT';
+  if (esScore > itScore) return 'ES';
+  return 'ES';
+}
+
+/** Returns true if the poem has content for the given language. */
+function poemMatchesLang(poem: Artwork, lang: Language): boolean {
+  const m = poem.medium || '';
+  if (!m) return false;
+  try {
+    const p = JSON.parse(m);
+    if (p && typeof p === 'object' && !Array.isArray(p)) {
+      // Multilingual JSON: show if the selected lang has content, or ES fallback when lang='ES'
+      return !!(p[lang]) || (lang === 'ES' && !!(p['ES']));
+    }
+  } catch {}
+  // Plain text: show only if it matches the detected language
+  return detectMediumLanguage(m) === lang;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 const PoetryHub: React.FC<PoetryHubProps> = ({ artists, artworks, lang }) => {
   const [selectedArtist, setSelectedArtist] = useState<Artist | null>(null);
   const [expandedPoem, setExpandedPoem] = useState<string | null>(null);
 
   const t = TRANSLATIONS[lang].poetryHub;
 
-  // Only poems
+  // All poems
   const poems = useMemo(
     () => artworks.filter((a) => a.category === 'Poesía'),
     [artworks]
   );
 
-  // Poets: artists that have at least one poem
+  // Poets: only those with ≥1 poem in the selected language
   const poets = useMemo(() => {
-    const poetIds = new Set(poems.map((p) => p.artistId));
-    const fromArtists = artists.filter((a) => poetIds.has(a.id));
+    const allPoetIds = new Set(poems.map((p) => p.artistId));
+    const fromArtists = artists.filter((a) => allPoetIds.has(a.id));
     const fromArtistsIds = new Set(fromArtists.map((a) => a.id));
 
-    // Include poets not in the artists table (only in artworks)
     const extra: Artist[] = [];
     poems.forEach((p) => {
       if (!fromArtistsIds.has(p.artistId)) {
@@ -43,8 +99,18 @@ const PoetryHub: React.FC<PoetryHubProps> = ({ artists, artworks, lang }) => {
       }
     });
 
-    return [...fromArtists, ...extra];
-  }, [artists, poems]);
+    const allPoets = [...fromArtists, ...extra];
+
+    // Filter: only poets with at least 1 poem matching the selected language
+    return allPoets.filter((poet) =>
+      poems.some(
+        (p) =>
+          (p.artistId === poet.id ||
+            p.artistName.toLowerCase() === poet.name.toLowerCase()) &&
+          poemMatchesLang(p, lang)
+      )
+    );
+  }, [artists, poems, lang]);
 
   const poetPoems = (artistId: string) =>
     poems.filter(
@@ -57,6 +123,7 @@ const PoetryHub: React.FC<PoetryHubProps> = ({ artists, artworks, lang }) => {
   // ─── Artist detail view ───────────────────────────────────────────────────
   if (selectedArtist) {
     const works = poetPoems(selectedArtist.id);
+    const filteredWorks = works.filter((poem) => poemMatchesLang(poem, lang));
 
     return (
       <div className="min-h-screen bg-zinc-950 text-white animate-fadeIn">
@@ -101,20 +168,20 @@ const PoetryHub: React.FC<PoetryHubProps> = ({ artists, artworks, lang }) => {
               )}
               <div className="pt-4 border-t border-zinc-800">
                 <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">
-                  {works.length} {works.length === 1 ? t.poem : t.poems}
+                  {filteredWorks.length} {filteredWorks.length === 1 ? t.poem : t.poems}
                 </span>
               </div>
             </div>
           </div>
 
           {/* Poems */}
-          {works.length > 0 && (
+          {filteredWorks.length > 0 ? (
             <div className="space-y-2">
               <h2 className="text-2xl md:text-3xl serif text-white mb-10 pb-5 border-b border-zinc-800">
                 {t.worksBy} {selectedArtist.name}
               </h2>
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {works.map((poem) => {
+                {filteredWorks.map((poem) => {
                   const isExpanded = expandedPoem === poem.id;
                   const localizedMedium = getLocalizedText(poem.medium, lang);
                   const hasLongText = localizedMedium.length > 300;
@@ -184,10 +251,8 @@ const PoetryHub: React.FC<PoetryHubProps> = ({ artists, artworks, lang }) => {
                 })}
               </div>
             </div>
-          )}
-
-          {works.length === 0 && (
-            <p className="text-zinc-600 text-center py-16">{t.noPoems}</p>
+          ) : (
+            <p className="text-zinc-600 text-center py-16">{t.noPoemsInLanguage}</p>
           )}
         </div>
       </div>
@@ -199,7 +264,6 @@ const PoetryHub: React.FC<PoetryHubProps> = ({ artists, artworks, lang }) => {
     <div className="min-h-screen bg-zinc-950 text-white animate-fadeIn">
       {/* Hero */}
       <div className="relative pt-32 md:pt-44 pb-20 md:pb-32 px-4 overflow-hidden">
-        {/* Background texture */}
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute inset-0 bg-gradient-to-b from-zinc-900 via-zinc-950 to-zinc-950"></div>
           <div
@@ -233,7 +297,7 @@ const PoetryHub: React.FC<PoetryHubProps> = ({ artists, artworks, lang }) => {
       <div className="max-w-7xl mx-auto px-4 md:px-8 pb-24 md:pb-32">
         {poets.length === 0 ? (
           <div className="text-center py-24">
-            <p className="text-zinc-600">{t.noPoets}</p>
+            <p className="text-zinc-600">{t.noPoemsInLanguage}</p>
           </div>
         ) : (
           <>
@@ -246,7 +310,9 @@ const PoetryHub: React.FC<PoetryHubProps> = ({ artists, artworks, lang }) => {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
               {poets.map((poet) => {
-                const count = poetPoems(poet.id).length;
+                const count = poetPoems(poet.id).filter((p) =>
+                  poemMatchesLang(p, lang)
+                ).length;
                 return (
                   <button
                     key={poet.id}

@@ -177,6 +177,7 @@ export const TRANSLATIONS: Record<Language, any> = {
       noPoems: 'Este poeta no tiene poemas publicados aún.',
       readFull: 'Leer poema completo',
       collapse: 'Colapsar',
+      noPoemsInLanguage: 'No hay poemas disponibles en este idioma.',
     }
   },
   EN: {
@@ -354,6 +355,7 @@ export const TRANSLATIONS: Record<Language, any> = {
       noPoems: 'This poet has no published poems yet.',
       readFull: 'Read full poem',
       collapse: 'Collapse',
+      noPoemsInLanguage: 'No poems available in this language.',
     }
   },
   FR: {
@@ -531,6 +533,7 @@ export const TRANSLATIONS: Record<Language, any> = {
       noPoems: 'Ce poète n\'a pas encore de poèmes publiés.',
       readFull: 'Lire le poème complet',
       collapse: 'Réduire',
+      noPoemsInLanguage: 'Aucun poème disponible dans cette langue.',
     }
   },
   IT: {
@@ -708,6 +711,7 @@ export const TRANSLATIONS: Record<Language, any> = {
       noPoems: 'Questo poeta non ha ancora poesie pubblicate.',
       readFull: 'Leggi il poema completo',
       collapse: 'Comprimi',
+      noPoemsInLanguage: 'Nessun poema disponibile in questa lingua.',
     }
   }
 };
