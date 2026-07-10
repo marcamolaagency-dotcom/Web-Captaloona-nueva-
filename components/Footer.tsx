@@ -4,6 +4,8 @@ import { submitNewsletterToGHL } from '../lib/ghl';
 import { TRANSLATIONS } from '../translations.ts';
 import { Language } from '../types.ts';
 
+const BLOG_URL = 'https://blog.captaloona.com';
+
 interface FooterProps { lang: Language; onNavigate: (path: string) => void; }
 
 const Footer: React.FC<FooterProps> = ({ lang, onNavigate }) => {
@@ -103,7 +105,7 @@ const Footer: React.FC<FooterProps> = ({ lang, onNavigate }) => {
                 <li><button onClick={() => onNavigate('/')} className="hover:text-emerald-600">Inicio</button></li>
                 <li><button onClick={() => onNavigate('/artistas')} className="hover:text-emerald-600">Artistas</button></li>
                 <li><button onClick={() => onNavigate('/coleccion')} className="hover:text-emerald-600">Colección</button></li>
-                <li><span className="text-zinc-400 cursor-default">Blog</span></li>
+                <li><a href={BLOG_URL} target="_blank" rel="noopener noreferrer" className="hover:text-emerald-600">Blog</a></li>
               </ul>
             </div>
             <div>
