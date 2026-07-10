@@ -10,6 +10,8 @@ interface NavbarProps {
   onLanguageChange: (lang: Language) => void;
 }
 
+const BLOG_URL = 'https://blog.captaloona.com';
+
 const Navbar: React.FC<NavbarProps> = ({ currentPath, onNavigate, lang, onLanguageChange }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -86,6 +88,14 @@ const Navbar: React.FC<NavbarProps> = ({ currentPath, onNavigate, lang, onLangua
                   {item.label}
                 </button>
               ))}
+              <a
+                href={BLOG_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[9px] font-bold uppercase tracking-[0.2em] transition-all hover:text-emerald-600 relative py-1 text-zinc-500"
+              >
+                Blog
+              </a>
             </div>
 
             {/* Configuration Link (Small Icon) */}
@@ -177,6 +187,18 @@ const Navbar: React.FC<NavbarProps> = ({ currentPath, onNavigate, lang, onLangua
                   </li>
                 </React.Fragment>
               ))}
+              <li className="py-1"><div className="h-px bg-zinc-100 mx-3" /></li>
+              <li>
+                <a
+                  href={BLOG_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="w-full block py-3 px-3 text-sm font-medium tracking-wide transition-colors rounded-md text-zinc-700 hover:bg-zinc-50"
+                >
+                  Blog
+                </a>
+              </li>
             </ul>
           </nav>
 
