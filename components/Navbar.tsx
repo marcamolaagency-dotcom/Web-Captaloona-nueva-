@@ -10,7 +10,7 @@ interface NavbarProps {
   onLanguageChange: (lang: Language) => void;
 }
 
-const BLOG_URL = 'https://blog.captaloona.com';
+const BLOG_URL = 'https://blog.loonacontemporary.com';
 
 const Navbar: React.FC<NavbarProps> = ({ currentPath, onNavigate, lang, onLanguageChange }) => {
   const [isScrolled, setIsScrolled] = useState(false);

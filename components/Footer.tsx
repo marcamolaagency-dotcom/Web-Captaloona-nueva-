@@ -4,7 +4,7 @@ import { submitNewsletterToGHL } from '../lib/ghl';
 import { TRANSLATIONS } from '../translations.ts';
 import { Language } from '../types.ts';
 
-const BLOG_URL = 'https://blog.captaloona.com';
+const BLOG_URL = 'https://blog.loonacontemporary.com';
 
 interface FooterProps { lang: Language; onNavigate: (path: string) => void; }
 
