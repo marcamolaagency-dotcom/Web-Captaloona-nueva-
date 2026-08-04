@@ -4,7 +4,7 @@ import { submitNewsletterToGHL } from '../lib/ghl';
 import { TRANSLATIONS } from '../translations.ts';
 import { Language } from '../types.ts';
 
-const BLOG_URL = 'https://blog.loonacontemporary.com';
+const BLOG_BASE = 'https://blog.loonacontemporary.com';
 
 interface FooterProps { lang: Language; onNavigate: (path: string) => void; }
 
@@ -54,7 +54,6 @@ const Footer: React.FC<FooterProps> = ({ lang, onNavigate }) => {
           <div>
             <h3 className="text-3xl font-normal mb-6 serif">{t.newsletterTitle}</h3>
             <p className="text-zinc-500 mb-8 max-w-md">{t.newsletterDesc}</p>
-            {/* Hidden form for Netlify Forms detection */}
             <form name="newsletter" data-netlify="true" hidden>
               <input type="text" name="name" />
               <input type="email" name="email" />
@@ -105,7 +104,7 @@ const Footer: React.FC<FooterProps> = ({ lang, onNavigate }) => {
                 <li><button onClick={() => onNavigate('/')} className="hover:text-emerald-600">Inicio</button></li>
                 <li><button onClick={() => onNavigate('/artistas')} className="hover:text-emerald-600">Artistas</button></li>
                 <li><button onClick={() => onNavigate('/coleccion')} className="hover:text-emerald-600">Colección</button></li>
-                <li><a href={BLOG_URL} target="_blank" rel="noopener noreferrer" className="hover:text-emerald-600">Blog</a></li>
+                <li><a href={`${BLOG_BASE}/tag/${lang.toLowerCase()}`} target="_blank" rel="noopener noreferrer" className="hover:text-emerald-600">Blog</a></li>
               </ul>
             </div>
             <div>
