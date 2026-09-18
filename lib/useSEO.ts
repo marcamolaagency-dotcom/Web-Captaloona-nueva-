@@ -86,6 +86,9 @@ export function useSEO(currentPath: string) {
   useEffect(() => {
     const meta = SEO_MAP[currentPath] ?? DEFAULT_SEO;
 
+    document.documentElement.setAttribute('translate', 'no');
+    document.documentElement.classList.add('notranslate');
+
     document.title = meta.title;
 
     setMeta('description', meta.description);
