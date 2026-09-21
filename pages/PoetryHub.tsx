@@ -72,9 +72,9 @@ const PoetryHub: React.FC<PoetryHubProps> = ({ artists, artworks, lang }) => {
 
   const t = TRANSLATIONS[lang].poetryHub;
 
-  // All poems
+  // All poems and narrative pieces
   const poems = useMemo(
-    () => artworks.filter((a) => a.category === 'Poesía'),
+    () => artworks.filter((a) => a.category === 'Poesía' || a.category === 'Narrativa'),
     [artworks]
   );
 
