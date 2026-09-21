@@ -17,6 +17,8 @@ function getYouTubeThumbnail(url: string): string | null {
   return match ? `https://img.youtube.com/vi/${match[1]}/maxresdefault.jpg` : null;
 }
 
+const LITERARY_CATEGORIES = new Set(['Poesía', 'Narrativa']);
+
 const Coleccion: React.FC<ColeccionProps> = ({ artworks, artists = [], lang }) => {
   const [selectedArtistProfile, setSelectedArtistProfile] = useState<Artist | null>(null);
   const [lightboxImage, setLightboxImage] = useState<{url: string; title: string; artist: string} | null>(null);
@@ -26,10 +28,15 @@ const Coleccion: React.FC<ColeccionProps> = ({ artworks, artists = [], lang }) =
 
   const t = TRANSLATIONS[lang].collection;
 
+  const visualArtworks = useMemo(
+    () => artworks.filter(art => !LITERARY_CATEGORIES.has(art.category)),
+    [artworks]
+  );
+
   const allArtists = useMemo(() => {
     const artistMap = new Map<string, Artist>();
     artists.forEach(artist => artistMap.set(artist.id, artist));
-    artworks.forEach(art => {
+    visualArtworks.forEach(art => {
       if (!artistMap.has(art.artistId)) {
         artistMap.set(art.artistId, {
           id: art.artistId,
@@ -41,12 +48,12 @@ const Coleccion: React.FC<ColeccionProps> = ({ artworks, artists = [], lang }) =
       }
     });
     return Array.from(artistMap.values());
-  }, [artworks, artists]);
+  }, [visualArtworks, artists]);
 
-  const filteredArt = useMemo(() => artworks.filter(art => {
+  const filteredArt = useMemo(() => visualArtworks.filter(art => {
     if (filterMode === 'permanentes') return art.isPermanent === true;
     return filterArtist === 'all' || art.artistId === filterArtist;
-  }), [artworks, filterMode, filterArtist]);
+  }), [visualArtworks, filterMode, filterArtist]);
 
   const findArtist = (artistId: string, artistName: string): Artist | null => {
     let artist = allArtists.find(a => a.id === artistId);
@@ -67,7 +74,7 @@ const Coleccion: React.FC<ColeccionProps> = ({ artworks, artists = [], lang }) =
 
   // View: Artist Profile
   if (selectedArtistProfile) {
-    const artistWorks = artworks.filter(a =>
+    const artistWorks = visualArtworks.filter(a =>
       a.artistId === selectedArtistProfile.id ||
       a.artistName.toLowerCase() === selectedArtistProfile.name.toLowerCase()
     );
