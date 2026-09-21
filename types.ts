@@ -51,6 +51,28 @@ export interface OtherEvent {
   description: string;
 }
 
+export interface Auction {
+  id: string;
+  artworkId: string;
+  startingPrice: number;
+  minIncrement: number;
+  currentBid: number | null;
+  currentBidderName: string | null;
+  startDate: string;
+  endDate: string;
+  status: 'activa' | 'finalizada' | 'cancelada';
+}
+
+export interface Bid {
+  id: string;
+  auctionId: string;
+  bidderName: string;
+  bidderEmail: string;
+  bidderPhone?: string;
+  amount: number;
+  createdAt: string;
+}
+
 export interface Gallery {
   id: string;
   name: string;

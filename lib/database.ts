@@ -9,7 +9,7 @@ import type {
   ContactMessageInsert,
 } from './database.types';
 
-import type { Artwork as LocalArtwork, EventItem, OtherEvent, Artist as LocalArtist, Gallery } from '../types';
+import type { Artwork as LocalArtwork, EventItem, OtherEvent, Artist as LocalArtist, Gallery, Auction } from '../types';
 
 // ============================================
 // LOCAL STORAGE HELPERS
@@ -885,4 +885,147 @@ export async function deleteGallery(id: string): Promise<boolean> {
   }
 
   return true;
+}
+
+// ============================================
+// AUCTIONS (Pujas virtuales)
+// ============================================
+// A diferencia del resto de entidades, las subastas no tienen fallback de
+// localStorage: la puja más alta debe ser siempre la verdad de Supabase
+// (validada por la función place_bid), nunca un dato local potencialmente
+// obsoleto o manipulable.
+
+function dbToAuction(row: any): Auction {
+  return {
+    id: row.id,
+    artworkId: row.artwork_id,
+    startingPrice: Number(row.starting_price),
+    minIncrement: Number(row.min_increment),
+    currentBid: row.current_bid !== null ? Number(row.current_bid) : null,
+    currentBidderName: row.current_bidder_name || null,
+    startDate: row.start_date,
+    endDate: row.end_date,
+    status: row.status,
+  };
+}
+
+export async function getAuctions(): Promise<Auction[]> {
+  if (!isSupabaseConfigured()) return [];
+
+  const { data, error } = await supabase
+    .from('auctions')
+    .select('*')
+    .order('end_date', { ascending: true });
+
+  if (error) {
+    console.error('Error fetching auctions:', error);
+    return [];
+  }
+
+  return data.map(dbToAuction);
+}
+
+export async function createAuction(auction: {
+  artworkId: string;
+  startingPrice: number;
+  minIncrement: number;
+  endDate: string;
+}): Promise<Auction | null> {
+  if (!isSupabaseConfigured()) return null;
+
+  const { data, error } = await supabase
+    .from('auctions')
+    .insert({
+      artwork_id: auction.artworkId,
+      starting_price: auction.startingPrice,
+      min_increment: auction.minIncrement,
+      end_date: auction.endDate,
+    })
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error creating auction:', error);
+    return null;
+  }
+
+  return dbToAuction(data);
+}
+
+export async function updateAuction(id: string, updates: Partial<Auction>): Promise<boolean> {
+  if (!isSupabaseConfigured()) return false;
+
+  const patch: Record<string, unknown> = {};
+  if (updates.startingPrice !== undefined) patch.starting_price = updates.startingPrice;
+  if (updates.minIncrement !== undefined) patch.min_increment = updates.minIncrement;
+  if (updates.endDate !== undefined) patch.end_date = updates.endDate;
+  if (updates.status !== undefined) patch.status = updates.status;
+
+  const { error } = await supabase
+    .from('auctions')
+    .update(patch)
+    .eq('id', id);
+
+  if (error) {
+    console.error('Error updating auction:', error);
+    return false;
+  }
+
+  return true;
+}
+
+export async function deleteAuction(id: string): Promise<boolean> {
+  if (!isSupabaseConfigured()) return false;
+
+  const { error } = await supabase
+    .from('auctions')
+    .delete()
+    .eq('id', id);
+
+  if (error) {
+    console.error('Error deleting auction:', error);
+    return false;
+  }
+
+  return true;
+}
+
+/**
+ * Envía una oferta a través de la función RPC place_bid(), que valida de
+ * forma atómica (monto mínimo, subasta activa y no expirada) dentro de la
+ * base de datos — ver migración `add_auctions_bids_and_place_bid`. Nunca
+ * escribe directo en la tabla bids: esa tabla no tiene política de INSERT
+ * pública a propósito.
+ */
+export async function placeBid(params: {
+  auctionId: string;
+  name: string;
+  email: string;
+  phone?: string;
+  amount: number;
+}): Promise<{ success: true } | { success: false; message: string }> {
+  if (!isSupabaseConfigured()) {
+    return { success: false, message: 'Las pujas requieren conexión activa con el servidor.' };
+  }
+
+  const { error } = await supabase.rpc('place_bid', {
+    p_auction_id: params.auctionId,
+    p_name: params.name,
+    p_email: params.email,
+    p_phone: params.phone || null,
+    p_amount: params.amount,
+  });
+
+  // El tipado generado de Supabase (database.types.ts) no incluye esta RPC,
+  // así que `error` resuelve a un tipo degradado aquí; se normaliza a un
+  // tipo explícito para no propagar esa degradación al código que consume
+  // placeBid() (ver database.d.ts: la firma pública ya es correcta).
+  const rpcError = error as { message?: string } | null;
+
+  if (rpcError) {
+    console.error('Error placing bid:', rpcError);
+    return { success: false, message: rpcError.message || 'No se pudo registrar la oferta.' };
+  }
+
+  return { success: true };
 }

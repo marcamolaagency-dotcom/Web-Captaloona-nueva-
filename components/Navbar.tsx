@@ -51,6 +51,7 @@ const Navbar: React.FC<NavbarProps> = ({ currentPath, onNavigate, lang, onLangua
     { label: t.artist, path: '/artista' },
     { label: t.space, path: '/galerias' },
     { label: t.collection, path: '/coleccion' },
+    { label: t.auctions, path: '/pujas' },
     { label: t.contact, path: '/contacto' },
   ];
 
