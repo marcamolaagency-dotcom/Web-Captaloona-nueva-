@@ -54,6 +54,11 @@ const SEO_MAP: Record<string, SEOMeta> = {
     description:
       'Contacta con Loona Contemporary para información sobre obras, exposiciones, coaching artístico y visitas a la galería Captaloona Art en Madrid.',
   },
+  '/pujas': {
+    title: 'Pujas en Vivo | Captaloona Art Madrid',
+    description:
+      'Puja en tiempo real por obras exclusivas de Captaloona Art. Ofertas en vivo, puja más alta y tiempo restante visibles al instante.',
+  },
 };
 
 const DEFAULT_SEO: SEOMeta = {

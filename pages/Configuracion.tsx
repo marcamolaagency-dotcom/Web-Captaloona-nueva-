@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Artwork, EventItem, OtherEvent, Artist, Gallery, Language } from '../types';
+import { Artwork, EventItem, OtherEvent, Artist, Gallery, Language, Auction } from '../types';
 import { useAuth } from '../lib/useAuth';
 import { isSupabaseConfigured } from '../lib/supabase';
 import ImageUpload from '../components/ImageUpload';
@@ -29,6 +29,10 @@ interface ConfiguracionProps {
   onAddGallery: (gallery: Omit<Gallery, 'id'>) => Promise<void>;
   onEditGallery: (id: string, updates: Partial<Gallery>) => Promise<void>;
   onRemoveGallery: (id: string) => Promise<void>;
+  auctions: Auction[];
+  onAddAuction: (auction: { artworkId: string; startingPrice: number; minIncrement: number; endDate: string }) => Promise<void>;
+  onEditAuction: (id: string, updates: Partial<Auction>) => Promise<void>;
+  onRemoveAuction: (id: string) => Promise<void>;
 }
 
 const Configuracion: React.FC<ConfiguracionProps> = ({
@@ -39,6 +43,7 @@ const Configuracion: React.FC<ConfiguracionProps> = ({
   onAddOtherEvent, onRemoveOtherEvent, onAddArtist, onEditArtist, onRemoveArtist,
   onUpdateFeaturedArtworkIds,
   galleries, onAddGallery, onEditGallery, onRemoveGallery,
+  auctions, onAddAuction, onEditAuction, onRemoveAuction,
 }) => {
   const [isSaving, setIsSaving] = useState(false);
   const [backupMsg, setBackupMsg] = useState<string | null>(null);
@@ -56,7 +61,7 @@ const Configuracion: React.FC<ConfiguracionProps> = ({
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [activeTab, setActiveTab] = useState<'obras' | 'exposiciones' | 'otros' | 'artistas' | 'destacados' | 'galerias'>('obras');
+  const [activeTab, setActiveTab] = useState<'obras' | 'exposiciones' | 'otros' | 'artistas' | 'destacados' | 'galerias' | 'subastas'>('obras');
   const [loginError, setLoginError] = useState<string | null>(null);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
 
@@ -91,6 +96,9 @@ const Configuracion: React.FC<ConfiguracionProps> = ({
   const [eventDescValues, setEventDescValues] = useState<Record<Language, string>>(emptyLangValues());
   const [otherDescLang, setOtherDescLang] = useState<Language>('ES');
   const [otherDescValues, setOtherDescValues] = useState<Record<Language, string>>(emptyLangValues());
+
+  // Auction editing state
+  const [editingAuction, setEditingAuction] = useState<Auction | null>(null);
 
   // Gallery editing state
   const [editingGallery, setEditingGallery] = useState<Gallery | null>(null);
@@ -354,7 +362,7 @@ ${otherEventsSQL}
           <p className="text-zinc-400 text-sm font-light mt-2">Gestión de contenidos dinámicos del sitio web.</p>
         </div>
         <div className="flex bg-zinc-50 p-1 rounded-sm border border-zinc-100">
-          {(['obras', 'exposiciones', 'otros', 'artistas', 'destacados', 'galerias'] as const).map((tab) => (
+          {(['obras', 'exposiciones', 'otros', 'artistas', 'destacados', 'galerias', 'subastas'] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -1186,6 +1194,140 @@ ${otherEventsSQL}
             ))}
             {galleries.length === 0 && (
               <p className="text-center text-zinc-400 text-sm py-12 italic">No hay galerías registradas.</p>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* SUBASTAS TAB */}
+      {activeTab === 'subastas' && (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-16">
+          <div className="lg:col-span-1 space-y-8 bg-zinc-50 p-8 rounded-sm">
+            <h2 className="text-xl serif italic mb-6">
+              {editingAuction ? 'Editar Subasta' : 'Nueva Subasta'}
+            </h2>
+
+            {editingAuction ? (
+              <form className="space-y-4" onSubmit={async (e) => {
+                e.preventDefault();
+                setIsSaving(true);
+                const form = e.target as any;
+                await onEditAuction(editingAuction.id, {
+                  startingPrice: Number(form.startingPrice.value),
+                  minIncrement: Number(form.minIncrement.value),
+                  endDate: new Date(form.endDate.value).toISOString(),
+                  status: form.status.value,
+                });
+                setEditingAuction(null);
+                setIsSaving(false);
+              }}>
+                <div>
+                  <label className="text-xs font-bold uppercase tracking-widest text-zinc-400 block mb-2">Obra</label>
+                  <p className="text-sm text-zinc-600">{artworks.find(a => a.id === editingAuction.artworkId)?.title || editingAuction.artworkId}</p>
+                </div>
+                <div>
+                  <label className="text-xs font-bold uppercase tracking-widest text-zinc-400 block mb-2">Precio de salida (€)</label>
+                  <input name="startingPrice" type="number" min="0" step="1" defaultValue={editingAuction.startingPrice} required className="w-full border border-zinc-200 px-3 py-2 text-sm" />
+                </div>
+                <div>
+                  <label className="text-xs font-bold uppercase tracking-widest text-zinc-400 block mb-2">Incremento mínimo (€)</label>
+                  <input name="minIncrement" type="number" min="1" step="1" defaultValue={editingAuction.minIncrement} required className="w-full border border-zinc-200 px-3 py-2 text-sm" />
+                </div>
+                <div>
+                  <label className="text-xs font-bold uppercase tracking-widest text-zinc-400 block mb-2">Fecha/hora de cierre</label>
+                  <input name="endDate" type="datetime-local" defaultValue={editingAuction.endDate.slice(0, 16)} required className="w-full border border-zinc-200 px-3 py-2 text-sm" />
+                </div>
+                <div>
+                  <label className="text-xs font-bold uppercase tracking-widest text-zinc-400 block mb-2">Estado</label>
+                  <select name="status" defaultValue={editingAuction.status} className="w-full border border-zinc-200 px-3 py-2 text-sm">
+                    <option value="activa">Activa</option>
+                    <option value="finalizada">Finalizada</option>
+                    <option value="cancelada">Cancelada</option>
+                  </select>
+                </div>
+                <div className="flex gap-3 pt-2">
+                  <button type="submit" disabled={isSaving} className="flex-1 bg-zinc-900 text-white py-3 text-[10px] uppercase font-bold tracking-widest hover:bg-emerald-600 transition-all disabled:opacity-50">
+                    Guardar
+                  </button>
+                  <button type="button" onClick={() => setEditingAuction(null)} className="flex-1 border border-zinc-200 py-3 text-[10px] uppercase font-bold tracking-widest hover:bg-zinc-100 transition-all">
+                    Cancelar
+                  </button>
+                </div>
+              </form>
+            ) : (
+              <form className="space-y-4" onSubmit={async (e) => {
+                e.preventDefault();
+                setIsSaving(true);
+                const form = e.target as any;
+                await onAddAuction({
+                  artworkId: form.artworkId.value,
+                  startingPrice: Number(form.startingPrice.value),
+                  minIncrement: Number(form.minIncrement.value),
+                  endDate: new Date(form.endDate.value).toISOString(),
+                });
+                form.reset();
+                setIsSaving(false);
+              }}>
+                <div>
+                  <label className="text-xs font-bold uppercase tracking-widest text-zinc-400 block mb-2">Obra</label>
+                  <select name="artworkId" required className="w-full border border-zinc-200 px-3 py-2 text-sm">
+                    <option value="">Selecciona una obra</option>
+                    {artworks.map(a => (
+                      <option key={a.id} value={a.id}>{a.title} — {a.artistName}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="text-xs font-bold uppercase tracking-widest text-zinc-400 block mb-2">Precio de salida (€)</label>
+                  <input name="startingPrice" type="number" min="0" step="1" required className="w-full border border-zinc-200 px-3 py-2 text-sm" />
+                </div>
+                <div>
+                  <label className="text-xs font-bold uppercase tracking-widest text-zinc-400 block mb-2">Incremento mínimo (€)</label>
+                  <input name="minIncrement" type="number" min="1" step="1" defaultValue={10} required className="w-full border border-zinc-200 px-3 py-2 text-sm" />
+                </div>
+                <div>
+                  <label className="text-xs font-bold uppercase tracking-widest text-zinc-400 block mb-2">Fecha/hora de cierre</label>
+                  <input name="endDate" type="datetime-local" required className="w-full border border-zinc-200 px-3 py-2 text-sm" />
+                </div>
+                <button type="submit" disabled={isSaving} className="w-full bg-zinc-900 text-white py-3 text-[10px] uppercase font-bold tracking-widest hover:bg-emerald-600 transition-all disabled:opacity-50">
+                  Crear Subasta
+                </button>
+              </form>
+            )}
+          </div>
+
+          <div className="lg:col-span-2 space-y-4">
+            {auctions.map(auction => {
+              const artwork = artworks.find(a => a.id === auction.artworkId);
+              return (
+                <div key={auction.id} className="flex items-center justify-between border border-zinc-100 p-4 rounded-sm">
+                  <div className="flex items-center gap-4">
+                    {artwork && <img src={artwork.imageUrl} className="w-14 h-14 object-cover rounded-sm" />}
+                    <div>
+                      <p className="font-bold text-sm">{artwork?.title || auction.artworkId}</p>
+                      <p className="text-xs text-zinc-400">
+                        {auction.currentBid ? `Puja actual: ${auction.currentBid}€` : `Salida: ${auction.startingPrice}€`}
+                        {' · '}
+                        <span className={
+                          auction.status === 'activa' ? 'text-emerald-600' : auction.status === 'finalizada' ? 'text-zinc-500' : 'text-red-500'
+                        }>{auction.status}</span>
+                        {' · Cierra: '}{new Date(auction.endDate).toLocaleString('es-ES')}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4 shrink-0">
+                    <button onClick={() => setEditingAuction(auction)} className="text-zinc-400 hover:text-emerald-600 text-sm">
+                      Editar
+                    </button>
+                    <button onClick={() => onRemoveAuction(auction.id)} className="text-zinc-300 hover:text-red-500 text-sm">
+                      Eliminar
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+            {auctions.length === 0 && (
+              <p className="text-center text-zinc-400 text-sm py-12 italic">No hay subastas creadas.</p>
             )}
           </div>
         </div>

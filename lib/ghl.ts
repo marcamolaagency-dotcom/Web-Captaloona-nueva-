@@ -115,3 +115,28 @@ export async function submitNewsletterToGHL(email: string, name?: string): Promi
     return false;
   }
 }
+
+/**
+ * Notifica a GHL de una puja YA CONFIRMADA por place_bid() en Supabase.
+ * Llamar solo tras un éxito real de la oferta, nunca antes de validarla.
+ */
+export async function submitBidToGHL(params: {
+  name: string;
+  email: string;
+  phone?: string;
+  amount: number;
+  artworkTitle: string;
+  auctionId: string;
+}): Promise<boolean> {
+  try {
+    const response = await fetch('/.netlify/functions/bid-notify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(params),
+    });
+    return response.ok;
+  } catch (error) {
+    console.error('Error calling bid-notify function:', error);
+    return false;
+  }
+}

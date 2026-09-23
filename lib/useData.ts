@@ -21,8 +21,12 @@ import {
   createGallery,
   updateGallery,
   deleteGallery,
+  getAuctions,
+  createAuction,
+  updateAuction,
+  deleteAuction,
 } from './database';
-import type { Artwork, EventItem, OtherEvent, Artist, Gallery } from '../types';
+import type { Artwork, EventItem, OtherEvent, Artist, Gallery, Auction } from '../types';
 
 interface UseDataReturn {
   // Data
@@ -59,6 +63,12 @@ interface UseDataReturn {
   editGallery: (id: string, updates: Partial<Gallery>) => Promise<void>;
   removeGallery: (id: string) => Promise<void>;
 
+  auctions: Auction[];
+  addAuction: (auction: { artworkId: string; startingPrice: number; minIncrement: number; endDate: string }) => Promise<void>;
+  editAuction: (id: string, updates: Partial<Auction>) => Promise<void>;
+  removeAuction: (id: string) => Promise<void>;
+  refreshAuctions: () => Promise<void>;
+
   // For backwards compatibility with existing code
   setArtists: React.Dispatch<React.SetStateAction<Artist[]>>;
   setArtworks: React.Dispatch<React.SetStateAction<Artwork[]>>;
@@ -76,6 +86,7 @@ export function useData(): UseDataReturn {
   const [events, setEvents] = useState<EventItem[]>([]);
   const [otherEvents, setOtherEvents] = useState<OtherEvent[]>([]);
   const [galleries, setGalleries] = useState<Gallery[]>([]);
+  const [auctions, setAuctions] = useState<Auction[]>([]);
   const [featuredArtworkIds, setFeaturedArtworkIdsState] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -94,13 +105,14 @@ export function useData(): UseDataReturn {
     setError(null);
 
     try {
-      const [artistsData, artworksData, eventsData, otherEventsData, featuredIds, galleriesData] = await Promise.all([
+      const [artistsData, artworksData, eventsData, otherEventsData, featuredIds, galleriesData, auctionsData] = await Promise.all([
         getArtists(),
         getArtworks(),
         getEvents(),
         getOtherEvents(),
         getFeaturedArtworkIds(),
         getGalleries(),
+        getAuctions(),
       ]);
 
       // Clean up orphaned featured artwork IDs
@@ -119,6 +131,7 @@ export function useData(): UseDataReturn {
       setOtherEvents(otherEventsData);
       setFeaturedArtworkIdsState(validFeaturedIds);
       setGalleries(galleriesData);
+      setAuctions(auctionsData);
     } catch (err) {
       console.error('Error loading data:', err);
       setError('Error al cargar los datos. Usando datos locales.');
@@ -258,6 +271,36 @@ export function useData(): UseDataReturn {
     setGalleries((prev) => prev.filter((g) => g.id !== id));
   };
 
+  // Auction actions
+  const refreshAuctions = useCallback(async () => {
+    setAuctions(await getAuctions());
+  }, []);
+
+  const addAuction = async (auction: { artworkId: string; startingPrice: number; minIncrement: number; endDate: string }) => {
+    setSaveError(null);
+    const newAuction = await createAuction(auction);
+    if (newAuction) {
+      setAuctions((prev) => [...prev, newAuction]);
+    } else {
+      setSaveError('No se pudo crear la subasta en Supabase.');
+    }
+  };
+
+  const editAuction = async (id: string, updates: Partial<Auction>) => {
+    setSaveError(null);
+    const ok = await updateAuction(id, updates);
+    if (ok) {
+      setAuctions((prev) => prev.map((a) => (a.id === id ? { ...a, ...updates } : a)));
+    } else {
+      setSaveError('No se pudieron guardar los cambios de la subasta.');
+    }
+  };
+
+  const removeAuction = async (id: string) => {
+    await deleteAuction(id);
+    setAuctions((prev) => prev.filter((a) => a.id !== id));
+  };
+
   return {
     artists,
     artworks,
@@ -283,6 +326,11 @@ export function useData(): UseDataReturn {
     addGallery,
     editGallery,
     removeGallery,
+    auctions,
+    addAuction,
+    editAuction,
+    removeAuction,
+    refreshAuctions,
     setArtists,
     setArtworks,
     setEvents,
