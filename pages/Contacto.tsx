@@ -1,8 +1,12 @@
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { submitContactMessage } from '../lib/database';
 import { isSupabaseConfigured } from '../lib/supabase';
 import { submitContactToGHL, isGHLConfigured } from '../lib/ghl';
+
+// Umbral por debajo del cual una respuesta se considera de un bot (un
+// humano nunca rellena y envía un formulario en menos de 1.5s).
+const MIN_HUMAN_SUBMIT_MS = 1500;
 
 const Contacto: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -12,6 +16,9 @@ const Contacto: React.FC = () => {
   });
   const [status, setStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
+  // Honeypot: campo invisible para humanos que los bots suelen rellenar igualmente.
+  const [honeypot, setHoneypot] = useState('');
+  const mountedAt = useRef(Date.now());
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -20,6 +27,18 @@ const Contacto: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    // Verificador anti-bot: si el campo honeypot está relleno o el envío
+    // llega demasiado rápido, es un bot. Se simula un envío correcto sin
+    // llamar a Supabase/GHL para no crear contactos vacíos ni delatar el filtro.
+    const isBot = honeypot.trim() !== '' || Date.now() - mountedAt.current < MIN_HUMAN_SUBMIT_MS;
+    if (isBot) {
+      setStatus('success');
+      setFormData({ name: '', email: '', message: '' });
+      setTimeout(() => setStatus('idle'), 5000);
+      return;
+    }
+
     setStatus('sending');
     setErrorMessage('');
 
@@ -107,9 +126,15 @@ const Contacto: React.FC = () => {
             >
               {/* Honeypot field for spam protection */}
               <input type="hidden" name="form-name" value="contact" />
-              <p className="hidden">
+              <p className="hidden" aria-hidden="true">
                 <label>
-                  No llenar este campo: <input name="bot-field" />
+                  No llenar este campo: <input
+                    name="bot-field"
+                    tabIndex={-1}
+                    autoComplete="off"
+                    value={honeypot}
+                    onChange={(e) => setHoneypot(e.target.value)}
+                  />
                 </label>
               </p>
 

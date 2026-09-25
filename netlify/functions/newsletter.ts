@@ -29,7 +29,16 @@ export const handler = async (event: any) => {
     if (!email || !email.includes('@')) {
       return { statusCode: 400, headers, body: JSON.stringify({ error: 'Invalid email' }) };
     }
-    const nameParts = (body.name || '').trim().split(/\s+/);
+    // Honeypot: si el bot rellenó este campo oculto, se responde 200 igual
+    // (para no delatar el filtro) pero sin crear el contacto en GHL.
+    if ((body.empresa || '').trim() !== '') {
+      return { statusCode: 200, headers, body: JSON.stringify({ success: true }) };
+    }
+    const trimmedName = (body.name || '').trim();
+    if (!trimmedName) {
+      return { statusCode: 400, headers, body: JSON.stringify({ error: 'Name is required' }) };
+    }
+    const nameParts = trimmedName.split(/\s+/);
     firstName = nameParts[0] || '';
     lastName = nameParts.slice(1).join(' ') || '';
   } catch {

@@ -1,10 +1,14 @@
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { submitNewsletterToGHL } from '../lib/ghl';
 import { TRANSLATIONS } from '../translations.ts';
 import { Language } from '../types.ts';
 
 const BLOG_URL = 'https://blog.loonacontemporary.com';
+
+// Umbral por debajo del cual un envío se considera de un bot (un humano
+// nunca rellena y envía el formulario en menos de 1.5s tras cargar la página).
+const MIN_HUMAN_SUBMIT_MS = 1500;
 
 interface FooterProps { lang: Language; onNavigate: (path: string) => void; }
 
@@ -13,9 +17,23 @@ const Footer: React.FC<FooterProps> = ({ lang, onNavigate }) => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');
+  // Honeypot: campo invisible para humanos que los bots suelen rellenar igualmente.
+  const [honeypot, setHoneypot] = useState('');
+  const mountedAt = useRef(Date.now());
 
   const handleNewsletterSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    // Verificador anti-bot: campo honeypot relleno o envío demasiado rápido.
+    // Se simula éxito sin llamar a GHL/Netlify para no crear contactos vacíos.
+    const isBot = honeypot.trim() !== '' || Date.now() - mountedAt.current < MIN_HUMAN_SUBMIT_MS;
+    if (isBot) {
+      setStatus('success');
+      setName('');
+      setEmail('');
+      setTimeout(() => setStatus('idle'), 3000);
+      return;
+    }
 
     if (!name.trim()) { setStatus('error'); return; }
     if (!email || !email.includes('@')) { setStatus('error'); return; }
@@ -61,6 +79,18 @@ const Footer: React.FC<FooterProps> = ({ lang, onNavigate }) => {
             </form>
 
             <form onSubmit={handleNewsletterSubmit} className="flex flex-col max-w-md gap-3">
+              {/* Honeypot: invisible para humanos, los bots lo suelen rellenar igual */}
+              <p className="hidden" aria-hidden="true">
+                <label>
+                  No llenar este campo: <input
+                    name="empresa"
+                    tabIndex={-1}
+                    autoComplete="off"
+                    value={honeypot}
+                    onChange={(e) => setHoneypot(e.target.value)}
+                  />
+                </label>
+              </p>
               <input
                 type="text"
                 name="name"
