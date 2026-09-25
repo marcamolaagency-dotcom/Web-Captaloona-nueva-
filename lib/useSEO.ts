@@ -59,6 +59,11 @@ const SEO_MAP: Record<string, SEOMeta> = {
     description:
       'Puja en tiempo real por obras exclusivas de Captaloona Art. Ofertas en vivo, puja más alta y tiempo restante visibles al instante.',
   },
+  '/politica-privacidad': {
+    title: 'Política de Privacidad | Captaloona Art Madrid',
+    description:
+      'Información sobre el tratamiento de datos personales en el sitio web de Captaloona Art: responsable, finalidades, destinatarios y derechos del usuario.',
+  },
 };
 
 const DEFAULT_SEO: SEOMeta = {

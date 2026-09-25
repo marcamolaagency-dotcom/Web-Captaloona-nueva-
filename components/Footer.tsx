@@ -111,7 +111,7 @@ const Footer: React.FC<FooterProps> = ({ lang, onNavigate }) => {
             <div>
               <h4 className="font-semibold text-zinc-900 mb-4 uppercase tracking-tighter">Legal</h4>
               <ul className="space-y-2 text-zinc-500">
-                <li><a href="#" className="hover:text-emerald-600">Política de Privacidad</a></li>
+                <li><button onClick={() => onNavigate('/politica-privacidad')} className="hover:text-emerald-600">Política de Privacidad</button></li>
                 <li><a href="#" className="hover:text-emerald-600">Política de Cookies</a></li>
                 <li><a href="#" className="hover:text-emerald-600">Términos</a></li>
               </ul>
